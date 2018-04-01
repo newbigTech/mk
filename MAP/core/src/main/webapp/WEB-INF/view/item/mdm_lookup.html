@@ -1,0 +1,807 @@
+<#--
+        * description: 主数据属性维护页面
+        * version: 0.1
+        * author:liuhongxi
+        *
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?attributeGroupCode=HAP_MDM_ATTRIBUTE_GROUP_CODE"
+                type="text/javascript"></script>
+        <!-- 按钮操作区域 方法初始化 -->
+        <script type="text/javascript">
+            /* 头 */
+            var viewModelHeader = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#headerInfGrid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#headerInfGrid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#headerInfGrid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+
+            /* 行 */
+            var viewModelCode = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#codeGrid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#codeGrid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#codeGrid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+        </script>
+        <body>
+        <div id="page-content">
+            <!-- 头信息操作区域 -->
+            <!-- 按钮操作区 -->
+            <div class="pull-left" id="type-toolbar-btn" style="padding-bottom:10px;">
+                <span class="btn btn-success k-grid-save-changes" data-bind="click:createFunction"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.new"/></span>
+                <span class="btn btn-success k-grid-save-changes" data-bind="click:saveFunction"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+                <span onclick="downloadExcel()" class="btn btn-success k-grid-save-changes"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.execlexport"/></span>
+                <span onclick="deleteData()" class="btn btn-danger"
+                      style="float:left;"><@spring.message "hap.delete"/></span>
+            </div>
+            <!-- 按钮操作区动作绑定 -->
+            <script>kendo.bind($('#type-toolbar-btn'), viewModelHeader);</script>
+
+            <!-- 右侧查询操作区 -->
+            <div class="pull-right" id="type-query-form" style="padding-bottom:10px;">
+                <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;"
+                       placeholder='<@spring.message "LookupType.name"/>'
+                       data-bind="value:model.name" class="k-textbox">
+                <span class="btn btn-primary" style="float:left;width:70px" data-bind="click:queryResource"
+                      type="submit"><@spring.message "hap.query"/></span>
+                <div style="clear:both"></div>
+            </div>
+            <!-- 右侧查询操作区动作绑定 -->
+            <script>kendo.bind($('#type-query-form'), viewModelHeader);</script>
+            <!-- 表格显示区域 -->
+            <div style="clear:both;padding-bottom: 10px">
+                <div id="headerInfGrid"></div>
+            </div>
+
+            <!-- 分割线 -->
+            <div id="mydiv" style=" height:1px;width:100%;background:#00CCFF;overflow:hidden;"></div>
+
+            <!-- 行信息操作区域 -->
+            <!-- 按钮操作区 -->
+            <div class="pull-left" id="code-toolbar-btn" style="padding-bottom:10px;padding-top: 10px">
+                <span class="btn btn-success k-grid-save-changes" data-bind="click:createFunction"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.new"/></span>
+                <span class="btn btn-success k-grid-save-changes" data-bind="click:saveFunction"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+                <span onclick="deleteSiteData()" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+                <!--导入按钮 heng.zhang04@hand-china.com-->
+                <span  onclick="importExcel()" class="btn btn-default" style="float:left;margin-left: 5px"><i class="fa fa-file-excel-o"></i><@spring.message "hap.execlImport"/></span>
+
+            </div>
+            <!-- 按钮操作区动作绑定 -->
+            <script>kendo.bind($('#code-toolbar-btn'), viewModelCode);</script>
+
+            <!-- 右侧查询操作区 -->
+            <div class="pull-right" id="code-query-form" style="padding-bottom:10px;">
+                <div style="clear:both"></div>
+            </div>
+            <!-- 右侧查询操作区动作绑定 -->
+            <script>kendo.bind($('#code-query-form'), viewModelCode);</script>
+            <!-- 表格显示区域 -->
+            <div style="clear:both">
+                <div id="codeGrid"></div>
+            </div>
+            <!-- 导入导出的execl Window -->
+            <div id="excelWindow"></div>
+        </div>
+        <script type="text/javascript">
+            //导入
+            function importExcel(){
+                excelWindow();
+            }
+            var headerId = 0;
+            var BaseUrl = _basePath;
+            //保存成功提示框，重复提示的判定Flg
+            var dialogFlg = false;
+            //用于点击头表详细按钮后，保存点击行的header_id,然后在行表添加信息的时候，读取出来，保存使用。
+            var G_headerId = '';
+            //用于点击头表详细按钮后，保存点击行的lookupType,然后在行表添加信息的时候，读取出来，保存使用。
+            var G_TypeCode = '';
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/markor/hand/hap/itemType/query",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/markor/hand/hap/itemType/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/markor/hand/hap/itemType/remove",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/markor/hand/hap/itemType/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModelHeader.model.toJSON(), options)
+                        }
+                    },
+
+                },
+                //请求结束操作 用于初始化头表后，使用第一条数据的header_id查询出对应的行表信息的处理
+                requestEnd: function (e) {
+                    if (!(e.response.success === true)) {
+                        kendo.ui.showErrorDialog({
+                            message: '操作失败!'
+                        });
+                        return;
+                    }
+
+                    if (e.type == "create" || e.type == "update") {
+                        if (!dialogFlg) {
+                            dialogFlg = true;
+                            kendo.ui.showInfoDialog({
+                                message: '<@spring.message "hap.tip.success"/>'
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    dialogFlg = false;
+                                }
+                            })
+                        }
+
+                    } else if (e.type == "destroy") {
+                        if (!dialogFlg) {
+                            dialogFlg = true;
+                            kendo.ui.showInfoDialog({
+                                message: '<@spring.message "hap.tip.success"/>'
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    dialogFlg = false;
+                                }
+                            })
+                        }
+                    }
+                    // 判断如果是查询操作的情况，直接初始化返回结果的第一行的行信息
+                    if (e.type == "read") {
+                        if (e.response.rows[0] != null) {
+                            var headerId_init = e.response.rows[0].headerId;
+                            var lookupType_init = e.response.rows[0].lookupType;
+                        }
+                    } else {
+                        // 如果不是查询方法（添加、修改、删除），将之前保存的头ID和类型Code取出，进行查询
+                        // 如果保存的是已经删除的 数据，则显示空表
+                        var headerId_init = G_headerId;
+                        var lookupType_init = G_TypeCode;
+                    }
+                    // 由于框架绑定了很多的连带动作，使用如下框架方法，进行查询
+                    viewModelCode.model["headerId"] = headerId_init;
+                    viewModelCode.queryResource();
+                    G_headerId = headerId_init;
+                    G_TypeCode = lookupType_init;
+//
+//                    data_init = {
+//                        "headerId": headerId_init,
+//                    },
+//                        $.ajax({
+//                            url: BaseUrl + "/markor/hand/hap/itemCode/queryCode",
+//                            data: data_init,
+//                            type: 'post',
+//                            dataType: 'json',
+//                            async: false,
+//                            success: function (result) {
+//                                console.log(result);
+//                                G_headerId = headerId_init;
+//                                G_TypeCode = lookupType_init;
+//                                $('#codeGrid').data('kendoGrid').dataSource.data(result.rows);
+//                            }
+//                        });
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "headerId",
+                        fields: {
+                            name: {validation: {required: true}},
+                            description: {validation: {required: true}},
+                            attrbuteCode: {validation: {required: true}},
+                            attributeGroupCode: {defaultValue: ''},
+                            effectFlag: {defaultValue: 'Y', type: 'boolean', checkedValue: 'Y', uncheckedValue: 'N'},
+                            effectDateFrom: {type: "date"},
+                        }
+                    }
+                }
+            });
+
+            var headerInfGrid = $("#headerInfGrid").kendoGrid({
+                rownumber: true,
+                dataSource: dataSource,
+                height: '250px',
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                reorderable: true,
+                columnMenu: true,//可以藏列
+                reorderrable: true,//可调整列顺序
+                sortable: true,
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "headerId",
+                        title: '<@spring.message "LookupType.headerId"/>',
+                        width: 120,
+                        hidden: true
+                    },
+                    {
+                        field: "lookupType",
+                        title: '<@spring.message "LookupType.lookupType"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            container.html(options.model.lookupType);
+                            //$('<input id="' + options.field + '" name="' + options.field + '" onkeyup="this.value = this.value.slice(0, 70)"/>')
+//                            .appendTo(container)
+//                            .kendoMaskedTextBox({
+//                                    change: function () {
+//                                        var dd = this.value();
+//                                        var d = $.trim(dd);
+//                                        this.value = 'a';
+//                                        console.log(this.value );
+//                                        if(d.length >7){
+//                                            kendo.ui.showInfoDialog({
+//                                                message: "字符超长！"
+//                                            }).done(function (event) {
+//                                                if (event.button == 'OK') {
+//                                                    container.click();
+//                                                }})
+//                                        }
+//
+//                                    }
+//                    })
+                        }
+
+                    },
+                    {
+                        field: "name",
+                        title: '<@spring.message "LookupType.name"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            $('<input id="' + options.field + '" name="' + options.field + '" onkeyup="this.value = this.value.slice(0, 70)" required="required"/>')
+                                .appendTo(container).kendoMaskedTextBox()
+                        }
+                    },
+                    {
+                        field: "attributeGroupCode",
+                        title: '<@spring.message "LookupType.attributeGroupCode"/>',
+                        width: 110,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        template: function (dataItem) {
+                            var v = dataItem.attributeGroupCode;
+                            $.each(attributeGroupCode, function (i, n) {
+                                if ((n.value || '').toLowerCase() == (v || '').toLowerCase()) {
+                                    v = n.meaning;
+                                    return v;
+                                }
+                            })
+                            return v;
+                        },
+                        editor: function (container, options) {
+                            $('<input name="' + options.field + '"/>')
+                                .appendTo(container)
+                                .kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: attributeGroupCode
+                                });
+                        }
+                    },
+                    {
+                        field: "description",
+                        title: '<@spring.message "LookupType.description"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            $('<input id="' + options.field + '" name="' + options.field + '" onkeyup="this.value = this.value.slice(0,400)" required="required"/>')
+                                .appendTo(container).kendoMaskedTextBox()
+                        }
+                    },
+                    {
+                        field: "effectDateFrom",
+                        title: '<@spring.message "LookupType.effectDateFrom"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        format: "{0: yyyy-MM-dd HH:mm:ss}",
+                        editor: function (container, options) {
+                            $('<input name="' + options.field + '" required="required"/>')
+                                .appendTo(container)
+                                .kendoDateTimePicker({});
+                        }
+                    },
+                    {
+                        field: "endDate",
+                        title: '<@spring.message "LookupType.endDate"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        format: "{0: yyyy-MM-dd HH:mm:ss}",
+                        editor: function (container, options) {
+                            $('<input name="' + options.field + '"/>')
+                                .appendTo(container)
+                                .kendoDateTimePicker({});
+                        }
+                    },
+                    {
+                        field: "effectFlag",
+                        title: '<@spring.message "LookupType.effectFlag"/>',
+                        headerAttributes: {style: "text-align:center"},
+                        attributes: {style: "text-align:center"},
+                        template: function (dataItem) {
+                            if (dataItem['effectFlag'] == "Y") {
+                                return '<span id="C_' + value.id + '_' + value.id + '_F" disabled="disabled"><span  type="checkbox" #= C_' + value.id + '_' + value.id + '_F=="Y" ? \'checked="checked"\' : ""   # data-field=C_' + value.id + '_' + value.id + '_F   class="chkbx k-checkbox  checked " /></span>';
+                            } else {
+                                return '<span id="C_' + value.id + '_' + value.id + '_F" disabled="true"  type="checkbox" #= C_' + value.id + '_' + value.id + '_F=="Y" ? \'checked="checked"\' : ""   # data-field=C_' + value.id + '_' + value.id + '_F   class="chkbx k-checkbox " />';
+                            }
+
+                        },
+                        width: 120
+
+                    }/*,
+                    {
+                        field: "attrbuteCode",
+                        title: '<@spring.message "LookupType.attrbuteCode"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            $('<input id="' + options.field + '" name="' + options.field + '" onkeyup="this.value = this.value.slice(0, 15)"/>')
+                                .appendTo(container).kendoMaskedTextBox();
+                        }
+                    }*/,
+                    {
+                        attributes: {style: "text-align:center;padding:0px"},
+                        command: [{
+                            name: 'remove',
+                            template: '<a class="btn btn-primary k-grid-remove"><@spring.message "hap.detail"/></a>',
+                            click: function (e) {
+                                var th = this;
+                                // 取消事件的默认处理
+                                e.preventDefault();
+                                kendo.ui.showConfirmDialog({
+                                    title: $l('hap.tip.info'),
+                                    message: $l('确认编辑详细信息吗？')
+                                }).done(function (event) {
+                                    if (event.button == 'OK') {
+                                        var data = th.dataItem($(e.target).closest("tr"));
+                                        var headerId = data.headerId;
+                                        var lookupType = data.lookupType;
+                                        viewModelCode.model["headerId"] = headerId;
+                                        viewModelCode.queryResource();
+                                        G_headerId = headerId;
+                                        G_TypeCode = lookupType;
+//                                        var data = th.dataItem($(e.target).closest("tr"));
+//                                        var headerId = data.headerId;
+//                                        var lookupType = data.lookupType;
+//                                        data = {
+//                                            "headerId": headerId,
+//                                        },
+//                                            $.ajax({
+//                                                url: BaseUrl + "/markor/hand/hap/itemCode/queryCode",
+//                                                data: data,
+//                                                type: 'post',
+//                                                dataType: 'json',
+//                                                async: false,
+//                                                success: function (result) {
+//                                                    console.log(result);
+//                                                    G_headerId = headerId;
+//                                                    G_TypeCode = lookupType;
+//                                                    $('#codeGrid').data('kendoGrid').dataSource.data(result.rows)
+//                                                }
+//                                            });
+                                    }
+                                })
+                            }
+                        }],
+                        width: 70
+                    }
+                ],
+                editable: true
+            }).data('kendoGrid');
+
+            // 头信息在删除前，check是否被使用的处理
+            function deleteData() {
+                //获取选中列
+                delSelection = $('#headerInfGrid') || {};
+                var grid = delSelection.data("kendoGrid") || {};
+                var checkData = grid.selectedDataItems();
+                // 判断选中数据是否全为新建数据
+                var newFlg = false;
+                for (var i = 0; i < checkData.length; i++) {
+                    if (typeof(checkData[i].lookupType) != "undefined") {
+                        newFlg = true;
+                    }
+                }
+                if (newFlg) {
+                    // 创建基础json结构
+                    data = {
+                        "models": checkData,
+                    };
+                    // 构建框架需要的数据格式
+                    var datas = Hap.prepareSubmitParameter(data, "update")
+                    // 过滤json数据
+                    var endDatas = kendo.stringify(datas);
+                    // ajax中，需要添加headers【 'Content-Type': 'application/json;charset=utf-8'】
+                    $.ajax({
+                        url: BaseUrl + "/markor/hand/hap/itemType/queryCheckUsed",
+                        data: endDatas,
+                        type: 'post',
+                        dataType: 'json',
+                        async: false,
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        success: function (result) {
+                            console.log(result);
+                            if (result.success == true) {
+                                Hap.deleteGridSelection({
+                                    grid: $('#headerInfGrid')
+                                });
+                            } else {
+                                kendo.ui.showInfoDialog({
+                                    message: result.message + "已被使用，不能删除"
+                                })
+                            }
+                        }
+                    });
+                } else {
+                    Hap.deleteGridSelection({
+                        grid: $('#headerInfGrid')
+                    });
+                }
+
+
+            }
+
+            /*   Hap.autoResizeGrid("#cusInfGrid"); */
+
+            var codeDataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/markor/hand/hap/itemCode/queryCode",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/markor/hand/hap/itemCode/submitCode",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/markor/hand/hap/itemCode/removeCode",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/markor/hand/hap/itemCode/submitCode",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type);
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModelCode.model.toJSON(), options)
+                        }
+                    }
+                },
+                //请求结束操作 用于初始化头表后，使用第一条数据的header_id查询出对应的行表信息的处理
+                requestEnd: function (e) {
+                    if (!(e.response.success === true)) {
+                        kendo.ui.showErrorDialog({
+                            message: '操作失败!'
+                        });
+                        return;
+                    }
+
+                    if (e.type == "create" || e.type == "update") {
+                        if (!dialogFlg) {
+                            dialogFlg = true;
+                            kendo.ui.showInfoDialog({
+                                message: '<@spring.message "hap.tip.success"/>'
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    dialogFlg = false;
+                                }
+                            })
+                        }
+
+                    } else if (e.type == "destroy") {
+                        if (!dialogFlg) {
+                            dialogFlg = true;
+                            kendo.ui.showInfoDialog({
+                                message: '<@spring.message "hap.tip.success"/>'
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    dialogFlg = false;
+                                }
+                            })
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "lineId",
+                        fields: {
+                            lookupValue: {validation: {required: true}},
+                            meaning: {validation: {required: true}},
+                            description: {validation: {required: true}},
+                            /*endDate: {validation: {required: true}},*/
+                            effectFlag: {defaultValue: 'Y', type: 'boolean', checkedValue: 'Y', uncheckedValue: 'N'},
+                            effectDate: {type: "date"}
+                        }
+                    }
+                }
+            });
+
+            var codeGrid = $("#codeGrid").kendoGrid({
+                rownumber: true,
+                dataSource: codeDataSource,
+                height: '250px',
+                autoBind: false,
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                reorderable: true,
+                columnMenu: true,//可以藏列
+                reorderrable: true,//可调整列顺序
+                sortable: true,
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                edit: function (row) {
+                    if (typeof(row.model.headerId) == 'undefined') {
+                        row.model.headerId = G_headerId;
+                        row.model.lookupCode = G_TypeCode + '-XXXX';
+
+                    }
+                },
+                columns: [
+
+                    {
+                        field: "lineId",
+                        title: '<@spring.message "LookupCode.lineId"/>',
+                        width: 120,
+                        hidden: true
+                    },
+                    {
+                        field: "headerId",
+                        title: '<@spring.message "LookupCode.headerId"/>',
+                        width: 120,
+                        hidden: true
+                    },
+                    {
+                        field: "lookupCode",
+                        title: '<@spring.message "LookupCode.lookupCode"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            if (typeof(options.model.lookupCode) == 'undefined') {
+                                container.html(G_TypeCode + '-XXXX');
+                            } else {
+                                container.html(options.model.lookupCode);
+                            }
+                        }
+                    },
+                    {
+                        field: "lookupValue",
+                        title: '<@spring.message "LookupCode.lookupValue"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            $('<input id="' + options.field + '" name="' + options.field + '" onkeyup="this.value = this.value.slice(0, 70)" required="required"/>')
+                                .appendTo(container).kendoMaskedTextBox()
+                        }
+                    },
+                    {
+                        field: "meaning",
+                        title: '<@spring.message "LookupCode.meaning"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            $('<input id="' + options.field + '" name="' + options.field + '" onkeyup="this.value = this.value.slice(0, 70)" required="required"/>')
+                                .appendTo(container).kendoMaskedTextBox()
+                        }
+                    },
+                    {
+                        field: "description",
+                        title: '<@spring.message "LookupCode.description"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        editor: function (container, options) {
+                            $('<input id="' + options.field + '" name="' + options.field + '" onkeyup="this.value = this.value.slice(0, 400)" required="required"/>')
+                                .appendTo(container).kendoMaskedTextBox()
+                        }
+                    },
+                    {
+                        field: "effectDate",
+                        title: '<@spring.message "LookupCode.effectDate"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        format: "{0: yyyy-MM-dd HH:mm:ss}",
+                        editor: function (container, options) {
+                            $('<input name="' + options.field + '" required="required"/>')
+                                .appendTo(container)
+                                .kendoDateTimePicker({});
+                        }
+                    },
+                    {
+                        field: "endDate",
+                        title: '<@spring.message "LookupCode.endDate"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        format: "{0: yyyy-MM-dd HH:mm:ss}",
+                        editor: function (container, options) {
+                            $('<input name="' + options.field + '"/>')
+                                .appendTo(container)
+                                .kendoDateTimePicker({});
+                        }
+                    },
+                    {
+                        field: "effectFlag",
+                        title: '<@spring.message "LookupCode.effectFlag"/>',
+                        headerAttributes: {style: "text-align:center"},
+                        attributes: {style: "text-align:center"},
+                        template: function (dataItem) {
+                            if (dataItem['effectFlag'] == "Y") {
+                                return '<span id="C_' + value.id + '_' + value.id + '_F" disabled="disabled"><span  type="checkbox" #= C_' + value.id + '_' + value.id + '_F=="Y" ? \'checked="checked"\' : ""   # data-field=C_' + value.id + '_' + value.id + '_F   class="chkbx k-checkbox  checked " /></span>';
+                            } else {
+                                return '<span id="C_' + value.id + '_' + value.id + '_F" disabled="true"  type="checkbox" #= C_' + value.id + '_' + value.id + '_F=="Y" ? \'checked="checked"\' : ""   # data-field=C_' + value.id + '_' + value.id + '_F   class="chkbx k-checkbox " />';
+                            }
+
+                        },
+                        width: 120
+                    }
+                ],
+                editable: true
+            }).data('kendoGrid');
+            function deleteSiteData() {
+
+                Hap.deleteGridSelection({
+                    grid: $('#codeGrid')
+                });
+
+            }
+            //下载属性&属性值excel列表
+            function downloadExcel() {
+                var form = $("<form>");   //定义一个form表单
+                form.attr('style', 'display:none');   //在form表单中添加查询参数
+                form.attr('target', '');
+                form.attr('method', 'GET');
+                form.attr('action', BaseUrl + "/markor/hand/hap/itemType/downloadExcel");
+                $('body').append(form);  //将表单放置在web中
+                form.submit();
+            }
+
+            //下载属性&属性值excel列表
+            function downloadExcel() {
+                var form = $("<form>");   //定义一个form表单
+                form.attr('style', 'display:none');   //在form表单中添加查询参数
+                form.attr('target', '');
+                form.attr('method', 'GET');
+                form.attr('action', BaseUrl + "/markor/hand/hap/itemType/downloadExcel");
+                $('body').append(form);  //将表单放置在web中
+                form.submit();
+            }
+
+            //数据导入window
+            window.excelWindow = function(){
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '配置属性值导入',
+                    content:"${base.contextPath}/item/mdm_lookup_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal:true,
+                    visible:false,
+                    width:800,
+                    height:400,
+                    iframe:true,
+                    close: function() {
+                        //window 关闭  刷新 本页面的  Grid
+                        $('#codeGrid').data('kendoGrid').dataSource.page(1);
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+                /*//最大化
+                 excelWindow.toggleMaximization();*/
+            }
+        </script>
+        </body>
+        </html>

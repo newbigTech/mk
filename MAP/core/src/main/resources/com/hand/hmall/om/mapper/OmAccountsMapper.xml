@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OmAccountsMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OmAccounts">
+        <result column="ACCOUNTS_ID" property="accountsId" jdbcType="DECIMAL"/>
+        <result column="TRANSACTION" property="transaction" jdbcType="VARCHAR"/>
+        <result column="SERIAL_NUM" property="serialNum" jdbcType="VARCHAR"/>
+        <result column="OUT_TRADE_NO" property="outTradeNo" jdbcType="VARCHAR"/>
+        <result column="PRODUCT" property="product" jdbcType="VARCHAR"/>
+        <result column="TIME" property="time" jdbcType="DATE"/>
+        <result column="ACCOUNT" property="account" jdbcType="VARCHAR"/>
+        <result column="AMOUNT" property="amount" jdbcType="DECIMAL"/>
+        <result column="CHANNEL" property="channel" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="SYNC_FLAG" property="syncFlag" jdbcType="VARCHAR"/>
+        <!-- 添加会计凭证编号、原始业务类型字段 add by zhangyanan  2017-09-26 -->
+        <result column="VOUCHERNO" property="voucherno" jdbcType="VARCHAR"/>
+        <result column="PRE_TYPE" property="preType" jdbcType="VARCHAR"/>
+        <!-- 商城订单号 add by zhangmeng  2017-11-22 -->
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="AccountsResultMap" type="com.hand.hmall.om.dto.OmAccounts">
+        <result column="ACCOUNTS_ID" property="accountsId" jdbcType="DECIMAL"/>
+        <result column="TRANSACTION" property="transaction" jdbcType="VARCHAR"/>
+        <result column="SERIAL_NUM" property="serialNum" jdbcType="VARCHAR"/>
+        <result column="OUT_TRADE_NO" property="outTradeNo" jdbcType="VARCHAR"/>
+        <result column="TIME" property="time" jdbcType="DATE"/>
+        <result column="ACCOUNT" property="account" jdbcType="VARCHAR"/>
+        <result column="AMOUNT" property="amount" jdbcType="DECIMAL"/>
+        <result column="CHANNEL" property="channel" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="SYNC_FLAG" property="syncFlag" jdbcType="VARCHAR"/>
+        <result column="VOUCHERNO" property="voucherno" jdbcType="VARCHAR"/>
+        <result column="PRE_TYPE" property="preType" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="userNumber" property="userNumber" jdbcType="VARCHAR"/>
+        <result column="companyCode" property="companyCode" jdbcType="VARCHAR"/>
+        <result column="tradeDate" property="tradeDate" jdbcType="VARCHAR"/>
+        <result column="tradeTime" property="tradeTime" jdbcType="VARCHAR"/>
+        <result column="startTradeDate" property="startTradeDate" jdbcType="VARCHAR"/>
+        <result column="endTradeDate" property="endTradeDate" jdbcType="VARCHAR"/>
+        <result column="SOURCE" property="source" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        ACCOUNT.TRANSACTION,ACCOUNT.ACCOUNTS_ID,ACCOUNT.TYPE,ACCOUNT.CHANNEL,ACCOUNT.OUT_TRADE_NO,ACCOUNT.TIME,
+        ACCOUNT.AMOUNT,ACCOUNT.OUT_TRADE_NO,ACCOUNT.REMARK,ACCOUNT.SERIAL_NUM,ACCOUNT.SYNC_FLAG,ACCOUNT.VOUCHERNO,ACCOUNT.PRE_TYPE,ACCOUNT.SOURCE
+    </sql>
+
+    <!-- 手工对账界面手工对账数据 -->
+    <select id="getAccountsForBalance" parameterType="com.hand.hmall.om.dto.OmAccounts" resultMap="BaseResultMap">
+        SELECT oa.ACCOUNTS_ID,oo.ESC_ORDER_CODE, oa.TRANSACTION, oa.SERIAL_NUM, oa.OUT_TRADE_NO, oa.ACCOUNT, oa.AMOUNT, oa.CHANNEL, oa.TYPE, oa.VOUCHERNO,
+        oa.PRE_TYPE, to_char(oa.TIME, 'yyyy-MM-dd') tradeDate, to_char(oa.TIME, 'HH24:mi:ss') tradeTime
+        FROM HMALL_OM_ACCOUNTS oa
+        LEFT JOIN hmall_om_paymentinfo op ON op.NUMBER_CODE = oa.TRANSACTION
+        LEFT JOIN hmall_om_order oo ON oo.order_id = op.order_id
+        WHERE
+        oa.ACCOUNTS_ID NOT IN (
+        SELECT ob.ACCOUNT_ID
+        FROM HMALL_OM_BALANCE ob)
+        AND oa.TYPE IN (1,2)
+        <if test="type != null and type != ''">
+            AND oa.TYPE = #{type}
+        </if>
+        <if test="startTradeDate != null and startTradeDate != ''">
+            AND to_char(oa.TIME, 'yyyy-MM-dd HH24:mi:ss') &gt;= #{startTradeDate}
+        </if>
+        <if test="endTradeDate != null and endTradeDate != ''">
+            AND to_char(oa.TIME, 'yyyy-MM-dd HH24:mi:ss') &lt;= #{endTradeDate}
+        </if>
+        <if test="voucherno != null and voucherno == 1">
+            AND oa.VOUCHERNO IS NULL
+        </if>
+        <if test="voucherno != null and voucherno == 2">
+            AND oa.VOUCHERNO IS NOT NULL
+        </if>
+        <if test="escOrderCode != null and escOrderCode !=''">
+            AND oo.esc_order_code like CONCAT('%',CONCAT(#{escOrderCode},'%') )
+        </if>
+        <if test="transaction != null and transaction !=''">
+            AND oa.transaction like CONCAT('%',CONCAT(#{transaction},'%') )
+        </if>
+    </select>
+
+    <!-- 财务上载用户账号字段查询 -->
+    <select id="getUserNumber" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT mw.SOLD_PARTY
+        FROM HMALL_OM_ACCOUNTS oa, HMALL_OM_PAYMENTINFO op, HMALL_OM_ORDER oo, HMALL_MST_WEBSITE mw
+        WHERE 1 = 1
+        AND oa.TRANSACTION = op.NUMBER_CODE
+        AND op.ORDER_ID = oo.ORDER_ID
+        AND oo.WEBSITE_ID = mw.CODE
+        AND oa.ACCOUNTS_ID = #{accountsId}
+    </select>
+
+    <!-- 手工上载重复性校验 -->
+    <select id="checkIsExict" parameterType="com.hand.hmall.om.dto.OmAccounts" resultType="java.lang.Long">
+        SELECT oa.ACCOUNTS_ID
+        FROM HMALL_OM_ACCOUNTS oa
+        WHERE oa.TRANSACTION = #{transaction}
+        and oa.SERIAL_NUM = #{serialNum}
+        AND oa.TYPE = #{type}
+        AND oa.CHANNEL = 'WECHAT'
+    </select>
+
+    <!-- 手工上载财务账单界面查询 -->
+    <select id="queryAccountsList" resultMap="AccountsResultMap" parameterType="com.hand.hmall.om.dto.OmAccounts">
+        SELECT oa.ACCOUNTS_ID,oa.TRANSACTION,oa.AMOUNT,oa.SERIAL_NUM,oa.OUT_TRADE_NO,oa.TIME,oa.CHANNEL,oa.REMARK,oa.PRE_TYPE,oo.ESC_ORDER_CODE,oa.TYPE,oa.SOURCE,
+        to_char(oa.TIME, 'yyyy-MM-dd') tradeDate, to_char(oa.TIME, 'HH24:mi:ss`') tradeTime
+        FROM HMALL_OM_ACCOUNTS oa
+        LEFT JOIN HMALL_OM_PAYMENTINFO op ON op.NUMBER_CODE = oa.TRANSACTION
+        LEFT JOIN HMALL_OM_ORDER oo ON  oo.ORDER_ID = op.ORDER_ID
+        WHERE 1 = 1
+        <if test="transaction != null and transaction != ''">
+            AND oa.TRANSACTION LIKE '%'||#{transaction}||'%'
+        </if>
+        <if test="escOrderCode != null and escOrderCode != ''">
+            AND oo.ESC_ORDER_CODE LIKE  '%'||#{escOrderCode}||'%'
+        </if>
+        <if test="type != null and type != ''">
+            AND oa.TYPE = #{type}
+        </if>
+        <if test="source != null and source != ''">
+            <if test="source == 'Y'.toString()">
+                AND oa.SOURCE = #{source}
+            </if>
+            <if test="source == 'N'.toString()">
+                AND oa.SOURCE = #{source}
+                OR oa.SOURCE IS NULL
+            </if>
+        </if>
+        <if test="channel != null and channel != ''">
+            AND oa.CHANNEL = #{channel}
+        </if>
+        <if test="startTradeDate != null and startTradeDate != ''">
+            AND to_char(oa.TIME, 'yyyy-MM-dd') &gt;= #{startTradeDate}
+        </if>
+        <if test="endTradeDate != null and endTradeDate != ''">
+            AND to_char(oa.TIME, 'yyyy-MM-dd') &lt;= #{endTradeDate}
+        </if>
+        <if test="userNumber != null and userNumber != ''">
+            <if test="userNumber == '9520'.toString()">
+                AND upper(oa.channel) in ('WECHAT', 'UNIONPAY')
+                OR( upper(oa.channel) = 'ALIPAY'
+                AND oa.ACCOUNTS_ID in (SELECT cu.accounts_id FROM (
+                SELECT oa.accounts_id, mw.SOLD_PARTY as userNumber FROM HMALL_OM_ACCOUNTS oa
+                LEFT JOIN HMALL_OM_PAYMENTINFO op ON oa.TRANSACTION = op.NUMBER_CODE
+                LEFT JOIN HMALL_OM_ORDER oo ON op.ORDER_ID = oo.ORDER_ID
+                LEFT JOIN HMALL_MST_WEBSITE mw ON oo.WEBSITE_ID = mw.CODE
+                ) cu
+                where cu.usernumber = '9520'))
+            </if>
+            <if test="userNumber == '9519'.toString()">
+                AND upper(oa.channel) = 'ALIPAY'
+                AND oa.ACCOUNTS_ID in (
+                SELECT cu.ACCOUNTS_ID FROM (
+                SELECT oa.ACCOUNTS_ID, mw.SOLD_PARTY FROM HMALL_OM_ACCOUNTS oa
+                LEFT JOIN HMALL_OM_PAYMENTINFO op ON oa.TRANSACTION = op.NUMBER_CODE
+                LEFT JOIN HMALL_OM_ORDER oo ON op.ORDER_ID = oo.ORDER_ID
+                LEFT JOIN HMALL_MST_WEBSITE mw ON oo.WEBSITE_ID = mw.CODE) cu
+                WHERE cu.SOLD_PARTY IS NULL OR cu.SOLD_PARTY = '9519'
+                )
+            </if>
+            <if test="userNumber != '9520'.toString() and userNumber != '9519'.toString()">
+                AND upper(oa.channel) = 'ALIPAY'
+                AND oa.ACCOUNTS_ID in (
+                SELECT cu.ACCOUNTS_ID FROM (
+                SELECT oa.ACCOUNTS_ID, mw.SOLD_PARTY FROM HMALL_OM_ACCOUNTS oa
+                LEFT JOIN HMALL_OM_PAYMENTINFO op ON oa.TRANSACTION = op.NUMBER_CODE
+                LEFT JOIN HMALL_OM_ORDER oo ON op.ORDER_ID = oo.ORDER_ID
+                LEFT JOIN HMALL_MST_WEBSITE mw ON oo.WEBSITE_ID = mw.CODE) cu
+                WHERE cu.SOLD_PARTY = #{userNumber}
+                )
+            </if>
+        </if>
+        ORDER BY oa.ACCOUNTS_ID DESC
+    </select>
+
+    <!-- 根据同步Retail标记获得将要推送Retail系统的账单记录 add by zhangyanan 2017-09-22 -->
+    <select id="getBillListBySyncFlag" parameterType="com.hand.hmall.om.dto.OmAccounts" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_OM_ACCOUNTS ACCOUNT
+        <where>
+            SYNC_FLAG = #{syncFlag}
+            <if test="syncFlag eq 'Y'.toString()">
+                and VOUCHERNO IS NULL
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据账单表中的transaction获得订单表中的ESC_ORDER_CODE add by zhangyanan 2017-09-23 -->
+    <select id="getEscOrderCodeBytransaction" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT o.ESC_ORDER_CODE FROM HMALL_OM_ACCOUNTS account
+        LEFT JOIN HMALL_OM_PAYMENTINFO pay ON account.TRANSACTION = pay.NUMBER_CODE
+        LEFT JOIN HMALL_OM_ORDER o ON o.ORDER_ID = pay.ORDER_ID
+        WHERE account.TRANSACTION = #{transaction} AND ROWNUM = 1
+    </select>
+
+    <!-- 根据第三方交易号获取SOLD_PARTY add by zhangyanan 2017-09-23 -->
+    <select id="getSoldPartyByTransaction" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT website.SOLD_PARTY FROM HMALL_OM_ACCOUNTS account
+        LEFT JOIN HMALL_OM_PAYMENTINFO pay ON pay.NUMBER_CODE = account.TRANSACTION
+        LEFT JOIN HMALL_OM_ORDER o ON o.ORDER_ID = pay.ORDER_ID
+        LEFT JOIN HMALL_MST_WEBSITE website ON website.CODE = o.WEBSITE_ID
+        WHERE pay.NUMBER_CODE = #{transaction} AND ROWNUM = 1
+    </select>
+
+</mapper>

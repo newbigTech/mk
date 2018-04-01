@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.OdtypeMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Odtype">
+        <result column="ODTYPE_ID" property="odtypeId" jdbcType="DECIMAL" />
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL" />
+        <result column="CUST_CHAN_SRC" property="custChanSrc" jdbcType="VARCHAR" />
+        <result column="APPROVAL_STATUS" property="approvalStatus" jdbcType="VARCHAR" />
+        <result column="IS_USED" property="isUsed" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="OdtypeMap" type="com.hand.hmall.mst.dto.OdtypeDto">
+        <result column="odtype_id" property="odtypeId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="CUST_CHAN_SRC" property="custChanSrc" jdbcType="VARCHAR" />
+        <result column="APPROVAL_STATUS" property="approvalStatus" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 推送商城的频道数据 -->
+    <select id="selectOdtypeData" resultMap="OdtypeMap">
+
+        select mo.odtype_id,pd.code, mo.cust_chan_src, mo.approval_status
+          from hmall_mst_odtype mo
+          join (select p.product_id, p.code
+                       from hmall_mst_product p
+                        join (select version.catalogversion_id
+                                   from hmall_mst_catalogversion version
+                                   left join hmall_mst_catalogs catalogs
+                                     on version.catalog = catalogs.catalogs_id
+                                  where version.catalogversion = 'online'
+                                    and catalogs.code = 'markor') c
+                         on p.catalogversion_id = c.catalogversion_id
+                      where p.product_type is not null --商品类型不为空
+                     ) pd
+            on mo.product_id = pd.product_id
+         where mo.is_used = 'Y'
+
+    </select>
+
+    <!-- 同步商品关联的od关系 -->
+    <select id="getOdtypeInfoByProductId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT mo.ODTYPE_ID,mo.CUST_CHAN_SRC,mo.APPROVAL_STATUS,mo.IS_USED
+        FROM hmall_mst_odtype mo
+        WHERE 1 = 1
+        AND mo.product_id = #{productId}
+    </select>
+
+    <delete id="removeByProductId" parameterType="java.lang.Long">
+        DELETE FROM hmall_mst_odtype mo
+        WHERE mo.product_id = #{productId}
+    </delete>
+
+    <!-- 根据商品ID和定制类型查询对应定制信息 -->
+    <select id="getByProductAndCustChanSrc" parameterType="com.hand.hmall.mst.dto.Odtype" resultMap="BaseResultMap">
+        SELECT mo.ODTYPE_ID,mo.APPROVAL_STATUS,mo.IS_USED
+        FROM hmall_mst_odtype mo
+        WHERE 1 = 1
+         <if test="productId != null">
+             AND mo.product_id = #{productId}
+         </if>
+         <if test="custChanSrc != null">
+             AND mo.CUST_CHAN_SRC = #{custChanSrc}
+         </if>
+    </select>
+
+
+</mapper>

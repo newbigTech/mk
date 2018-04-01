@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.ReceiptMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.Receipt">
+        <result column="RECEIPT_ORDER_ID" property="receiptOrderId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="RECEIPT_TYPE" property="receiptType" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SV_CATEGORY1" property="svCategory1" jdbcType="VARCHAR"/>
+        <result column="SV_CATEGORY2" property="svCategory2" jdbcType="VARCHAR"/>
+        <result column="SALES_CODE" property="salesCode" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="COMPLAINT" property="complaint" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="USER_ID" property="userId" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE"/>
+        <result column="EXECUTION_DATE" property="executionDate" jdbcType="DATE"/>
+        <result column="TECHNICIAN_NAME" property="technicianName" jdbcType="VARCHAR"/>
+        <result column="IS_CHARGE" property="isCharge" jdbcType="VARCHAR"/>
+        <result column="LINKS_CODE" property="linksCode" jdbcType="VARCHAR"/>
+        <result column="PAY_STATUS" property="payStatus" jdbcType="VARCHAR"/>
+        <result column="TRANS_FEE" property="transFee" jdbcType="DECIMAL"/>
+        <result column="RESTORE_FEE" property="restoreFee" jdbcType="DECIMAL"/>
+        <result column="REPAIR_FEE" property="repairFee" jdbcType="DECIMAL"/>
+        <result column="SHOULD_PAY" property="shouldPay" jdbcType="DECIMAL"/>
+        <result column="REAL_PAY" property="realPay" jdbcType="DECIMAL"/>
+        <result column="REFUND_STATUS" property="refundStatus" jdbcType="VARCHAR"/>
+        <result column="REFUND_REASON" property="refundReason" jdbcType="VARCHAR"/>
+        <result column="REFUND_SUM" property="refundSum" jdbcType="DECIMAL"/>
+        <result column="RETURN_REASON" property="returnReason" jdbcType="VARCHAR"/>
+        <result column="RETURN_TYPE" property="returnType" jdbcType="VARCHAR"/>
+        <result column="RECEIVE_POSITION" property="receivePosition" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="RETURN_FEE" property="returnFee" jdbcType="DECIMAL"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+    </resultMap>
+
+    <!--根据服务单CODE查询售后单-->
+    <select id="queryReceiptByServiceOrderId" parameterType="com.hand.hmall.as.dto.ServiceorderEntry"
+            resultMap="BaseResultMap">
+        SELECT
+        AS_REFUND_ID RECEIPT_ORDER_ID,
+        CODE,
+        STATUS,
+        CS,
+        CREATION_DATE,
+        FINISH_TIME,
+        'SR08' RECEIPT_TYPE
+        FROM HMALL_AS_REFUND
+        <where>
+            <if test="receiptOrderId != null">
+                SERVICE_ORDER_ID = #{receiptOrderId}
+            </if>
+        </where>
+        UNION
+        SELECT
+        AS_RETURN_ID RECEIPT_ORDER_ID,
+        CODE,
+        STATUS,
+        CS,
+        CREATION_DATE,
+        FINISH_TIME,
+        'SR01' RECEIPT_TYPE
+        FROM HMALL_AS_RETURN
+        <where>
+            <if test="receiptOrderId != null">
+                SERVICE_ORDER_ID = #{receiptOrderId}
+            </if>
+        </where>
+        UNION
+        SELECT
+        AS_EXCHANGE_ID RECEIPT_ORDER_ID,
+        CODE,
+        STATUS,
+        CS,
+        CREATION_DATE,
+        FINISH_TIME,
+        'SR02' RECEIPT_TYPE
+        FROM HMALL_AS_EXCHANGE
+        <where>
+            <if test="receiptOrderId != null">
+                SERVICE_ORDER_ID = #{receiptOrderId}
+            </if>
+        </where>
+        UNION
+        SELECT
+        AS_SVSALES_ID RECEIPT_ORDER_ID,
+        CODE,
+        STATUS,
+        CS,
+        CREATION_DATE,
+        FINISH_TIME,
+        'S013' RECEIPT_TYPE
+        FROM HMALL_AS_SVSALES
+        <where>
+            <if test="receiptOrderId != null">
+                SERVICE_ORDER_ID = #{receiptOrderId}
+            </if>
+        </where>
+        UNION
+        SELECT
+        ID RECEIPT_ORDER_ID,
+        CODE,
+        STATUS,
+        CS,
+        CREATION_DATE,
+        FINISH_TIME,
+        'S003' RECEIPT_TYPE
+        FROM HMALL_AS_MATERIAL
+        <where>
+            <if test="receiptOrderId != null">
+                SERVICE_ORDER_ID = #{receiptOrderId}
+            </if>
+        </where>
+        UNION
+        SELECT
+        COMPENSATE_ID RECEIPT_ORDER_ID,
+        CODE,
+        STATUS,
+        CS,
+        CREATION_DATE,
+        FINISH_TIME,
+        'SR02' RECEIPT_TYPE
+        FROM HMALL_AS_COMPENSATE
+        <where>
+            <if test="receiptOrderId != null">
+                SERVICE_ID = #{receiptOrderId}
+            </if>
+        </where>
+    </select>
+</mapper>

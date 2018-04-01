@@ -1,0 +1,1106 @@
+<#--
+        * description: 订单列表查询页面
+        * author:zhangmeng
+        * 2017/5/22
+        * version: 0.1
+        *
+        -->
+    <#include "/include/header.html">
+        <script src="${base.contextPath}/common/code?product_Order_PICK_UP_GOODS_WAY=HMALL.SHIPPING_TYPE" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?product_Order_INVOICE_TYPE=HMALL.SHIPPING_TYPE" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?product_Order_State=HMALL.ORDER.STATE" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?product_Order_Type=HMALL.ORDER.ORDER_TYPE" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?YNData=SYS.YES_NO" type="text/javascript"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.js"></script>
+        <style type="text/css">
+            #forms .condition_forms {
+                float: left;
+                width: auto;
+                height: 36px;
+                margin-left: 10px;
+                padding-bottom: 10px;
+            }
+
+            #forms .condition_forms label {
+                width: 7em;
+                text-align: right;
+                font-size: auto;
+            }
+
+            #forms .condition_forms input {
+                width: 200px;
+            }
+        </style>
+        <body>
+        <script type="text/javascript">
+            var funCode = '${RequestParameters.functionCode!0}';
+            var BaseUrl = _basePath;
+            var maps;
+            var maps2;
+            //equal
+            var orderStatus_ = [];
+            var orderStyle__ = [];
+            var distribution = [];
+            var afterSell___ = [];
+            var orderTypes__ = [];
+
+            if (funCode == 'ORDER_SNAPSHOT') {
+                $(document).ready(function () {
+                    $('#toolbar-btn').hide();
+                });
+            }
+
+            var map = {orderStatus_: orderStatus_, orderStyle__: orderStyle__, distribution: distribution, afterSell___: afterSell___, orderTypes__: orderTypes__};
+
+            var viewModel = kendo.observable({
+                model: {},
+                resourceTypeData: [product_Order_Type, product_Order_PICK_UP_GOODS_WAY, product_Order_INVOICE_TYPE, product_Order_State],
+                resetForm: function (e) {
+                    var formData = viewModel.model.toJSON();
+                    for (var k in formData) {
+                        if (k != "productCatalog") {
+                            viewModel.model.set(k, null);
+                        } else {
+                            viewModel.model.set(k, 'UniqloCatalog-online');
+                        }
+                    }
+                    ;
+                    //清空按钮
+                    $("#all_empty").attr("class", "btn btn-primary");
+                    $(".aChild").attr("class", "btn btn-default btn-xs aChild");
+                    map = {orderStatus_: [], orderStyle__: [], distribution: [], afterSell___: [], orderTypes__: []};
+                    $("#distribution_PICKUP").attr("disabled", false);
+                    $("#distribution_EXPRESS").attr("disabled", false);
+                    $("#lockedY").attr("checked", null);
+                    $("#lockedN").attr("checked", null);
+                    $("#allPayY").attr("checked", null);
+                    $("#allPayN").attr("checked", null);
+
+                }
+            });
+        </script>
+
+        <script type="text/javascript">
+            function isClicked2(z) {
+                console.log("class", $(z).attr("class"));
+                if ($(z).attr("class") == "btn btn-primary") {  //如果当前是清空状态，执行全选操作
+                    $(z).attr("class", "btn btn-primary active");
+                    $(".aChild").attr("class", "btn btn-default btn-xs aChild active");
+                    var aChild = $(".aChild");
+                    console.log("aChild", aChild);
+                    for (var ii = 0; ii < aChild.length; ii++) {
+                        var subName = aChild.eq(ii).attr("id").substring(0, 12);
+                        map[subName].push(aChild.eq(ii).attr("id").substring(13));
+                    }
+                } else {       //如果当前是全选状态，执行清空操作
+                    $(z).attr("class", "btn btn-primary");
+                    $(".aChild").attr("class", "btn btn-default btn-xs aChild");
+                    map = {orderStatus_: [], orderStyle__: [], distribution: [], afterSell___: [], orderTypes__: []};
+                }
+            }
+
+            function selects(z) {
+                if ($(z).attr("class") == "btn btn-default btn-xs aChild") {
+                    $(z).attr("class", "btn btn-default btn-xs aChild active");
+
+                    var subValue = $(z).attr("id").substring(13);
+                    if ($(z).attr("id") == 'orderStatus__WAIT_SELLER_SEND_GOODS__PICKUP') {     //选中已付款，选中门店自提
+                        //获取代发货是否被选中   （选中true，没有选中false）
+                        var express_Pitch_On = $("#orderStatus__WAIT_SELLER_SEND_GOODS__EXPRESS").attr("class") == "btn btn-default btn-xs aChild active";
+                        if (!express_Pitch_On) {
+                            $("#distribution_EXPRESS").attr("class", "btn btn-default btn-xs aChild").blur();
+                            $.each(map["distribution"], function (index, item) {
+                                map["distribution"].splice(index, 1);
+                            });
+                        }
+
+                        $("#distribution_PICKUP").addClass('active');
+                        var subName = $("#distribution_PICKUP").attr("id").substring(0, 12);
+                        map[subName].push($("#distribution_PICKUP").attr("id").substring(13));
+
+                        subValue = "WAIT_SELLER_SEND_GOODS";
+                        $("#distribution_PICKUP").attr("disabled", true);
+                        $("#distribution_EXPRESS").attr("disabled", true);
+                    }
+                    if ($(z).attr("id") == 'orderStatus__WAIT_SELLER_SEND_GOODS__EXPRESS') {    //选中待发货，选中快递配送
+                        //获取已付款是否被选中   （选中true，没有选中false）
+                        var prickup_Pitch_On = $("#orderStatus__WAIT_SELLER_SEND_GOODS__PICKUP").attr("class") == "btn btn-default btn-xs aChild active";
+                        if (!prickup_Pitch_On) {
+                            $("#distribution_PICKUP").attr("class", "btn btn-default btn-xs aChild").blur();
+                            $.each(map["distribution"], function (index, item) {
+                                map["distribution"].splice(index, 1);
+                            });
+                        }
+
+                        $("#distribution_EXPRESS").addClass('active');
+                        var subName = $("#distribution_EXPRESS").attr("id").substring(0, 12);
+                        map[subName].push($("#distribution_EXPRESS").attr("id").substring(13));
+                        subValue = "WAIT_SELLER_SEND_GOODS";
+                        $("#distribution_PICKUP").attr("disabled", true);
+                        $("#distribution_EXPRESS").attr("disabled", true);
+                    }
+                    var subName = $(z).attr("id").substring(0, 12);
+                    map[subName].push(subValue);
+                } else {
+                    $(z).attr("class", "btn btn-default btn-xs aChild").blur();
+                    var subName = $(z).attr("id").substring(0, 12);
+                    var val_ = $(z).attr("id").substring(13);
+                    if (val_ == "WAIT_SELLER_SEND_GOODS__PICKUP") {     //选中已付款，选中门店自提
+                        val_ = "WAIT_SELLER_SEND_GOODS";
+                        $.each(map["distribution"], function (index, item) {
+                            map["distribution"].splice(index, 1);
+                        });
+                        $("#distribution_PICKUP").attr("class", "btn btn-default btn-xs aChild").blur();
+                    }
+                    if (val_ == "WAIT_SELLER_SEND_GOODS__EXPRESS") {
+                        val_ = "WAIT_SELLER_SEND_GOODS";
+                        $.each(map["distribution"], function (index, item) {
+                            map["distribution"].splice(index, 1);
+                        });
+                        $("#distribution_EXPRESS").attr("class", "btn btn-default btn-xs aChild").blur();
+                    }
+
+                    //获取门店自提是否被选中   （选中true，没有选中false）
+                    var prickup_Pitch_On = $("#orderStatus__WAIT_SELLER_SEND_GOODS__PICKUP").attr("class") == "btn btn-default btn-xs aChild active";
+                    //获取快递配送是否被选中   （选中true，没有选中false）
+                    var express_Pitch_On = $("#orderStatus__WAIT_SELLER_SEND_GOODS__EXPRESS").attr("class") == "btn btn-default btn-xs aChild active";
+                    if (!prickup_Pitch_On && !express_Pitch_On) {
+                        $("#distribution_PICKUP").attr("disabled", false);
+                        $("#distribution_EXPRESS").attr("disabled", false);
+                    }
+
+                    $.each(map[subName], function (index, item) {
+                        // index是索引值（即下标）   item是每次遍历得到的值；
+                        if (item == val_) {
+                            map[subName].splice(index, 1);
+                            return;
+                        }
+                    });
+
+                }
+            }
+            function doSubmit() {
+                if ($('#grid').data('kendoGrid').dataSource.options.data != null) {
+                    $('#grid').data('kendoGrid').setDataSource(dataSource);
+                } else {
+                    $('#grid').data('kendoGrid').dataSource.page(1);
+                }
+                return true;
+            }
+        </script>
+
+        <!-- 加载该页面中的按钮条件 -->
+        <script type="text/javascript">
+            $(function () {
+                //创建订单状态的按钮
+                var list_state = viewModel.resourceTypeData[3];
+                for (var st in list_state) {
+                    $("#orderStatus_td").append("<button id='orderStatus__" + list_state[st].value + "' type='button' class='btn btn-default btn-xs aChild' style='float:left;margin-left: 5px;' onclick= 'selects(this);'>" + list_state[st].meaning + "</button>");
+                }
+                //创建配送方式按钮
+//            var List_distribution=viewModel.resourceTypeData[1];
+//            for (var st in List_distribution) {
+//                $("#distribution_td").append("<button id='distribution_"+List_distribution[st].value+"' type='button' class='btn btn-default btn-xs aChild' style='float:left;margin-left: 5px;' onclick= 'selects(this);'>"+List_distribution[st].meaning+"</button>");
+//            }
+                //创建订单类型按钮
+                var List_type = viewModel.resourceTypeData[0];
+                for (var st in List_type) {
+                    $("#orderType_td").append("<button id='orderTypes___" + List_type[st].value + "' type='button' class='btn btn-default btn-xs aChild' style='float:left;margin-left: 5px;' onclick= 'selects(this);'>" + List_type[st].meaning + "</button>");
+                }
+            });
+            function unlockOrder() {
+                var lockedVal = $('#locked input:radio:checked').val();
+                var payRate = $('#allPay input:radio:checked').val();
+                var pages = viewModel.model.toJSON();
+                pages.locked = lockedVal;
+                pages.payRate = payRate;
+                pages.page = 1;
+                pages.pagesize = 10000;
+                maps = {status: map, pages: pages};
+
+                var post = {data: JSON.stringify(maps)};
+//            console.log("post",post);
+//            console.log("viewModel.model.toJSON()",viewModel.model.toJSON());
+
+                //获取查询的所有信息
+                $.ajax({
+                    type: "POST",
+                    url: '${base.contextPath}/hmall/om/order/query',
+                    dataType: "json",
+                    data: post,
+                    success: function (data) {
+                        var lockFlag = true;
+                        $.each(data.rows, function (i, v) {
+                            if (v.locked == 'N') {
+                                kendo.ui.showInfoDialog({
+                                    message: "查询出的数据不满足解锁条件",
+                                })
+                                lockFlag = false;
+                                return lockFlag;
+                            }
+                        })
+                        if (lockFlag) {
+                            $.ajax({
+                                type: 'POST',
+                                url: '${base.contextPath}/hmall/om/order/releasedLock',
+                                dataType: "json",
+                                contentType: "application/json",
+                                data: kendo.stringify(data.rows),
+                                success: function (data) {
+                                    if (data.success) {
+                                        kendo.ui.showConfirmDialog({
+                                            message: "订单解锁成功"
+                                        }).done(function (event) {
+                                            if (event.button == 'OK') {
+                                                $('#grid').data("kendoGrid").dataSource.page(1);
+                                            }
+                                        })
+                                    } else {
+                                        kendo.ui.showConfirmDialog({
+                                            message: "订单解锁失败"
+                                        })
+                                    }
+                                }
+                            })
+                        }
+                    }
+                });
+
+
+            }
+            /**
+             * 虚拟订单导入
+             */
+            function virtualOrderImport() {
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '虚拟订单导入',
+                    content: "${base.contextPath}/om/order_virtualOrder_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                        //window 关闭  刷新 本页面的  Grid
+//                    refreshItemDimensionsConf();
+                        // $('#relationGrid').data('kendoGrid').dataSource.page(1);
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+            }
+
+            /**
+             * 天猫订单导入方法
+             */
+            function tmallOrderImport() {
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '天猫订单导入',
+                    content: "${base.contextPath}/om/import_tmall_order_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                        // window 关闭  刷新 本页面的  Grid
+                        // refreshItemDimensionsConf();
+                        // $('#relationGrid').data('kendoGrid').dataSource.page(1);
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+            }
+
+            function exportTMDataHis() {
+                var dialog = $("#exportTMDataHis").kendoWindow({
+                    width: 1200,
+                    height: 440,
+                    title: '发货单导出历史信息',
+                    visible: false,
+                    iframe: true,
+                    modal: true,
+                    content: "${base.contextPath}/om/tm_consignment_his.html",
+                    actions: ["Pin", "Close"],
+                    close: function () {
+                    }
+                }).data("kendoWindow");
+                dialog.center().open();
+            }
+
+            /**
+             * 归属分配函数
+             */
+            function assigningBelonger() {
+                var assignedOrders = grid__.selectedDataItems();
+                console.log("分配以下订单归属");
+                console.log(assignedOrders);
+                if (assignedOrders.length < 1) {
+                    kendo.ui.showInfoDialog({
+                        message: '请至少选择一个订单'
+                    });
+                } else {
+
+                    var orderIDs = '';
+                    for (var i in assignedOrders) {
+                        orderIDs += assignedOrders[i].id + ',';
+                    }
+                    orderIDs.substr(0, orderIDs.length);
+
+                    var orderAssigningWindow = $("#excelWindow").kendoWindow({
+                        title: '订单归属确认信息',
+                        content: "${base.contextPath}/om/order_assigning_panel.html?orderIDs=" + orderIDs,
+                        actions: [
+                            /*"Pin",*/
+                            "Close"
+                        ],
+                        modal: true,
+                        visible: false,
+                        width: 600,
+                        height: 350,
+                        iframe: true,
+                        close: function () {
+                        }
+                    }).data("kendoWindow");
+                    orderAssigningWindow.center().open();
+                }
+            }
+            // 根据当前操作员岗位信息控制“归属分配”按钮的显示与否
+            $(function () {
+                $.ajax({
+                    url: '${base.contextPath}/hmall/hr/currentPositions',
+                    success: function (response) {
+                        var vm = kendo.observable({
+                            isInvisible: true
+                        });
+                        for (var i in response.rows) {
+                            if (response.rows[i].POSITION_CODE == 'MD_CS_MANAGER'
+                                    || response.rows[i].POSITION_CODE == 'MD_CS_DIRECTOR') {
+                                vm.isInvisible = false;
+                                break;
+                            }
+                        }
+                        kendo.bind($("#assigningBelongId"), vm);
+                    }
+                });
+            });
+
+        </script>
+        <div id="exportTMDataHis" style="display:none;"></div>
+        <div id="page-content">
+            <#if accessService.access("HIDEORDER")>
+                <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                    <span id="export" class="btn btn-primary" style="float:left;margin-right:5px;" onclick="exportData()">导出</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="unlockOrder()">解锁</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick=" virtualOrderImport()">虚拟订单</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="tmallOrderImport()">天猫订单导入</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="exportTMData()">天猫订单导出</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="exportTMDataHis()">天猫订单发货历史</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="importTMStatus()">天猫订单状态导入</span>
+                    <span id="assigningBelongId" class="btn btn-primary" style="float:left;margin-right:5px;"
+                          onclick="assigningBelonger()" data-bind="invisible: isInvisible">归属分配</span>
+                </div>
+            </#if>
+
+            <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+                <div id="forms" style="padding-bottom: 20px">
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;"><@spring.message "hmall.ordercode"/>:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;" data-bind="value:model.code" class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">用户账户:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;" data-bind="value:model.userId"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">收货人手机号:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%" data-bind="value:model.receiverMobile" class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">变式物料号:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;"
+                                           data-bind="value:model.vproduct" class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">商品编码:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;" data-bind="value:model.productId"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;"><@spring.message "hmall.escordercode"/>:</label>
+                                <div class="col-sm-8">
+                                    <input id="escOrderCode" type="text" style="width: 100%"
+                                           data-bind="value:model.escOrderCode"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;"> 下单日期从:</label>
+                                <div class="col-sm-8">
+                                    <input id="startTime" data-bind="value:model.startTime" style="width: 100%;"/>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">下单日期至:</label>
+                                <div class="col-sm-8">
+                                    <input id="endTime" data-bind="value:model.endTime" style="width: 100%;"/>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- modified by hengzhang 20170922 MAG-1200 添加pin码搜索条件-->
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">PIN码:</label>
+                                <div class="col-sm-8">
+                                    <input id="pinCode" type="text" style="width: 100%"
+                                           data-bind="value:model.pinCode"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+                        <!--end-->
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:12px;">订单来源:</label>
+                                <div class="col-sm-8" style="padding-top:8px;" id="order_source">
+                                    <input id="order_source_i" type="text" placeholder='不限' style="width: 100%"
+                                           data-bind="value:model.websiteId"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:12px;">是否虚拟订单:</label>
+                                <div class="col-sm-8" style="padding-top:8px;" id="is_virtual">
+                                    <input id="is_virtual_i" type="text" placeholder='不限' style="width: 100%"
+                                           data-bind="value:model.isIo"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:12px;">订单归属:</label>
+                                <div class="col-sm-8" style="padding-top:8px;" id="orderBelong">
+                                    <input id="orderBelong_i" type="text" placeholder='全部' style="width: 100%"
+                                           data-bind="value:model.orderBelong"/>
+                                </div>
+                            </div>
+                        </div>
+                        <script type="text/javascript">
+                            var orderSourceDS = [{
+                                "meaning": "天猫订单",
+                                "value": "TM"
+                            }, {
+                                "meaning": "商城订单",
+                                "value": "1"
+                            }];
+                            var isVirtualDS = [{
+                                "meaning": "是",
+                                "value": "Y"
+                            }, {
+                                "meaning": "否",
+                                "value": "N"
+                            }];
+                            var orderBelongDS = [{
+                                "meaning": "本人",
+                                "value": "C" // current operator
+                            }, {
+                                "meaning": "无归属",
+                                "value": "N" // no operator
+                            }];
+                            $("#order_source_i").kendoComboBox({
+                                dataSource: orderSourceDS,
+                                valuePrimitive: true,
+                                dataTextField: "meaning",
+                                dataValueField: "value"
+                            });
+                            $("#is_virtual_i").kendoComboBox({
+                                dataSource: isVirtualDS,
+                                valuePrimitive: true,
+                                dataTextField: "meaning",
+                                dataValueField: "value"
+                            });
+                            $("#orderBelong_i").kendoComboBox({
+                                dataSource: orderBelongDS,
+                                valuePrimitive: true,
+                                dataTextField: "meaning",
+                                dataValueField: "value"
+                            });
+                        </script>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">是否锁定:</label>
+                                <div class="col-sm-8" style="padding-top:8px;" id="locked">
+                                    <label class="col-sm-6"><input id="lockedY" name="locked" type="radio" value="Y">已锁定</label>
+                                    <label class="col-sm-6"><input id="lockedN" name="locked" type="radio" value="N">未锁定</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">是否全款支付:</label>
+                                <div class="col-sm-8" style="padding-top:8px;" id="allPay">
+                                    <label class="col-sm-6"><input id="allPayY" name="allPay" type="radio" value="1">是</label>
+                                    <label class="col-sm-6"><input id="allPayN" name="allPay" type="radio" value="0">否</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="selects">
+                    <table class="table">
+                        <tr>
+                            <td style="width:100px;"><label style="margin-left:20px"> 订单状态:</label></td>
+                            <td colspan="3" id="orderStatus_td">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width:100px;"><label style="margin-left:20px"><@spring.message 'hmall.order.type'/></label></td>
+                            <td id="orderType_td" colspan="3">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div style="clear:both;margin-top: -20px;height:50px;">
+                <span class="btn btn-primary" style="float:left;width:70px;" onclick="doSubmit();" type="submit"><@spring.message "hap.query"/></span>
+                <span class="btn btn-primary" style="float:left;width:70px" data-bind="click:resetForm" type="reset"><@spring.message "hap.reset"/></span>
+                <span id="all_empty" class="btn btn-primary" style="float:left;width:90px;" onclick="isClicked2(this);" style="float:right;margin-right: 5px;">全选/清空</span>
+            </div>
+
+            <div style="height: 300px;">
+                <div id="grid"></div>
+            </div>
+            <!--<div id="container"></div>-->
+        </div>
+        <form id="form_ExportExcle" action="${base.contextPath}/om/order/exportData" method="GET">
+            <input type="hidden" id="code" name="code" value="">
+            <input type="hidden" id="userId" name="userId" value="">
+            <input type="hidden" id="receiverMobile" name="receiverMobile" value="">
+            <input type="hidden" id="exportStartTime" name="startTime" value="">
+            <input type="hidden" id="exportEndTime" name="endTime" value="">
+            <input type="hidden" id="strOrderStatus" name="strOrderStatus" value="">
+            <input type="hidden" id="strDistribution" name="strDistribution" value="">
+            <input type="hidden" id="vproduct" name="vproduct" value="">
+            <input type="hidden" id="productId" name="productId" value="">
+            <!-- modified by hengzhang 20170922 MAG-1200 添加pin码搜索条件 -->
+            <input type="hidden" id="pinCode" name="pinCode" value="">
+            <!--end-->
+        </form>
+        <!-- 导入导出的execl Window -->
+        <div id="excelWindow"></div>
+        <script type="text/javascript">
+            kendo.bind($('#page-content'), viewModel);
+            //导出列表excel
+            function exportData() {
+                var equalChild = $(".equalChild");
+                console.log(equalChild);
+                console.log(equalChild.eq(5).val());
+                //订单编号
+                if (equalChild.eq(0).val != "") {
+                    $('#code').val(equalChild.eq(0).val());
+                }
+                //用户ID
+                if (equalChild.eq(1).val != "") {
+                    $('#userId').val(equalChild.eq(1).val());
+                }
+                //收货人手机号
+                if (equalChild.eq(2).val != "") {
+                    $('#receiverMobile').val(equalChild.eq(2).val());
+                }
+                //变式物料号
+                if (equalChild.eq(3).val != "") {
+                    $('#vproduct').val(equalChild.eq(3).val());
+                }
+                //商品编码
+                if (equalChild.eq(4).val != "") {
+                    $('#productId').val(equalChild.eq(4).val());
+                }
+                //开始时间
+                var exportStartTime = $("#startTime").data("kendoDateTimePicker");
+                $('#exportStartTime').val(exportStartTime.value());
+                //结束时间
+                var exportEndTime = $("#endTime").data("kendoDateTimePicker");
+                $('#exportEndTime').val(exportEndTime.value());
+                //订单状态
+                $('#strOrderStatus').val(orderStatus_);
+                //配送方式
+                $('#strDistribution').val(distribution);
+                $("#form_ExportExcle").submit();
+            }
+
+
+            $('#query-form input').keydown(function (e) {
+                if (e.keyCode == 13) {
+                    e.target.blur();
+                    viewModel.queryFunction(e);
+                }
+            });
+
+            $("#startTime").kendoDateTimePicker({
+                animation: {
+                    close: {
+                        effects: "fadeOut zoom:out",
+                        duration: 300
+                    },
+                    open: {
+                        effects: "fadeIn zoom:in",
+                        duration: 300
+                    }
+                },
+                format: "yyyy-MM-dd HH:mm:ss",
+                change: function () {
+                    var startTime = $("#startTime").val();
+                    var endFinal = $("#endTime").data("kendoDateTimePicker");
+                    endFinal.min(startTime || new Date(1800, 0, 1));
+                }
+            });
+
+            $("#endTime").kendoDateTimePicker({
+                animation: {
+                    close: {
+                        effects: "fadeOut zoom:out",
+                        duration: 300
+                    },
+                    open: {
+                        effects: "fadeIn zoom:in",
+                        duration: 300
+                    }
+                },
+                format: "yyyy-MM-dd HH:mm:ss",
+                change: function () {
+                    var endTime = $("#endTime").val();
+                    var startFinal = $("#startTime").data("kendoDateTimePicker");
+                    startFinal.max(endTime || new Date(2099, 11, 31));
+                }
+            });
+
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var dataSource;
+            if (funCode == 'ORDER_SNAPSHOT') {
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: crudServiceBaseUrl + "/hmall/om/orderBk/query",
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type !== "read" && options.models) {
+                                var datas = Hap.prepareSubmitParameter(options, type)
+                                return kendo.stringify(datas);
+                            } else if (type === "read") {
+                                var lockedVal = $('#locked input:radio:checked').val();
+                                var payRate = $('#allPay input:radio:checked').val();
+                                var pages = Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                                pages.locked = lockedVal;
+                                pages.payRate = payRate;
+                                maps = {status: map, pages: pages};
+//                                console.log("map",map);
+                                var post = {data: JSON.stringify(maps)};
+                                return post;
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    serverSorting: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            id: "orderId",
+                            fields: {}
+                        }
+                    }
+                })
+
+            } else if (funCode == "ORDERHEADER") {
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: crudServiceBaseUrl + "/hmall/om/order/query",
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type !== "read" && options.models) {
+                                var datas = Hap.prepareSubmitParameter(options, type)
+                                return kendo.stringify(datas);
+                            } else if (type === "read") {
+                                var lockedVal = $('#locked input:radio:checked').val();
+                                var payRate = $('#allPay input:radio:checked').val();
+                                var pages = Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                                pages.locked = lockedVal;
+                                pages.payRate = payRate;
+                                maps = {status: map, pages: pages};
+//                                console.log("map",map);
+                                var post = {data: JSON.stringify(maps)};
+                                return post;
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    serverSorting: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            id: "orderId",
+                            fields: {}
+                        }
+                    }
+                });
+            }
+
+            var grid = $("#grid");
+            var grid__ = $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: "400px",
+                pageable: true,
+                resizable: true,
+                editable: false,
+                navigatable: true,
+                scrollable: true,
+                selectable: 'multiple,rowbox', // selectable: true,
+                sortable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 10
+                },
+                columns: [{
+                    field: "orderId",
+                    title: '序号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 50,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: "<span class='row-number'></span>"
+                }, {
+                    field: "orderCreationtime",
+                    title: '下单日期',
+                    attributes: {style: "text-align:center"},
+                    width: 150,
+                    format: "{0:yyyy-MM-dd HH:mm:ss}",
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "code",
+                    title: '<@spring.message "hmall.ordercode"/>',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    template: function (dataItem) {
+                        if (dataItem.code != null && dataItem.code != '') {
+                            return '<a style="margin-right:10px;" href="javascript:void(0);" onclick="entryFunction(\'' + dataItem.orderId + '\',\'' + dataItem.code + '\',\'' + funCode + '\')">' + dataItem.code + '</a>'
+                        }
+                    },
+                    width: 130,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "escOrderCode",
+                    title: '<@spring.message "hmall.escordercode"/>',
+                    attributes: {style: "text-align:center"},
+                    width: 130,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "responsibleName",
+                    title: '订单归属',
+                    attributes: {style: "text-align:center"},
+                    width: 130,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "locked",
+                    title: '是否锁定',
+                    attributes: {style: "text-align:center"},
+                    width: 80,
+                    dataTextField: "meaning",
+                    dataValueField: "value",
+                    template: function (dataItem) {
+                        var v = dataItem.locked;
+                        $.each(YNData, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            }
+                        });
+                        return v;
+                    },
+                    editor: function (container, options) {
+                        $('<input name="' + options.field + '"/>')
+                                .appendTo(container)
+                                .kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    dataSource: YNData
+                                });
+                    }
+                }, {
+                    field: "orderSta",
+                    title: '订单状态',
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }, template: function (dataItem) {
+                        var v = dataItem.orderSta;
+                        if (v == null) {
+                            return '';
+                        }
+                        $.each(product_Order_State, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            } else {
+                                return '';
+                            }
+                        })
+                        return v;
+                    }
+                }, {
+                    field: "orderType",
+                    title: '<@spring.message "hmall.order.type"/>',
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }, template: function (dataItem) {
+                        var v = dataItem.orderType;
+                        if (v == null) {
+                            return '';
+                        }
+                        $.each(product_Order_Type, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            } else {
+                                return '';
+                            }
+                        })
+                        return v;
+                    }
+                }, {
+                    field: "customerid",
+                    title: '用户账户',
+                    attributes: {style: "text-align:center"},
+                    width: 110,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "receiverName",
+                    title: '收货人',
+                    attributes: {style: "text-align:center"},
+                    width: 70,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "receiverMobile",
+                    title: '收货人手机号',
+                    attributes: {style: "text-align:center"},
+                    width: 110,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "quantity",
+                    title: '商品数量',
+                    attributes: {style: "text-align:center"},
+                    width: 70,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "paymentAmount",
+                    title: '支付金额',
+                    attributes: {style: "text-align:center"},
+                    width: 80,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "orderAmount",
+                    title: '总金额',
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "historyTotalRefundAmount",
+                    title: '历史退款总金额',
+                    attributes: {style: "text-align:center"},
+                    width: 120,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "estimateDeliveryTime",
+                    title: '预计交期',
+                    attributes: {style: "text-align:center"},
+                    width: 150,
+                    format: "{0:yyyy-MM-dd HH:mm:ss}",
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }],
+                dataBound: function () {
+                    var rows = this.items();
+                    var page = this.pager.page() - 1;
+                    var pagesize = this.pager.pageSize();
+                    $(rows).each(
+                            function () {
+                                var index = $(this).index() + 1 + page * pagesize;
+                                var rowLabel = $(this).find(".row-number");
+                                $(rowLabel).html(index);
+                            });
+                }
+            }).data("kendoGrid");
+
+            grid.on('dblclick', '.k-grid-content tr', function (event) {
+                var data = $('#grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+                var orderId = data.orderId;
+                var code = data.code;
+                entryFunction(orderId, code, funCode);
+            });
+
+            //跳到详情界面
+            function entryFunction(orderId, code, funCode) {
+                window.top.openTab("OD" + orderId, "订单详情", "${base.contextPath}/om/order_entry.html?orderId=" + orderId + "&code=" + code + "&funCode=" + funCode);
+            }
+            //下载天猫发货单excel列表
+            function exportTMData() {
+                var form = $("<form>");   //定义一个form表单
+                form.attr('style', 'display:none');   //在form表单中添加查询参数
+                form.attr('target', 'hidden_frame');
+                form.attr('method', 'GET');
+                form.attr('action', BaseUrl + "/om/order/exportTMData");
+                $('body').append(form);  //将表单放置在web中
+                form.submit();
+            }
+            function openDetail(orderId) {
+                var url = crudServiceBaseUrl + "/order/orderDetailExpress.html?orderId=" + orderId;
+                var dialog = $("#dialogEdit").kendoWindow({
+                    width: 1050,
+                    height: 550,
+                    title: '订单管理[订单详情-' + orderId + ']',
+                    visible: false,
+                    iframe: true,
+                    modal: true,
+                    content: url
+                }).data("kendoWindow");
+                dialog.maximize();
+                dialog.open();
+            }
+            ;
+
+            //天猫订单状态导入
+            function importTMStatus() {
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '天猫订单状态导入',
+                    content: "${base.contextPath}/om/import_tmall_order_status_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+            }
+
+            //自动根据当前屏幕大小调整表格
+            Hap.autoResizeGrid("#grid");
+        </script>
+        <div id="dialogEdit" style="display:none;"></div>
+        <iframe name="hidden_frame" id="hidden_frame" style="display:none"></iframe>
+        </body>
+        </html>

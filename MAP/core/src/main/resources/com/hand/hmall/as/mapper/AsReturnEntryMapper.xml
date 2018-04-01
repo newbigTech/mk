@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsReturnEntryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsReturnEntry">
+        <result column="AS_RETURN_ENTRY_ID" property="asReturnEntryId" jdbcType="DECIMAL"/>
+        <result column="AS_RETURN_ID" property="asReturnId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ENTRY_ID" property="orderEntryId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+        <result column="PARENT_LINE" property="parentLine" jdbcType="VARCHAR"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="RETURN_FEE" property="returnFee" jdbcType="DECIMAL"/>
+        <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="VARCHAR"/>
+        <result column="VPRODUCT" property="vproduct" jdbcType="VARCHAR"/>
+        <result column="SUIT_CODE" property="suitCode" jdbcType="VARCHAR"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON1" property="returnReason1" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON2" property="returnReason2" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="VARCHAR"/>
+        <result column="VPRODUCT_CODE" property="vproductCode" jdbcType="VARCHAR"/>
+        <result column="RETURNENTRY_STATUS" property="returnentryStatus" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <!--根据订单ID查询订单行中未创建发货单数量大于零的订单行-->
+    <select id="queryOrderEntrynotReturnQuantity" parameterType="com.hand.hmall.as.dto.AsReturnEntry"
+            resultMap="BaseResultMap">
+        SELECT
+        oe.ORDER_ENTRY_ID,
+        oe.LINE_NUMBER,
+        oe.ORDER_ID,
+        p.CODE,
+        p.NAME,
+        oe.PRODUCT_ID,
+        oe.BASE_PRICE,
+        oe.NOT_RETURN_QUANTITY QUANTITY,
+        oe.UNIT,
+        oe.VPRODUCT_CODE,
+        oe.PARENT_LINE
+        FROM HMALL_OM_ORDER_ENTRY oe
+        LEFT JOIN HMALL_MST_PRODUCT p ON p.PRODUCT_ID = oe.PRODUCT_ID
+        <where>
+            <if test="asReturnId != null">
+                oe.ORDER_ID = #{asReturnId}
+            </if>
+            AND oe.NOT_RETURN_QUANTITY > 0
+        </where>
+    </select>
+
+    <!--根据退货单id查询退货单行-->
+    <select id="queryReturnEntryById" parameterType="com.hand.hmall.as.dto.AsReturnEntry" resultMap="BaseResultMap">
+        SELECT
+        oe.*,
+        p.CODE,
+        p.NAME,
+        foe.VPRODUCT_CODE
+        from HMALL_AS_RETURN_ENTRY oe
+        LEFT JOIN HMALL_MST_PRODUCT p ON p.PRODUCT_ID = oe.PRODUCT_ID
+        LEFT JOIN HMALL_OM_ORDER_ENTRY foe ON foe.ORDER_ENTRY_ID = oe.PARENT_LINE
+        <where>
+            <if test="asReturnId != null">
+                oe.AS_RETURN_ID = #{asReturnId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 更新订单行未生成发货单数量为0 -->
+    <update id="updateOrderEntrynotReturnQuantity" parameterType="com.hand.hmall.as.dto.AsReturn">
+        UPDATE HMALL_OM_ORDER_ENTRY
+        <set>
+            NOT_RETURN_QUANTITY = 0
+        </set>
+        where NOT_RETURN_QUANTITY > 0 AND ORDER_ID = #{orderId}
+    </update>
+
+    <!--修改退货原因-->
+    <update id="updateReturnEntryReturnReason" parameterType="com.hand.hmall.as.dto.AsReturnEntry">
+        UPDATE HMALL_AS_RETURN_ENTRY
+        <set>
+            <if test="returnReason1 != null">
+                RETURN_REASON1 = #{returnReason1,jdbcType=VARCHAR},
+            </if>
+            <if test="returnReason2 != null">
+                RETURN_REASON2 = #{returnReason2,jdbcType=VARCHAR}
+            </if>
+        </set>
+        where HMALL_AS_RETURN_ENTRY.PARENT_LINE = #{parentLine,jdbcType=DECIMAL}
+    </update>
+
+</mapper>

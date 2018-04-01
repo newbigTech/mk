@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.ProductCategoryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.ProductCategory">
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_CODE" property="categoryCode" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION" property="catalogversion" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_LEVEL" property="categoryLevel" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL"/>
+        <result column="catalogName" property="catalogName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="CategoryMap" type="com.hand.hmall.mst.dto.Category">
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_CODE" property="categoryCode" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="CATALOG_VERSION" property="catalogVersion" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_LEVEL" property="categoryLevel" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="productMap" type="com.hand.hmall.mst.dto.Product">
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId"
+                jdbcType="DECIMAL"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus"
+                jdbcType="VARCHAR"/>
+        <result column="IMAGE_URL_ID" property="imageUrlId" jdbcType="DECIMAL"/>
+        <result column="IMAGEURL" property="imageUrl" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_TYPE" property="productType" jdbcType="VARCHAR"/>
+        <result column="IS_SIN_SALE" property="isSinSale" jdbcType="VARCHAR"/>
+        <result column="SALE_STATUS" property="saleStatus" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_STATUS" property="productStatus"
+                jdbcType="VARCHAR"/>
+        <result column="IS_SPE_SALE" property="isSpeSale" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="CATALOGVERSION" property="catalogversion" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 推送商城的商品类别数据-->
+    <select id="getInfo" resultMap="CategoryMap">
+        select CATEGORY_ID,
+               CATEGORY_CODE,
+               CATEGORY_NAME,
+               CATALOG_VERSION,
+               CATEGORY_LEVEL
+          from HMALL_MST_CATEGORY category,
+               (select mcv.catalogversion_id
+                  from hmall_mst_catalogversion mcv
+                  left join hmall_mst_catalogs mc
+                    on mcv.catalog = mc.catalogs_id
+                 where mcv.catalogversion = 'online'
+                   and mc.code = 'markor') version
+         where category.syncflag = 'N'
+           and category.catalog_version = version.catalogversion_id
+         order by CATEGORY_ID
+    </select>
+
+    <!-- 模糊查询商品类别列表 add by zhangyanan 2017-05-26 -->
+    <select id="getProductCategoryList" parameterType="com.hand.hmall.mst.dto.ProductCategory"
+            resultMap="BaseResultMap">
+        SELECT
+        category.CATEGORY_ID,
+        category.CATEGORY_CODE,
+        category.CATEGORY_NAME,
+        catalogs.NAME_ZH || '-' || version.CATALOGVERSION CATALOGVERSION,
+        version.CATALOGVERSION_ID,
+        category.CATEGORY_LEVEL,
+        category.CREATION_DATE,
+        category.LAST_UPDATE_DATE,
+        category.SYNCFLAG
+        FROM HMALL_MST_CATEGORY category LEFT JOIN HMALL_MST_CATALOGVERSION version
+        ON category.CATALOG_VERSION = version.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON version.CATALOG = catalogs.CATALOGS_ID
+        <where>
+            <if test="categoryCode != null">
+                AND upper(category.CATEGORY_CODE) LIKE upper(CONCAT(CONCAT('%',#{categoryCode}),'%'))
+            </if>
+            <if test="categoryName != null">
+                AND category.CATEGORY_NAME LIKE CONCAT(CONCAT('%',#{categoryName}),'%')
+            </if>
+            <if test="catalogVersion != null">
+                AND category.CATALOG_VERSION = #{catalogVersion}
+            </if>
+            <if test="categoryLevel != null">
+                AND category.CATEGORY_LEVEL = #{categoryLevel}
+            </if>
+            <if test="creationDateForm != null">
+                AND category.CREATION_DATE &gt;= TO_DATE(#{creationDateForm},'YYYY-MM-DD HH24:MI:SS')
+            </if>
+            <if test="creationDateTo != null">
+                AND category.CREATION_DATE &lt;= TO_DATE(#{creationDateTo},'YYYY-MM-DD HH24:MI:SS')
+            </if>
+            <if test="categoryId != null">
+                AND category.CATEGORY_ID = #{categoryId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据类别ID查询超类别列表 -->
+    <select id="querySuperType" parameterType="com.hand.hmall.mst.dto.ProductCategory" resultMap="BaseResultMap">
+        SELECT
+        category.CATEGORY_ID,
+        category.CATEGORY_CODE,
+        category.CATEGORY_NAME,
+        catalogs.NAME_ZH || '-' || version.CATALOGVERSION CATALOGVERSION,
+        category.CATEGORY_LEVEL,
+        category.CREATION_DATE,
+        category.LAST_UPDATE_DATE
+        FROM HMALL_MST_CATEGORY category LEFT JOIN HMALL_MST_CATALOGVERSION version
+        ON category.CATALOG_VERSION = version.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON version.CATALOG = catalogs.CATALOGS_ID
+        WHERE category.CATEGORY_ID IN (SELECT b.CATEGORY_ID
+        FROM HMALL_MST_CATEGORY a LEFT JOIN HMALL_MST_SUBCATEGORY b
+        ON a.CATEGORY_ID = b.SUB_CATEGORY_ID
+        <where>
+            <if test="categoryId != null">
+                b.SUB_CATEGORY_ID = #{categoryId}
+            </if>
+        </where>
+        )
+    </select>
+
+    <!-- 根据类别ID查询子类别列表 -->
+    <select id="querySubType" parameterType="com.hand.hmall.mst.dto.ProductCategory" resultMap="BaseResultMap">
+        SELECT
+        category.CATEGORY_ID,
+        category.CATEGORY_CODE,
+        category.CATEGORY_NAME,
+        catalogs.NAME_ZH || '-' || version.CATALOGVERSION CATALOGVERSION,
+        category.CATEGORY_LEVEL,
+        category.CREATION_DATE,
+        category.LAST_UPDATE_DATE
+        FROM HMALL_MST_CATEGORY category LEFT JOIN HMALL_MST_CATALOGVERSION version
+        ON category.CATALOG_VERSION = version.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON version.CATALOG = catalogs.CATALOGS_ID
+        WHERE category.CATEGORY_ID IN (SELECT b.SUB_CATEGORY_ID
+        FROM
+        HMALL_MST_CATEGORY a LEFT JOIN HMALL_MST_SUBCATEGORY b ON a.CATEGORY_ID = b.CATEGORY_ID
+        <where>
+            <if test="categoryId != null">
+                b.CATEGORY_ID = #{categoryId}
+            </if>
+        </where>
+        )
+    </select>
+
+    <!-- 根据类别ID查询查询超类别子类别都没有的其他类别 -->
+    <select id="queryTypeNotInSuperAndSub" parameterType="com.hand.hmall.mst.dto.ProductCategory"
+            resultMap="BaseResultMap">
+        SELECT
+        c.CATEGORY_ID,
+        c.CATEGORY_CODE,
+        c.CATEGORY_NAME,
+        catalogs.NAME_ZH || '-' || version.CATALOGVERSION CATALOGVERSION,
+        c.CATEGORY_LEVEL,
+        c.CREATION_DATE,
+        c.LAST_UPDATE_DATE
+        FROM HMALL_MST_CATEGORY c LEFT JOIN HMALL_MST_CATALOGVERSION version
+        ON c.CATALOG_VERSION = version.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON version.CATALOG = catalogs.CATALOGS_ID
+        WHERE c.CATEGORY_ID NOT IN (SELECT b.CATEGORY_ID
+        FROM HMALL_MST_CATEGORY a LEFT JOIN HMALL_MST_SUBCATEGORY b ON a.CATEGORY_ID = b.CATEGORY_ID
+        <where>
+            <if test="categoryId != null">
+                b.SUB_CATEGORY_ID = #{categoryId}
+            </if>
+        </where>
+        )AND c.CATEGORY_ID NOT IN (SELECT b.SUB_CATEGORY_ID
+        FROM HMALL_MST_CATEGORY a LEFT JOIN HMALL_MST_SUBCATEGORY b ON a.CATEGORY_ID = b.CATEGORY_ID
+        <where>
+            <if test="categoryId != null">
+                b.CATEGORY_ID = #{categoryId}
+            </if>
+        </where>
+        )
+        <if test="categoryId != null">
+            and c.CATEGORY_ID != #{categoryId}
+        </if>
+        <if test="categoryCode != null and categoryCode!=''and categoryCode!='undefined'">
+            AND upper(CATEGORY_CODE) LIKE upper(CONCAT(CONCAT('%',#{categoryCode}),'%'))
+        </if>
+        <if test="categoryName != null and categoryName!=''and categoryName!='undefined'">
+            AND CATEGORY_NAME LIKE CONCAT(CONCAT('%',#{categoryName}),'%')
+        </if>
+        <if test="catalogVersion != null">
+            AND CATALOG_VERSION = #{catalogVersion}
+        </if>
+    </select>
+
+    <!-- 根据类别ID查询不包含的商品 -->
+    <select id="queryProductNotItself" parameterType="com.hand.hmall.mst.dto.ProductCategory" resultMap="productMap">
+        SELECT
+        product.PRODUCT_ID,
+        product.CODE,
+        product.NAME,
+        catalogs.NAME_ZH || '-' || version.CATALOGVERSION CATALOGVERSION
+        FROM HMALL_MST_PRODUCT product LEFT JOIN HMALL_MST_CATALOGVERSION version
+        ON product.CATALOGVERSION_ID = version.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON version.CATALOG = catalogs.CATALOGS_ID
+        WHERE product.PRODUCT_ID NOT IN (SELECT b.PRODUCT_ID
+        FROM HMALL_MST_CATEGORY_MAPPING b
+        <where>
+            <if test="categoryId != null">
+                b.CATEGORY_ID = #{categoryId}
+            </if>
+        </where>
+        )
+        <if test="categoryCode !=null and categoryCode!=''and categoryCode!='undefined'">
+            and upper(a.CODE) LIKE upper('%'||#{categoryCode}||'%')
+        </if>
+        <if test="categoryName !=null and categoryName!=''and categoryName!='undefined'">
+            and a.NAME LIKE '%'||#{categoryName}||'%'
+        </if>
+    </select>
+
+    <!-- 根据类别ID查询商品列表 -->
+    <select id="queryProductByCategoryId" parameterType="com.hand.hmall.mst.dto.ProductCategory" resultMap="productMap">
+        SELECT
+        product.PRODUCT_ID,
+        product.CODE,
+        product.NAME,
+        product.APPROVAL_STATUS,
+        catalogs.NAME_ZH || '-' || version.CATALOGVERSION CATALOGVERSION,
+        product.CREATION_DATE,
+        product.IS_SIN_SALE,
+        product.SALE_STATUS,
+        media.URL IMAGEURL
+        FROM HMALL_MST_PRODUCT product LEFT JOIN HMALL_MST_CATALOGVERSION version
+        ON product.CATALOGVERSION_ID = version.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON version.CATALOG = catalogs.CATALOGS_ID
+        LEFT JOIN HMALL_MST_MEDIA media
+        ON product.IMAGE_URL_ID = media.MEDIA_ID
+        WHERE product.PRODUCT_ID IN (SELECT b.PRODUCT_ID
+        FROM HMALL_MST_CATEGORY a LEFT JOIN HMALL_MST_CATEGORY_MAPPING b
+        ON a.CATEGORY_ID = b.CATEGORY_ID
+        <where>
+            <if test="categoryId != null">
+                a.CATEGORY_ID = #{categoryId}
+            </if>
+        </where>
+        )
+    </select>
+
+    <select id="selectProductCategoryList" parameterType="com.hand.hmall.mst.dto.ProductCategory"
+            resultMap="BaseResultMap">
+        SELECT * FROM HMALL_MST_CATEGORY ca WHERE ca.CATEGORY_ID IN (SELECT camp.CATEGORY_ID FROM
+        HMALL_MST_CATEGORY_MAPPING camp
+        <where>
+            <if test="productId != null">
+                camp.PRODUCT_ID = #{productId}
+            </if>
+        </where>
+        )
+    </select>
+
+    <!--根据类别编码和目录版本查询类别表-->
+    <select id="queryCategoryByCategoryIdAndVersion" parameterType="com.hand.hmall.mst.dto.ProductCategory"
+            resultMap="BaseResultMap">
+        SELECT * FROM HMALL_MST_CATEGORY
+        <where>
+            <if test="categoryCode != null">
+                AND CATEGORY_CODE =#{categoryCode}
+            </if>
+            <if test="catalogVersion != null">
+                AND CATALOG_VERSION =#{catalogVersion}
+            </if>
+            <if test="categoryId != null">
+                AND CATEGORY_ID !=#{categoryId}
+            </if>
+        </where>
+    </select>
+
+    <!--类别查询OV -->
+    <select id="catagoryLov" parameterType="com.hand.hmall.mst.dto.ProductCategory" resultMap="BaseResultMap">
+        select c.category_id,
+        c.category_code,
+        c.category_name,
+        ca.name_zh || '-' || v.catalogversion catalogName
+        from hmall_mst_category c
+        left join hmall_mst_catalogversion v
+        on c.catalog_version = v.catalogversion_id
+        left join hmall_mst_catalogs ca
+        on v.catalog = ca.catalogs_id
+        where 1 = 1
+        <if test="categoryId != null">
+            and c.category_id = #{categoryId}
+        </if>
+        <if test="categoryCode != null and categoryCode!=''">
+            and upper(c.category_code) LIKE upper('%'||#{categoryCode}||'%')
+        </if>
+        <if test="categoryName != null and categoryName !=''">
+            and c.category_name LIKE '%'||#{categoryName}||'%'
+        </if>
+    </select>
+
+    <!--根据类别Code和版本目录查询对应类别-->
+    <select id="selectByCodeAndVersion" parameterType="com.hand.hmall.mst.dto.ProductCategory" resultType="java.lang.Long">
+        SELECT mc.CATEGORY_ID
+        FROM hmall_mst_category mc
+        WHERE mc.CATEGORY_CODE = #{categoryCode}
+        AND mc.CATALOG_VERSION = #{catalogVersion}
+    </select>
+</mapper>

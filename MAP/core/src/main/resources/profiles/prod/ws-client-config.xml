@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- Webservice接口配置 -->
+<CONFIG>
+    <AUTH>
+        <CREDENTIAL host="mfrerpdev.markor.net" port="8000" username="HD_DAIRT" password="123123"/>
+        <CREDENTIAL host="mfrerpqas.markor.net" port="8000" username="BXRFC_800" password="Mk123456"/>
+        <CREDENTIAL host="mktjep102.markor.net" port="8000" username="MDRFC_800" password="mk123456"/>
+    </AUTH>
+    <SERVICES>
+
+        <!-- ECC接收订单BOM信息接口-->
+        <SERVICE id="bom.toEcc" desc="ECC接收订单BOM信息接口">
+            <URL>http://mktjep102:8000/sap/bc/srt/rfc/sap/zws_map_vbom_to_ecc/800/zws_map_vbom_to_ecc/zrfc_bom_from_map</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!--订单推送接口（HMALL-RETAIL） -->
+        <SERVICE id="order.pushRetail" desc="订单推送retail接口">
+            <URL>http://mfrretapp1.markor.net:8000/sap/bc/srt/rfc/sap/zzsd_so_create_soap/300/zzsd_so_create_soap/zzsd_so_create</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!--订单推送接口（HMALL-RETAIL）-->
+        <SERVICE id="order.updateRetail" desc="订单更新retail接口">
+            <URL>http://mfrretapp1.markor.net:8000/sap/bc/srt/rfc/sap/zmd_sd_so_change_soap/300/zmd_sd_so_change_soap/zmd_sd_so_change</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!-- 主推物料数据接口（MAP-ECC）-->
+        <SERVICE id="map.toEcc" desc="ECC接收常规品物料信息接口">
+            <URL>http://mktjep102:8000/sap/bc/srt/rfc/sap/zws_map_cbom_to_ecc/800/zws_map_cbom_to_ecc/zmd_mat_from_map</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!--主推物料数据接口（MAP-RETAIL）TODO: 已废弃 -->
+        <SERVICE id="map.toRetail" desc="MAP-RETAI接口">
+            <URL>http://mfrretapp1.markor.net:8000/sap/bc/srt/rfc/sap/zws_map_cbom_to_ecc/800/zws_map_cbom_to_ecc/zbd_map_cbom_to_ecc</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!-- 支付信息推送retail 生产机 -->
+        <SERVICE id="payment.toRetail" desc="支付信息推送Retail">
+            <URL>http://mfrretapp1.markor.net:8000/sap/bc/srt/rfc/sap/zmdfi_pay_save_data/300/default/default</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!--成品零部件在制推送ECC 这里使用测试地址 add by xuxiaoxue 2017-11-16-->
+        <SERVICE id="bom.atpToEcc" desc="成品零部件在制推送ECC">
+            <URL>http://mktjep102:8000/sap/bc/srt/rfc/sap/zfmatp/800/zfmatp/binding</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!-- 核对账单信息推送retail 生产机 add by zhangyanan 2017-10-18 -->
+        <SERVICE id="checkBill.toRetail" desc="核对账单信息推送Retail">
+            <URL>http://mfrretapp1.markor.net:8000/sap/bc/srt/rfc/sap/zws_fi_pay_return/300/zws_fi_pay_return/zmd_fi_001</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+        <!-- 中台订单推送Ecc（hmall-ECC） qin  2017.11.16 -->
+        <SERVICE id="order.toEcc" desc="中台订单推送Ecc">
+            <URL>http://mktjep102.markor.net:8000/sap/bc/srt/rfc/sap/zmd_sd_001/800/zmd_sd_001/binding</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!-- 中台短信推送梦网 zhangzilong  2017.11.20 -->
+        <SERVICE id="dream.pushMultixMsg" desc="中台短信推送梦网">
+            <URL>http://61.145.229.29:7903/MWGate/wmgw.asmx</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+    </SERVICES>
+</CONFIG>

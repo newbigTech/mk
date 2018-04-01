@@ -1,0 +1,84 @@
+<#--
+        * description: 导入销售赔付单
+        * author: xuxiaoxue
+        -->
+
+    <#include "../include/header.html">
+        <body>
+        <div id="content-container">
+            <div id="page-content">
+                <div class="panel" style="padding:0px;">
+                    <form class="form-horizontal">
+                        <div class="panel-body">
+                            <div class="row">
+                                <input type="file" name="files" id="importExcelFile">
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <span id="errorMessage"></span>
+                            </div>
+                        </div>
+                        <div class="panel-footer text-right">
+                            <a class="btn btn-success" id="download" onclick="exportTemplate()" type="submit">导出模板</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            $("#importExcelFile").kendoUpload({
+                async: {
+                    saveUrl: "${base.contextPath}/hmall/as/svsalesImport?${_csrf.parameterName}=${_csrf.token}",
+                    autoUpload: false
+                },
+                multiple: false,
+                localization: {
+                    select: "请选择文件",
+                    uploadSelectedFiles: "导入",
+                    headerStatusUploading: "导入中..."
+                },
+                error: function (e) {
+                    kendo.ui.showInfoDialog({
+                        title: '提示信息',
+                        message: '导入失败!'
+                    });
+                },
+                success: function (e) {
+                    if (e.response.success) {
+                        kendo.ui.showInfoDialog({
+                            title: '提示信息',
+                            message: '导入成功'
+                        }).done(function (event) {
+                            if (event.button == 'OK') {
+                                window.parent.$("#excelWindow").data("kendoWindow").close();
+                                window.parent.$("#Grid").data("kendoGrid").dataSource.page(1);
+                            }
+                        });
+                    } else {
+                        kendo.ui.showErrorDialog({
+                            title: '提示信息',
+                            message: '导入失败<br/>'
+                        }).done(function (event) {
+                            $("#errorMessage").html('<h5>导入失败信息:</h5><br/>' + e.response.message);
+                        });
+
+                    }
+                }
+            });
+
+            function exportTemplate() {
+                var form = $("<form>");   //定义一个form表单
+                form.attr('style', 'display:none');   //在form表单中添加查询参数
+                form.attr('target', '');
+                form.attr('method', 'GET');
+                form.attr('action', "${base.contextPath}/hmall/as/svsales/exportTemplate");
+                $('body').append(form);  //将表单放置在web中
+                form.submit();
+            }
+
+        </script>
+        </body>
+        </html>

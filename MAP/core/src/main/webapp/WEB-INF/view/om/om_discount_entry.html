@@ -1,0 +1,609 @@
+<#--
+        * description: 价格折扣行界面
+        * author:xuxiaoxue
+        * 2017/11/28
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?discount_type=HMALL_DISCOUNT_TYPE" type="text/javascript"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.js"></script>
+        <script type="text/javascript">
+            var viewModel = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#Grid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#Grid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                },
+                resetFunction: function () {
+                    var formData = viewModel.model.toJSON();
+                    for (var k in formData) {
+                        viewModel.model.set(k, null);
+                    }
+                }
+
+            });
+            //版本目录数据
+            var catalogData = new Array();
+            $.ajax({
+                url: '${base.contextPath}/hmall/mst/catalogversion/selectCatalog',
+                type: 'POST',
+                contentType: "application/json;charset=utf-8",
+                cache: false,
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+                    catalogData = data.rows;
+                }
+            });
+        </script>
+        <body>
+        <div id="page-content">
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+    <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;"
+          data-bind="click:createFunction"><i class="fa fa-plus-square"></i><@spring.message "hap.new"/></span>
+                <span onclick="deleteData()" class="btn btn-danger" style="float:left;margin-right:5px;"><i class="fa fa-eraser"></i><@spring.message "hap.delete"/></span>
+                <span onclick="saveData()" class="btn btn-success k-grid-save-changes" style="float:left;margin-right:5px;"><i class="fa fa-save"></i><@spring.message "hap.save"/></span>
+                <span onclick="importData()" class="btn btn-warning" style="float:left;margin-right:5px;"><i class="fa fa-file-pdf-o"></i><@spring.message "导入"/></span>
+                <span onclick="exportData()" class="btn btn-success" style="float:left;margin-right:5px"><i class="fa fa-file-excel-o"></i><@spring.message "导出"/></span>
+                <span onclick="dsyncData(1)" class="btn btn-info" style="float:left;margin-right:5px;"><i class="fa fa-refresh"></i><@spring.message "同步"/></span>
+                <span onclick="dsyncData(2)" class="btn btn-info" style="float:left;margin-right:5px;"><i class="fa fa-refresh"></i><@spring.message "全量同步"/></span>
+
+            </div>
+            <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+            <div id="queryPanel" class="pull-right" style="padding-bottom:10px;">
+                <div class="k-query-simple" id="query-form">
+                    <input type="text" class="form-control full_width" style="float:left;width:150px;height: 2.4em;margin-right:5px;" placeholder='商品编码'
+                           data-bind="value:model.productCode">
+                    <input id="discountType" name="discountType" type="text" style="width: 150px;height: 2.5em; margin-right: 5px;" placeholder='折扣类型'
+                           data-bind="value:model.discountType">
+                    <script type="text/javascript">
+                        $("#discountType").kendoDropDownList({
+                            dataTextField: "meaning",
+                            dataValueField: "value",
+                            valuePrimitive: true,
+                            dataSource: discount_type,
+                        }).data("kendoDropDownList");
+                    </script>
+                </div>
+                <script>
+                    kendo.bind($('#query-form'), viewModel);
+                </script>
+
+                <div class="k-query-detail" id="query-form-detail">
+
+                    <div class="rows" style="margin-top: 5px">
+                        <input type="text" id="catalogVersionId" style="width: 40%;height: 2.5em; margin-right: 5px;" placeholder='目录版本'
+                               data-bind="value:model.catalogversionId">
+                        <script type="text/javascript">
+                            $("#catalogVersionId").kendoDropDownList({
+                                dataTextField: "catalogName",
+                                dataValueField: "catalogversionId",
+                                valuePrimitive: true,
+                                dataSource: catalogData,
+                            }).data("kendoDropDownList");
+                        </script>
+                    </div>
+
+                    <div class="rows" style="margin-top: 5px">
+
+                        <input placeholder='开始时间'
+                               type="text" style="width: 40%;margin-right: 5px;" id="startTime"
+                               data-bind="value:model.startTimeStr">
+                        <input placeholder='结束时间'
+                               type="text" style="width: 40%;margin-right: 5px;" id="endTime"
+                               data-bind="value:model.endTimeStr">
+                    </div>
+                </div>
+                <script>
+                    kendo.bind($('#query-form-detail'), viewModel);
+                </script>
+            </div>
+
+            <!-- 导入导出的execl Window -->
+            <div id="excelWindow"></div>
+
+
+            <script>
+                $('#queryPanel').kendoQueryPanel({
+                    queryFunction: function () {
+                        viewModel.queryResource();
+                    },
+                    resetFunction: function (e) {
+                        viewModel.resetFunction();
+                    }
+                })
+            </script>
+
+            <div style="clear:both">
+                <div id="Grid"></div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var BaseUrl = _basePath;
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hmall/om/discount/entry/query",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/mst/product/category/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/mst/product/category/remove",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/mst/product/category/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 20,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "discountId",
+                        fields: {
+                            rowNum: {editable: false},
+                            catalogVersion: {editable: false},
+                            discount: {
+                                type: "number"
+                            }
+                        }
+                    }
+                }
+            });
+
+            var grid__ = $("#Grid").kendoGrid({
+                dataSource: dataSource,
+                height: "400px",
+                pageable: true,
+                resizable: true,
+                editable: true,
+                navigatable: true,
+                scrollable: true,
+                selectable: 'multiple, rowbox',
+                sortable: false,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 10
+                },
+                columns: [{
+                    field: "rowNum",
+                    title: '序号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 50,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: "<span class='row-number'></span>"
+                }, {
+                    field: "productCode",
+                    title: '商品编码',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 130,
+                    editor: function (container, options) {
+                        $('<input required name="' + options.field + '"/>').appendTo(container).kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_ZMALL_ONLINE_PRODYCT")},
+                                {
+                                    select: function (e) {
+                                        options.model.set("productId", e.item.productId);
+                                        options.model.set("productCode", e.item.code);
+                                        options.model.set("customSupportType", e.item.customSupportType);
+                                    }
+                                }))
+                    },
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "vcode",
+                    title: "V码",
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                },
+                    {
+                    field: "discountType",
+                    title: '折扣类型',
+                    attributes: {style: "text-align:center"},
+                    width: 130,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: function (dataItem) {
+                        var v = dataItem.discountType;
+                        if (v == null) {
+                            return '';
+                        }
+                        $.each(discount_type, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            } else {
+                                return '';
+                            }
+                        });
+                        return v;
+                    },
+                    editor: function (container, options) {
+                        $('<input name="discountType"  style="background-color: #fbeed5"/>')
+                                .appendTo(container)
+                                .kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: discount_type
+                                }).data("kendoDropDownList");
+                    }
+                }, {
+                    field: "discount",
+                    title: '折扣',
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "startTime",
+                    title: '开始时间',
+                    attributes: {style: "text-align:center"},
+                    width: 110,
+                    format: "{0:yyyy-MM-dd HH:mm:ss}",
+                    editor: function (container, options) {
+                        $('<input  name="' + options.field + '" />')
+                                .appendTo(container)
+                                .kendoDateTimePicker({}).data("kendoDateTimePicker");
+                    },
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "endTime",
+                    title: '结束时间',
+                    attributes: {style: "text-align:center"},
+                    width: 110,
+                    format: "{0:yyyy-MM-dd HH:mm:ss}",
+                    editor: function (container, options) {
+                        $('<input  name="' + options.field + '" />')
+                                .appendTo(container)
+                                .kendoDateTimePicker({}).data("kendoDateTimePicker");
+                    },
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "catalogVersion",
+                    title: '目录版本',
+                    attributes: {style: "text-align:center"},
+                    width: 110,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }
+                ],
+                dataBound: function () {
+                    var rows = this.items();
+                    var page = this.pager.page() - 1;
+                    var pagesize = this.pager.pageSize();
+                    $(rows).each(
+                            function () {
+                                var index = $(this).index() + 1 + page * pagesize;
+                                var rowLabel = $(this).find(".row-number");
+                                $(rowLabel).html(index);
+                            });
+                }
+            }).data("kendoGrid");
+
+
+            Hap.autoResizeGrid("#Grid");
+
+            //初始化起始时间从
+            initDateTimePicker("startTime", function () {
+                var startTime = $("#startTime").val();
+                var endTime = $("#endTime").data("kendoDateTimePicker");
+                endTime.min(startTime || new Date(1800, 0, 1));
+            });
+
+            //初始化起始时间至
+            initDateTimePicker("endTime", function () {
+                var endTime = $("#endTime").val();
+                var startTime = $("#startTime").data("kendoDateTimePicker");
+                startTime.max(endTime || new Date(2099, 11, 31));
+            });
+            /**
+             * 初始化时间选择控件
+             * @param elementId -被初始化的控件ID
+             * @param onChange - value值变化时的时间处理函数
+             */
+            function initDateTimePicker(elementId, onChange) {
+                $("#" + elementId).kendoDateTimePicker({
+                    animation: {
+                        close: {
+                            effects: "fadeOut zoom:out",
+                            duration: 300
+                        },
+                        open: {
+                            effects: "fadeIn zoom:in",
+                            duration: 300
+                        }
+                    },
+                    format: "yyyy-MM-dd HH:mm:ss",
+                    change: onChange
+                });
+            }
+
+            function importData() {
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '价格折扣行导入',
+                    content: "${base.contextPath}/om/om_discount_entry_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                        grid__.dataSource.page(1);
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+            }
+
+            //删除
+            function deleteData() {
+                var selections = grid__.selectedDataItems();
+                if (!selections.length) {
+                    kendo.ui.showInfoDialog({
+                        message: "<@spring.message 'hap.tip.selectrows'/>"
+                    });
+                    return;
+                }
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('是否删除选择的折扣行？')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        $.ajax({
+                            url: BaseUrl + "/hmall/om/discount/entry/delDiscountEntry",
+                            type: 'post',
+                            dataType: 'json',
+                            contentType: "application/json",
+                            async: false,
+                            data: JSON.stringify(selections),
+                            success: function (data) {
+                                if (data.success) {
+                                    kendo.ui.showInfoDialog({
+                                        message: "删除成功"
+                                    });
+                                    grid__.dataSource.page(1);
+                                } else {
+                                    kendo.ui.showInfoDialog({
+                                        message: data.message
+                                    });
+                                    grid__.dataSource.page(1);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            //同步
+            function dsyncData(flag) {
+                var selections = grid__.selectedDataItems();
+                if (flag == '1') {
+                    if (!selections.length) {
+                        kendo.ui.showInfoDialog({
+                            message: "<@spring.message 'hap.tip.selectrows'/>"
+                        });
+                        return;
+                    }
+                    kendo.ui.showConfirmDialog({
+                        title: $l('hap.tip.info'),
+                        message: $l('是否同步选择的折扣行？')
+                    }).done(function (event) {
+                        if (event.button == 'OK') {
+                            $.ajax({
+                                url: BaseUrl + "/hmall/om/discount/entry/syncDiscountEntry?flag=" + flag,
+                                type: 'post',
+                                dataType: 'json',
+                                contentType: "application/json",
+                                async: false,
+                                data: JSON.stringify(selections),
+                                success: function (data) {
+                                    if (data.success) {
+                                        kendo.ui.showInfoDialog({
+                                            message: "同步成功"
+                                        });
+                                        grid__.dataSource.page(1);
+                                    } else {
+                                        kendo.ui.showInfoDialog({
+                                            message: data.message
+                                        });
+                                        grid__.dataSource.page(1);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                } else if (flag == '2') {
+                    kendo.ui.showConfirmDialog({
+                        title: $l('hap.tip.info'),
+                        message: $l('是否全量同步折扣行？')
+                    }).done(function (event) {
+                        if (event.button == 'OK') {
+                            $.ajax({
+                                url: BaseUrl + "/hmall/om/discount/entry/syncDiscountEntry?flag=" + flag,
+                                type: 'post',
+                                dataType: 'json',
+                                contentType: "application/json",
+                                async: false,
+                                data: JSON.stringify(selections),
+                                success: function (data) {
+                                    if (data.success) {
+                                        kendo.ui.showInfoDialog({
+                                            message: "同步成功"
+                                        });
+                                        grid__.dataSource.page(1);
+                                    } else {
+                                        kendo.ui.showInfoDialog({
+                                            message: data.message
+                                        });
+                                        grid__.dataSource.page(1);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+            //保存
+            function saveData() {
+                var selections = grid__.selectedDataItems();
+                if (!selections.length) {
+                    kendo.ui.showInfoDialog({
+                        message: "<@spring.message 'hap.tip.selectrows'/>"
+                    });
+                    return;
+                }
+                for (var i = 0; i < selections.length; i++) {
+                    if (selections[i].discount == null || selections[i].discount == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "折扣不能为空"
+                        });
+                        return;
+                    }
+                    if (selections[i].discountType == null || selections[i].discountType == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "折扣类型不能为空"
+                        });
+                        return;
+                    }
+
+                    if (selections[i].startTime == null || selections[i].startTime == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "开始时间不能为空"
+                        });
+                        return;
+                    }
+
+                    if (selections[i].endTime== null || selections[i].endTime == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "结束时间不能为空"
+                        });
+                        return;
+                    }
+                    if (selections[i].discountType == '2' && (selections[i].discount > 1)) {
+                        kendo.ui.showInfoDialog({
+                            message: "平台打折折扣值应大于0小于1"
+                        });
+                        return;
+                    }
+
+                    //当custom_suppor_type=1或3时，折扣类型只能为商品直降
+                    if ((selections[i].customSupportType == '1' || selections[i].customSupportType == '3')) {
+                        if (selections[i].discountType != '3') {
+                            kendo.ui.showInfoDialog({
+                                message: "商品为主推或饰品，折扣类型只能为商品直降"
+                            });
+                            return;
+                        }
+                    }
+
+                    //当DISCOUNT_TYPE为3(商品直降)，且CODE为定制平台(商品表RODUCT_ID对应CUSTOM_SUPPORT_TYPE=2，则VCODE为必填项
+                    if (selections[i].discountType == '3' && selections[i].customSupportType == '2') {
+                        if (selections[i].vcode == null || selections[i].vcode == '' || selections[i].vcode == undefined) {
+                            kendo.ui.showInfoDialog({
+                                message: "定制支持类型为定制平台且折扣类型为定制直降的商品 商品V码不能为空"
+                            });
+                            return;
+                        }
+                    }
+
+                    //当折扣类型为“平台直降”或者“平台打折”时，商品code为必填项，且code在商品表中的custom_support_type=2，且V码不可填
+                    if ((selections[i].discountType == '1'|| selections[i].discountType == '2') && selections[i].customSupportType == '2') {
+                        if (selections[i].vcode != null && selections[i].vcode != "" && selections[i].vcode != undefined) {
+                            kendo.ui.showInfoDialog({
+                                message: "折扣类型为平台直降或者平台打折时，且商品为定制平台，V码必须为空"
+                            });
+                            return;
+                        }
+                    }
+
+                    //当折扣类型为“商品直降”时 当custom_suppor_type=1或3时，V码不可填
+                    if (selections[i].discountType == '3' && (selections[i].customSupportType == '1' || selections[i].customSupportType == '3')) {
+                        if (selections[i].vcode != null && selections[i].vcode != "" && selections[i].vcode != undefined) {
+                            kendo.ui.showInfoDialog({
+                                message: "折扣类型为商品直降时，且商品为主推或饰品，V码必须为空"
+                            });
+                            return;
+                        }
+                    }
+
+                }
+                $.ajax({
+                    url: BaseUrl + "/hmall/om/discount/entry/saveDiscountEntry",
+                    type: 'post',
+                    dataType: 'json',
+                    contentType: "application/json",
+                    async: false,
+                    data: JSON.stringify(selections),
+                    success: function (data) {
+                        if (data.success) {
+                            kendo.ui.showInfoDialog({
+                                message: "保存成功"
+                            });
+                            grid__.dataSource.page(1);
+                        } else {
+                            kendo.ui.showInfoDialog({
+                                message: data.message
+                            });
+                            grid__.dataSource.page(1);
+                        }
+                    }
+                });
+            }
+        </script>
+        </body>
+        </html>

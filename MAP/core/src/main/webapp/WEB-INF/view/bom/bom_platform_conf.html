@@ -1,0 +1,1368 @@
+<#include "../include/header.html"> 
+<#-- * description: BOM树 数据操作
+ *author:yougui.wu@hand-china.com
+ * 
+ * version: 1.0 
+ * -->
+	<link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.base.css" type="text/css"/>
+<link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.bootstrap.css" type="text/css"/>
+<#--<script type="text/javascript" src="${base.contextPath}/resources/jquery-1.11.1.min.js"></script>-->
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcore.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdata.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxbuttons.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxscrollbar.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdatatable.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxtreegrid.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcheckbox.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxlistbox.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdropdownlist.js"></script>
+
+<!--进度条-->
+<link rel="stylesheet" href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.css">
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.js"></script>
+</head>
+<body>
+<style>
+.select-bar {
+	box-shadow: inset 0 1px 1px #ccc;
+	width: 100%;
+}
+
+.select-bar option {
+	color: #1a1a1a;
+}
+
+div.k-widget.k-tooltip{
+            width:80px;
+            }
+.jqx-cell {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    border-collapse: separate;
+    border-color: transparent;
+    border-image: none;
+    border-spacing: 0;
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    box-sizing: border-box;
+    line-height: 1.5;
+    margin: 0;
+    min-height: 23px;
+    overflow: hidden;
+    padding: 6px 4px;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+.jqx-widget-bootstrap .jqx-grid-cell-bootstrap, .jqx-widget-bootstrap .jqx-grid-column-header-bootstrap, .jqx-widget-bootstrap .jqx-grid-group-cell {
+    border-color: #e7ecf1;
+}
+
+.k-state-selected {
+    background-color: #42a5f5;
+    color: #fff;
+}
+
+</style>
+
+	<script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+	<script src="${base.contextPath}/common/code?husmObtainMode=HUSM_OBTAIN_MODE" type="text/javascript"></script>
+	<script src="${base.contextPath}/common/code?projectUom=HUSM_PZ_UOM" type="text/javascript"></script>
+	
+	<script src="${base.contextPath}/common/code?husmAttrTypeData=HUSM_ATTR_TYPE_DATA" type="text/javascript"></script>
+	<script src="${base.contextPath}/common/code?husmAttrEnabledFlag=HUSM_ATTR_ENABLED_FLAG" type="text/javascript"></script>
+	<script src="${base.contextPath}/common/code?husmAttrEditableFlag=HUSM_ATTR_EDITABLE_FLAG" type="text/javascript"></script>
+	<script src="${base.contextPath}/common/code?husmRequriedFlag=HUSM_REQUIRED_FLAG" type="text/javascript"></script>
+	<script src="${base.contextPath}/common/code?husmDefaultValueType=HUSM_DEFAULT_VALUE_TYPE" type="text/javascript"></script>
+	<script src="${base.contextPath}/common/code?husmControlTpye=HUSM_CONTROL_TYPE" type="text/javascript"></script>
+	<script src="${base.contextPath}/common/code?husmControlWidth=HUSM_CONTROL_WIDTH" type="text/javascript"></script>
+
+	<script src="${base.contextPath}/resources/js/mask.js"></script>
+
+	<script type="text/javascript">
+       //设置第一个form vieModel
+         viewModel = kendo.observable({
+            firstLoad: true, //预留标志位，判断页面是否是第一次加载
+            isNew:null, //用于判断form表单数据时候被编辑过的标志位
+            uid:null, //存储当前被编辑的dataItem uid
+            model: {
+          
+            }
+        });
+
+       
+       function nodes(bomDatas){
+         	var formBehind = $("#dynamicallyGenerated");
+         	//先清空div里面的html，然后再插入行
+         	formBehind.html(""); 
+         	insertRows(bomDatas);
+         		
+         }
+        
+        //获取分屏需要的全屏参数
+        function divFullScreen(){
+            var width = $(window).width();//计算屏幕的宽度
+            var height = $(window).height();
+            $('#main').width(width-20);//设置div的宽度等于屏幕的宽度
+            $('#main').height(height-20);//设置div的宽度等于屏幕的宽度
+        }
+
+        //弹出的平台选择页面选中之后会调用此方法，options里有传入的选中的item
+        function confirmPlatform(option) {
+            var selectData = option.gridData;
+            platformId = selectData.itemId;
+            platformName=selectData.itemName;
+            var description = selectData.description;
+            //关闭平台选择窗口
+            $("#platformWindow").data("kendoWindow").close();
+            //将平台id放到viewModel中用于后面调用
+            startMask("Bom生成中...","");
+            viewModel.model.set("platformId",platformId);
+            viewModel.model.set("description",description);
+            //加载bom树
+            setTimeout(function(){
+            loadTree();
+        	},1000);
+
+
+        }
+
+
+    </script>
+<script type="text/javascript">
+    var changeFlagflag=false;
+
+    function changeFlagColor(){
+
+        console.log(changeFlagflag);
+        noTypeValueSet.forEach(function (element, sameElement, set) {
+            var select ="tr[data-key="+element+"]";
+            if($(select)!=null&& $(select).length>0) {
+                for(var i=0;i<$(select).length;i++){
+                    var selectId = $(select)[i].id;
+                    $('#'+selectId).css("color","");
+                    console.log("清空");
+                }
+            }
+        });
+
+        if(changeFlagflag==false){
+            chooseItemSet.forEach(function (element, sameElement, set) {
+                var select ="tr[data-key="+element+"]";
+                if($(select)!=null&& $(select).length>0) {
+                    for(var i=0;i<$(select).length;i++){
+                        var selectId = $(select)[i].id;
+                        $('#'+selectId).css("color","");
+                        $('#' + selectId).css("color", "#e49626");
+                        console.log("1");
+                    }
+                }
+
+            });
+
+            chooseValueSet.forEach(function (element, sameElement, set) {
+                var select ="tr[data-key="+element+"]";
+                if($(select)!=null&& $(select).length>0) {
+                    for(var i=0;i<$(select).length;i++){
+                        var selectId = $(select)[i].id;
+                        $('#'+selectId).css("color","");
+                        $('#' + selectId).css("color", "#198099");
+                    }
+                }
+            });
+        changeFlagflag=true;
+        }else{
+            chooseItemSet.forEach(function (element, sameElement, set) {
+                var select ="tr[data-key="+element+"]";
+                if($(select)!=null&& $(select).length>0) {
+                    for(var i=0;i<$(select).length;i++){
+                        var selectId = $(select)[i].id;
+                        $('#'+selectId).css("color","");
+                        console.log("2");
+                    }
+                }
+
+            });
+
+            chooseValueSet.forEach(function (element, sameElement, set) {
+                var select ="tr[data-key="+element+"]";
+                if($(select)!=null&& $(select).length>0) {
+                    for(var i=0;i<$(select).length;i++){
+                        var selectId = $(select)[i].id;
+                        $('#'+selectId).css("color","");
+                    }
+                }
+            });
+            changeFlagflag=false;
+        }
+    }
+
+//插行方法			
+ function insertRows(bomDatas){
+	var itemAttrList = bomDatas.rows[0].lookupTypeList;
+	
+	//给控件增加插入方式
+	for (var p = 0; p < itemAttrList.length; p++) {
+		if((p%2)==0){
+			var firstItem = itemAttrList[p];
+			firstItem["widthFlag"] = "halfRowCreate";
+		}else{
+			var secondItem = itemAttrList[p];
+			secondItem["widthFlag"] = "halfRowInsert";
+		}
+	}
+	
+	//循环插入控件
+	for (var i = 0; i < itemAttrList.length; i++) {
+		var attrCode = itemAttrList[i].lookupType;
+		var dataSource = itemAttrList[i].dataSource;
+		var deleteFlag = itemAttrList[i].deleteFlag;
+		var description = itemAttrList[i].description;
+		var effectDateFrom = itemAttrList[i].effectDateFrom;
+		var effectFlag = itemAttrList[i].effectFlag;
+		var endDate = itemAttrList[i].endDate;
+		var headerId = itemAttrList[i].headerId;
+		var lookupType = itemAttrList[i].lookupType;
+		var attrName = itemAttrList[i].name;
+		var value = itemAttrList[i].value;
+		var meaning=itemAttrList[i].meaning;
+		var widthFlag = itemAttrList[i].widthFlag;
+		var widgetType = "DropDownList";
+		//第一个tab页行id
+		var firstRowPositionFlag = viewModel.model.firstRowPositionFlag;
+		if( widthFlag == "halfRowCreate"){
+			//第一个tab页创建半行
+			var before_Front_Html = '<div class="row" id=\"'+firstRowPositionFlag+'\" style="padding: 5px">'+
+									 	'<div class="col-md-6">'+
+											'<div class="form-group">'+
+												'<label class="col-md-4 control-label">'+attrName+'</label>'+
+													'<div class="col-md-8">'+
+														'<input  id=\"'+attrCode+'\" name=\"'+attrCode+'\" type="text"'+
+															'data-bind=\"value:model.value\"'+
+																'style="width: 100%;" />'+
+														'<span style="width: 100%;"></span>'+				
+													'</div>'+
+											'</div>'+
+										'</div>'+
+									'</div>'; 
+			$("#dynamicallyGenerated").append(before_Front_Html);
+			generateAttr(attrCode,dataSource,deleteFlag,description,effectDateFrom,effectFlag,endDate,headerId,widgetType,lookupType,attrName,value,meaning);
+			viewModel.model.set("firstRowPositionFlag",firstRowPositionFlag+1);
+		}else if( widthFlag == "halfRowInsert"){
+			//插入半行（三个tab页都通用）					
+			var before_middle_Html = '<div class="col-md-6">'+
+										'<div class="form-group">'+
+											'<label class="col-md-4 control-label">'+attrName+'</label>'+
+												'<div class="col-md-8">'+
+													'<input id=\"'+attrCode+'\" name=\"'+attrCode+'\" type="text"'+
+													'data-bind=\"value:model.bomDatas.rows[0].lookupTypeList['+i+'].value\"'+
+															'style="width: 100%;" />'+
+												'</div>'+
+										'</div>'+
+									 '</div>'; 
+			var prentRowId = "#"+(firstRowPositionFlag-1);						 
+			$(prentRowId).append(before_middle_Html);
+			generateAttr(attrCode,dataSource,deleteFlag,description,effectDateFrom,effectFlag,endDate,headerId,widgetType,lookupType,attrName,value,meaning);
+		}
+	}
+}	 			
+					
+
+//取得生成from的数据
+function getFromConfData(itemId){
+	var platformId = viewModel.model.platformId;
+	var parent
+	var yy = '${base.contextPath}';
+	$.ajax({
+	    type: 'POST',
+	    url: yy+'/hap/mdm/item/queryItemCondition?itemId='+itemId+"&platformId="+platformId,
+	    contentType: 'application/json',
+	    async: false,
+	    success: function (bomDatas) {
+
+	    	if(bomDatas.success){
+	    	    //数据请求成功之后去除遮罩
+	    		 if($('#mask').length === 1){
+	                 $('#mask').remove();
+	             }
+	             //设置chooseItemFlag和chooseValueFlag的值，此处控件绑定了这里，所以控件值在这里设置的
+		    	viewModel.model.set("chooseItemFlag",bomDatas.rows[0].chooseItemFlag);
+		    	viewModel.model.set("chooseValueFlag",bomDatas.rows[0].chooseValueFlag);
+		    	viewModel.model.set("quantity",bomDatas.rows[0].quantity);
+
+                viewModel.model.set("attr1",bomDatas.rows[0].attr1);
+                viewModel.model.set("attr2",bomDatas.rows[0].attr2);
+                viewModel.model.set("attr3",bomDatas.rows[0].attr3);
+                viewModel.model.set("attr4",bomDatas.rows[0].attr4);
+                viewModel.model.set("attr5",bomDatas.rows[0].attr5);
+                viewModel.model.set("attr6",bomDatas.rows[0].attr6);
+                viewModel.model.set("attr7",bomDatas.rows[0].attr7);
+                viewModel.model.set("attr8",bomDatas.rows[0].attr8);
+                viewModel.model.set("attr9",bomDatas.rows[0].attr9);
+                viewModel.model.set("attr10",bomDatas.rows[0].attr10);
+
+		    	//设置动态生成的div的id，其为变动增加的
+		    	viewModel.model.set("firstRowPositionFlag",1000);
+
+				//此处新增时勾选框的值为null，对此进行初始赋值为N
+		    	if(bomDatas.rows[0].chooseValueFlag == null){
+                    bomDatas.rows[0].chooseValueFlag = "N";
+                }
+                if(bomDatas.rows[0].chooseItemFlag == null){
+                    bomDatas.rows[0].chooseItemFlag = "N";
+                }
+                if(bomDatas.rows[0].attr5 == null){
+                    bomDatas.rows[0].attr5 = "N";
+                }
+                if(bomDatas.rows[0].attr6 == null){
+                    bomDatas.rows[0].attr6 = "N";
+                }
+                if(bomDatas.rows[0].attr7 == null){
+                    bomDatas.rows[0].attr7 = "N";
+                }
+		    	//存到viewModel供以后调用
+		    	viewModel.model.set("bomDatas",bomDatas);
+
+
+		    	//动态渲染页面函数
+	            nodes(bomDatas);
+	    	}else{
+	            kendo.ui.showErrorDialog({
+	                message: bomDatas.message
+	            })
+	    	}
+	    },
+	    error: function (data) {
+
+	    	kendo.ui.showErrorDialog({
+                message: data.message
+            });
+	    } 
+	
+	}); 
+	}
+//展开关闭
+function expandAllFunction(){
+    NProgress.start();
+    $("#treeGrid").jqxTreeGrid('expandAll');
+    NProgress.done();
+    changeFlagflag=false;
+    setTimeout(function(){
+        changeFlagColor();
+    },300);
+}
+
+function compressAllFunction(){
+    NProgress.start();
+    $("#treeGrid").jqxTreeGrid('collapseAll');
+    NProgress.done();
+}
+//配置属性勾选框互斥
+function changechooseValueFlag(value){
+
+	var chooseItemFlag = value;
+	if(chooseItemFlag == "Y"){
+		viewModel.model.bomDatas.rows[0].chooseValueFlag = "N";
+        chooseItemSet.add(viewModel.model.bomId);
+        chooseValueSet.delete(viewModel.model.bomId);
+	}else{
+		
+	}
+}
+//配置属性勾选框互斥
+function changeChooseItemFlag(value){
+	var chooseValueFlag = value;
+	if(chooseValueFlag == "Y"){
+		viewModel.model.bomDatas.rows[0].chooseItemFlag = "N";
+        chooseItemSet.delete(viewModel.model.bomId);
+        chooseValueSet.add(viewModel.model.bomId);
+	}else{
+
+	}
+}
+
+//选配值导入
+function exportItemValueExcel() {
+    var assignDialog = $("#excelWindow").kendoWindow({
+        actions: ["Close"],
+        title: 'EXCEL导入',
+        visible: false,
+        iframe: true,
+        modal: true,
+        content: "${base.contextPath}/bom/item_value_import_excel.html",
+        close: function (e) {
+
+        }
+    }).data("kendoWindow");
+    assignDialog.toggleMaximization();
+    assignDialog.center().open();
+}
+</script> 
+<div class="container" style="width: auto; margin: 10px 0px 0px 0px; height: 100%">
+	<div id="main" style="padding: 0px">
+
+        <div id="left">
+        <div id="toolbar-btn" style="padding-left:5px ;margin-top: 5px;">
+        <span id="expandAll" class="btn btn-primary" onclick="expandAllFunction()">
+            <i class="fa fa-expand" style="margin-right:3px;"></i>展开全部</span>
+                    <span id="collapseAll" class="btn btn-warning" onclick="compressAllFunction()">
+            <i class="fa fa-compress" style="margin-right:3px;"></i>收缩全部</span>
+                    <span id="changeColor" class="btn btn-info" onclick="changeFlagColor()">
+            <i class="fa fa-star-half-o" style="margin-right:3px;"></i>突显颜色</span>
+                </div>
+
+                <div id="treeGrid" style="height: 100%;margin-top:10px"></div>
+        </div>
+		<div id="right">
+		<div id="mask" style="opacity: 0.3; filter: alpha(opacity = 30); background-color: #e0e0e0; z-index: 100; right: 0px; left: 0px; top: 0px; bottom: 0px; position: absolute;">
+    	</div>
+			<div>
+				<!--<input id = "vpin"  data-role="maskedtextbox" attrcode="pincode" style="width:150px;margin-right:10px;">-->
+				<script>
+                    $("#platfro").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "MAP_MAM_VPIN_LOV")},{
+                        select: function(e) {
+                            viewModel.model.set('vcode',e.item.vmatnr);
+                            //alert(viewModel.model.get('vcode'));
+                            $('#vcodeLov').data('kendoLov').text(e.item.vmatnr);
+
+                        },
+                        change:function(e){
+                            //alert(viewModel.model.get('vcode'));
+                            //alert(this.value());
+                            var value = this.value();
+                            viewModel.model.interfaceCode = value;
+                        }
+                    }));
+				</script>
+			</div>
+			<div class="row">
+				<span class="btn btn-success" style="float:left;margin:5px 0px 0px 12px;" onclick = "saveFormDatas()"> <i class="fa fa-save" style="margin-right:3px;"></i><@spring.message "hap.save"/></span>
+				<span class="btn btn-success" style="float:left;margin:5px 0px 0px 5px;" onclick="updateChooseValue()"> <i
+						class="fa fa-save" style="margin-right:3px;"></i>选项值数据更新</span>
+				<span  id="importItemValue" class="btn btn-default"  onclick="exportItemValueExcel()" style="float:left;margin:5px 0px 0px 5px;">导入属性选配值</span>
+			</div>
+			<div id ="rightTopTab" style="padding-left:5px ;margin-top: 10px;/* display:none */">
+                <div class="panel" style="padding: 0px;">
+      				<form class="form-horizontal">
+       					<div class="panel-body" id="conditionForm2">
+         					<div class="panel" style="padding: 0px;">
+					           <div class="panel-body">
+					           		<div class="row">
+					            		<h4><@spring.message "bom.configure.properties"/></h4>
+					           		</div>
+					           		<div  id = "dynamicallyGenerated">
+					           		
+					           		</div>
+						          </div>
+         					</div>
+       					</div>
+      				</form>
+    			</div>
+    			<div class="panel" style="padding: 0px;">
+      				<form class="form-horizontal">
+       					<div class="panel-body" id="conditionForm1">
+         					<div class="panel" style="padding: 0px;">
+					           <div class="panel-body" >
+					           		<div class="row">
+					            		<h4><@spring.message "bom.optional.properties"/></h4>
+					           		</div>
+					           		<div class="row">
+					            		<div class="col-sm-6">
+                            				<div class="form-group">
+                                				<label class="col-sm-4 control-label"><@spring.message "bom.option"/></label>
+                                				<div class="col-sm-8" style="text-align: left">
+                                    				<input id="chooseItemFlag" type="checkbox"
+                                    					style="margin-top: 8px"
+                                        				name="chooseItemFlag" data-bind="checked:model.bomDatas.rows[0].chooseItemFlag">
+                                        				<script type="text/javascript">
+                                        				$("#chooseItemFlag").kendoCheckbox({
+                                        		            checkedValue:'Y',
+                                        		            uncheckedValue:'N',
+                                        		            change : function(){
+                                        		            	var thisValue = this.value();
+
+                                        		            	if(thisValue == "Y"){
+                                        		            		viewModel.model.bomDatas.rows[0].chooseValueFlag = "N";
+/*                                                                    chooseItemSet.add(viewModel.bomId);
+                                                                    chooseValueSet.delete(viewModel.bomId);
+                                                                    console.log(chooseItemSet);
+                                                                    console.log(chooseValueSet);*/
+                                        		            	}else{
+                                        		            		
+                                        		            	}
+                                        		            }
+                                        		            
+                                        		        });
+                                        				</script>
+                                				</div>
+                            				</div>
+                        				</div>
+
+                                        <div class="col-sm-6">
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label"><@spring.message "bom.matching.value"/></label>
+                                                <div class="col-sm-8" style="text-align: left">
+                                                    <input id="chooseValueFlag" type="checkbox"
+                                                           style="margin-top: 8px"
+                                                           name="chooseValueFlag" data-bind="checked:model.bomDatas.rows[0].chooseValueFlag">
+                                                    <script type="text/javascript">
+                                                        $("#chooseValueFlag").kendoCheckbox({
+                                                            checkedValue:'Y',
+                                                            uncheckedValue:'N',
+                                                            change : function(){
+
+
+                                                                var thisValue = this.value();
+                                                                if(thisValue == "Y"){
+                                                                    viewModel.model.bomDatas.rows[0].chooseItemFlag = "N";
+/*                                                                    保存时才更改
+                                                                    console.log(viewModel);
+                                                                    chooseItemSet.delete(viewModel.bomId);
+                                                                    chooseValueSet.add( viewModel.bomId);*/
+                                                                }else{
+
+                                                                }
+                                                            }
+                                                        });
+                                                    </script>
+                                                </div>
+                                            </div>
+                                        </div>
+<#--                        				<div class="col-sm-6">
+
+
+                            				<div class="form-group">
+                                				<label class="col-sm-4 control-label">
+                                                    <div >
+													<span style="color:red;">*</span>
+													<@spring.message "bom.optional.quantity"/>
+                                                    </div>
+												</label>
+
+                                				<div class="col-sm-8">
+                                    				<input required type="text" id="quantity" style="width: 100%"
+                                           				name="quantity" data-bind="value:model.bomDatas.rows[0].quantity" required>
+                                           				<script type="text/javascript">
+                                           				$("#quantity").kendoMaskedTextBox({
+                                           		    		
+                                           	    	 	});
+                                           				</script>
+                                				</div>
+                            				</div>
+                        				</div>-->
+					           		</div>
+
+
+					           		<div class="row">
+
+
+
+                        				<div class="col-sm-6">
+                            				<div class="form-group">
+                            					<div class="col-sm-4">
+                            					</div>
+                                				<div id="" class="col-sm-8">
+         											<span class="btn btn-primary" onclick = "overrideChildNodes()" style="float:left;margin-right:5px;"><i class="fa fa-plus-square" style="margin-right:3px;"></i>选配值覆盖兄弟节点</span>
+    											</div>
+                            				</div>
+                        				</div>
+					           		</div>
+
+                                   <div class="col-sm-6">
+                                       <div class="form-group">
+                                           <label class="col-sm-4 control-label">长</label>
+                                           <div class="col-sm-8">
+                                               <input  type="text" id="length" style="width: 100%"
+                                                      name="length" data-bind="value:model.bomDatas.rows[0].attr1" disabled>
+                                               <script type="text/javascript">
+                                                   $("#length").kendoMaskedTextBox({
+
+                                                   });
+                                               </script>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                                   <div class="col-sm-6">
+                                       <div class="form-group">
+                                           <label class="col-sm-4 control-label">宽</label>
+                                           <div class="col-sm-8">
+                                               <input  type="text" id="width" style="width: 100%"
+                                                       name="width" data-bind="value:model.bomDatas.rows[0].attr2" disabled>
+                                               <script type="text/javascript">
+                                                   $("#width").kendoMaskedTextBox({
+
+                                                   });
+                                               </script>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                                   <div class="col-sm-6">
+                                       <div class="form-group">
+                                           <label class="col-sm-4 control-label">高</label>
+                                           <div class="col-sm-8">
+                                               <input  type="text" id="higth" style="width: 100%"
+                                                       name="higth" data-bind="value:model.bomDatas.rows[0].attr3" disabled>
+                                               <script type="text/javascript">
+                                                   $("#higth").kendoMaskedTextBox({
+
+                                                   });
+                                               </script>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                                   <div class="col-sm-6">
+                                       <div class="form-group">
+                                           <label class="col-sm-4 control-label">备货类型</label>
+                                           <div class="col-sm-8">
+                                               <input  type="text" id="backupItemType" style="width: 100%"
+                                                       name="backupItemType" data-bind="value:model.bomDatas.rows[0].attr4" disabled>
+                                               <script type="text/javascript">
+                                                   $("#backupItemType").kendoMaskedTextBox({
+
+                                                   });
+                                               </script>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                                   <div class="col-sm-6">
+                                       <div class="form-group">
+                                           <label class="col-sm-4 control-label">套件标识</label>
+                                           <div class="col-sm-8" style="text-align: left">
+                                               <input id="setFlag" type="checkbox"
+                                                      style="margin-top: 8px"
+                                                      name="setFlag" data-bind="checked:model.bomDatas.rows[0].attr5" disabled>
+                                               <script type="text/javascript">
+                                                   $("#setFlag").kendoCheckbox({
+                                                       checkedValue:'Y',
+                                                       uncheckedValue:'N',
+                                                       change : function(){
+
+                                                       }
+                                                   });
+                                               </script>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                                   <div class="col-sm-6">
+                                       <div class="form-group">
+                                           <label class="col-sm-4 control-label">必选项标识</label>
+                                           <div class="col-sm-8" style="text-align: left">
+                                               <input id="requireFlag" type="checkbox"
+                                                      style="margin-top: 8px"
+                                                      name="requireFlag" data-bind="checked:model.bomDatas.rows[0].attr6" >
+                                               <script type="text/javascript">
+                                                   $("#requireFlag").kendoCheckbox({
+                                                       checkedValue:'Y',
+                                                       uncheckedValue:'N',
+                                                       change : function(){
+
+                                                       }
+                                                   });
+                                               </script>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                                   <div class="col-sm-6">
+                                       <div class="form-group">
+                                           <label class="col-sm-4 control-label">前台可见标识</label>
+                                           <div class="col-sm-8" style="text-align: left">
+                                               <input id="showFlag" type="checkbox"
+                                                      style="margin-top: 8px"
+                                                      name="showFlag" data-bind="checked:model.bomDatas.rows[0].attr7" >
+                                               <script type="text/javascript">
+                                                   $("#showFlag").kendoCheckbox({
+                                                       checkedValue:'Y',
+                                                       uncheckedValue:'N',
+                                                       change : function(){
+
+                                                       }
+                                                   });
+                                               </script>
+                                           </div>
+                                       </div>
+                                   </div>
+								<!--面料用量系数 heng.zhang -->
+								<div class="col-sm-6">
+									<div class="form-group">
+										<label class="col-sm-4 control-label">面料用量系数</label>
+										<div class="col-sm-8">
+											<input  type="text" id="lining" style="width: 100%"
+													name="lining" data-bind="value:model.bomDatas.rows[0].attr8" >
+											<script type="text/javascript">
+												$("#lining").kendoMaskedTextBox({
+
+												});
+											</script>
+										</div>
+									</div>
+								</div>
+
+
+					          </div>
+         					</div>
+       					</div>
+      				</form>
+    			</div>
+    			<div class="panel" style="padding: 0px;">
+      				<form class="form-horizontal">
+       					<div class="panel-body" id="conditionForm">
+         					<div class="panel" style="padding: 0px;">
+					           <div class="panel-body">
+					           		<div class="row">
+					            		<h4><@spring.message "bom.reserve.attribute"/></h4>
+					           		</div>
+					           		<div class="row">
+					            		<h5><@spring.message "bom.reserved.area"/></h5>
+					           		</div>
+					          </div>
+         					</div>
+       					</div>
+      				</form>
+    			</div>
+    		</div>
+  		</div>
+	</div>
+</div>
+<!-- 选择平台窗口 -->
+<div id="platformWindow"></div>
+<div id="excelWindow"></div>
+<script>
+    var chooseItemSet=new Set();
+    var chooseValueSet=new Set();
+    var noTypeValueSet=new Set();
+    var dataJson;
+    var dataAdapter;
+    var listSource = [
+        {label: '物料编码', value: 'itemCode', checked: true},
+        {label: '物料名称', value: 'itemName', checked: true},
+        {label: 'sap编码', value: 'matnr', checked: true},
+        {label: '工厂', value: 'werks', checked: true}
+    ];
+
+    var listSource2 = [
+        {label: '物料编码', value: 'itemCode', checked: false},
+        {label: '物料名称', value: 'itemName', checked: false},
+        {label: 'sap编码', value: 'matnr', checked: false},
+        {label: '工厂', value: 'werks', checked: false}
+    ];
+
+    //点选事件
+    $("#treeGrid").on('rowSelect', function (event) {
+
+        // event arguments
+        var args = event.args;
+        // row data
+        var rowData = args.row;
+        //rowKey就是bomId(主键)
+
+        // row key
+        var itemId = rowData.itemId;
+        var bomId = rowData.bomId;
+        viewModel.set("platformId",rowData.platformId);
+        viewModel.set("bomId",bomId);
+        viewModel.set("itemId",itemId);
+        //调用动态生成form的函数
+        getFromConfData(itemId);
+        //加载bom树
+        setTimeout(function(){
+            changeFlagflag=false;
+            changeFlagColor();
+        },100);
+
+    });
+    /*行展开事件*/
+    $('#treeGrid').on('rowExpand',
+            function (event)
+            {
+                // event args.
+                var args = event.args;
+                // row data.
+                var row = args.row;
+                // row key.
+                var key = args.key;
+                /*row展开一定触发变色事件*/
+                changeFlagflag=false;
+                changeFlagColor();
+            });
+    /*行收缩事件*/
+    $('#treeGrid').on('rowCollapse',
+            function (event)
+            {
+                // event args.
+                var args = event.args;
+                // row data.
+                var row = args.row;
+                // row key.
+                var key = args.key;
+                changeFlagflag=false;
+                changeFlagColor();
+            });
+
+    function loadTree(){
+
+            var map = {};
+            map.itemId = viewModel.model.platformId;
+
+            $.ajax({
+                url: "${base.contextPath}/hap/mdm/bom/queryTree?${_csrf.parameterName}=${_csrf.token}",
+                contentType: "application/json",
+                async: false,
+                type: "POST",
+                data: JSON.stringify(map),
+                success: function (data) {
+                    endMask();
+                    /*$("#mask").hide();*/
+                    dataJson = data.rows;
+                }
+            });
+
+            // create Tree Grid
+            var source =
+                    {
+                        dataType: "json",
+                        dataFields: [
+                            {name: 'bomId', type: 'number'},
+                            {name: 'itemId', type: 'number'},
+                            {name: 'parentItemId', type: 'number'},
+                            {name: 'infaceId', type: 'number'},
+                            {name: 'matnr', type: 'string'},
+                            {name: 'werks', type: 'string'},
+                            {name: 'stlal', type: 'string'},
+                            {name: 'bmeng', type: 'string'},
+                            {name: 'postp', type: 'string'},
+                            {name: 'posnr', type: 'string'},
+                            {name: 'idnrk', type: 'string'},
+                            {name: 'menge', type: 'string'},
+                            {name: 'meins', type: 'string'},
+                            {name: 'hierarchy', type: 'number'},
+                            {name: 'deleteFlag', type: 'string'},
+                            {name: 'item'},
+                            {name: 'mdmItemValue'},
+                            {name: 'itemCode', type: 'string'},
+                            {name: 'itemName', type: 'string'},
+                            {name: 'subBomList', type: 'array'}
+                        ],
+/*                        hierarchy: {
+                            keyDataField: {name: 'itemId'},
+                            parentDataField: {name: 'parentItemId'}
+                        },*/
+                        hierarchy:
+                                {
+                                    root: 'subBomList'
+                                },
+                        id: 'bomId',
+                        localData: dataJson
+                    };
+
+            dataAdapter = new $.jqx.dataAdapter(source);
+
+            var treeGrid = $("#treeGrid").jqxTreeGrid(
+                    {
+                        height:700,
+                        width:'100%',
+                        source: dataAdapter,
+                        sortable: true,//可拍续
+                        theme: "bootstrap",//主题
+                        hierarchicalCheckboxes: true,//选子，相应的父是否变化
+                        altRows: true,//隔行变色
+                        checkboxes: false,
+                        columnsResize: true,//自动调节列
+                        autoRowHeight: true,//自动调高
+                        filterable: true,
+                        editable: true,
+                        ready: function () {
+/*                            // expand row with 根节点id
+                           $("#treeGrid").jqxTreeGrid('expandRow', 64582);
+                           $("#treeGrid").jqxTreeGrid('selectRow',64582);*/
+                        },
+                        columns: [
+                            {text: '物料编码', dataField: 'itemCode', minWidth: 150, pinned: false,
+                                cellsRenderer: function (rowKey, column, cellValue, rowData, cellText)
+                                {
+                                    if(rowData.mdmItemValue.chooseItemFlag=='Y'){
+                                        chooseItemSet.add(rowKey);
+                                    }else if(rowData.mdmItemValue.chooseValueFlag=='Y'){
+                                        chooseValueSet.add(rowKey);
+                                    }
+
+
+                                }},//pinned 固定
+                            {text: '物料名称', dataField: 'itemName', minWidth: 150, pinned: false},
+/*                          {text: 'sap编码', dataField: 'matnr', minWidth: 100, width: 120, pinned: false},
+                            {text: '工厂', dataField: 'werks', minWidth: 100, width: 120, pinned: false}*/
+                        ]
+                    });
+            //动态设置分屏div的大小
+            divFullScreen();//页面加载时全屏
+            $(window).bind('resize', function (){
+                divFullScreen();//最大化，还原窗口大小时DIV尺寸跟着变化，不过最好在CSS里给这个DIV加个min-width等于html,body的最小宽度。
+            });
+
+            //初始化分屏布局
+            $("#main").kendoSplitter({
+                orientation: "horizontal",
+                panes: [ { size: "38%" }, {} ]
+            });
+
+            //绑定dom树到viewModel，这样才能将其管理起来
+            kendo.bind($('#left'), viewModel);
+            kendo.bind($('#right'), viewModel);
+            kendo.bind($('#main'), viewModel);
+
+
+            endMask();
+        //数据加载完成事件
+    };
+
+
+
+
+        //treeGrid查询时触发
+    $('#treeGrid').on('filter', function (event) {
+        var filterGroups = event.args.filters;
+        var filterInfo = "";
+        for (var x = 0; x < filterGroups.length; x++) {
+            var filterDataField = filterGroups[x].datafield;
+            var filterGroup = filterGroups[x].filter;
+            var filterOperator = filterGroup.operator;
+            var filters = filterGroup.getfilters();
+
+            filterInfo += "\nData Field: " + filterDataField;
+            filterInfo += "\nOperator: " + filterOperator;
+
+            for (var m = 0; m < filters.length; m++) {
+                var filter = filters[m];
+                var value = filter.value;
+                var condition = filter.condition;
+                var operator = filter.operator;
+                var type = filter.type;
+                if(type!=null&&type!=""){
+                    $("#treeGrid").jqxTreeGrid('expandAll');
+                }
+            }
+        }
+    });
+
+/*    //此处用于隐藏
+    $("#jqxlistbox").jqxListBox({source: listSource, width: 120, height: 200, checkboxes: true});
+    $("#jqxlistbox").on('checkChange', function (event) {
+        NProgress.start();
+        $("#treeGrid").jqxTreeGrid('beginUpdate');
+        if (event.args.checked) {
+            $("#treeGrid").jqxTreeGrid('showColumn', event.args.value);
+        }
+        else {
+            $("#treeGrid").jqxTreeGrid('hideColumn', event.args.value);
+        }
+        $("#treeGrid").jqxTreeGrid('endUpdate');
+        NProgress.done();
+    });
+
+    //此处用于固定列
+    $("#jqxlistbox2").jqxListBox({source: listSource2, width: 120, height: 200, checkboxes: true});
+    $("#jqxlistbox2").on('checkChange', function (event) {
+        NProgress.start();
+        $("#treeGrid").jqxTreeGrid('beginUpdate');
+        $("#treeGrid").jqxTreeGrid('setColumnProperty', event.args.value, 'pinned', event.args.checked);
+        $("#treeGrid").jqxTreeGrid('endUpdate');
+        NProgress.done();
+    });*/
+
+
+</script>
+
+<!-- 右边Grid配置 -->
+<script type="text/javascript">
+
+	/**
+	 * @author yanjie.zhang@hand-china.com
+	 * @date 2017/06/24
+	 * @description 更新选项值
+	 */
+	function updateChooseValue() {
+		//打开遮罩
+		startMask("正在计算中...","");
+        //取到存到viewMode中的参数platformId和数据bomDatas
+		var map = {};
+		map.itemId = viewModel.model.platformId;
+
+
+		$.ajax({
+			type: 'POST',
+			url: '${base.contextPath}/hap/mdm/bom/updateChooseValue',
+			contentType: 'application/json',
+			data : JSON.stringify(map),
+			async: true,
+			success: function (sucData){
+				//关闭遮罩
+				endMask();
+				//成功则弹出提示
+				if(sucData.success){
+					kendo.ui.showInfoDialog({
+						message:'<@spring.message "hap.tip.success"/>'
+					}).done(function (e) {
+
+					})
+				}else{
+					kendo.ui.showErrorDialog({
+						message: sucData.message
+					})
+				}
+			},
+			error: function (data) {
+
+			}
+
+		});
+	}
+
+
+	//覆盖子节点按钮所调的方法
+function overrideChildNodes(){
+
+    //取到存到viewMode中的参数platformId和数据bomDatas
+	var platformId = viewModel.platformId;
+	var bomDatas = viewModel.model.bomDatas;
+	bomDatas.rows[0].platformId = platformId;
+	bomDatas.rows[0].bomId = viewModel.bomId;
+	var requestData = JSON.stringify(bomDatas.rows[0]);
+
+	//ajax对覆盖子节点进行处理
+	$.ajax({
+	    type: 'POST',
+	    url: '${base.contextPath}/hap/mdm/item/CoverBroItem',
+	    data   : requestData,
+	    contentType: 'application/json',
+	    async: false,
+	    success: function (sucData){
+	        //成功则弹出提示
+	    	if(sucData.success){
+		    	kendo.ui.showInfoDialog({
+	                message:'<@spring.message "hap.tip.success"/>'
+	            }).done(function (e) {
+	                for(var i=0;i<sucData.rows.length;i++){
+                        console.log(sucData.rows[i].bomId);
+                        if(sucData.rows[i].chooseValueFlag=='Y'){
+                            chooseItemSet.delete(sucData.rows[i].bomId);
+                            chooseValueSet.add(sucData.rows[i].bomId);
+                            noTypeValueSet.delete(sucData.rows[i].bomId);
+                        }
+                        if(sucData.rows[i].chooseItemFlag=='Y'){
+                            chooseItemSet.add(sucData.rows[i].bomId);
+                            chooseValueSet.delete(sucData.rows[i].bomId);
+                            noTypeValueSet.delete(sucData.rows[i].bomId);
+                        }
+                        if(sucData.rows[i].chooseItemFlag=='N'){
+                            chooseItemSet.delete(sucData.rows[i].bomId);
+                        }
+                        if(sucData.rows[i].chooseValueFlag=='N'){
+                            chooseValueSet.delete(sucData.rows[i].bomId);
+                        }
+                        if(sucData.rows[i].chooseValueFlag=='N'&&sucData.rows[i].chooseItemFlag=='N'){
+                            noTypeValueSet.add(sucData.rows[i].bomId);
+                        }
+                    }
+                    changeFlagflag=false;
+                    changeFlagColor();
+	            })
+		    }else{
+	            kendo.ui.showErrorDialog({
+	                message: bomDatas.message
+	            })
+	    	}
+	    },
+	    error: function (data) {
+	    	
+	    } 
+	
+	});
+}
+
+
+//from保存函数
+function saveFormDatas(){
+
+        //取到存到viewModel中的bomData（此处查询from中的数据事存到了viewModel中）
+        var bomDatas = viewModel.model.bomDatas;
+        bomDatas.rows[0].platformId = viewModel.model.platformId;
+
+        //重新set传到后台的form的值
+        var lookupTypeList = bomDatas.rows[0].lookupTypeList;
+        for(var o = 0;o < lookupTypeList.length ; o++){
+            var thisCode = lookupTypeList[o].lookupType;
+            lookupTypeList[o].value =  $("#"+thisCode).val();
+        }
+        var requestData = JSON.stringify(bomDatas.rows[0]);
+
+		//ajax请求保存from
+        $.ajax({
+            type: 'POST',
+            url: '${base.contextPath}/hap/mdm/item/ItemConditionSubmit',
+            data   : requestData,
+            contentType: 'application/json',
+            async: false,
+            success: function (sucData){
+                if(sucData.success){
+                    kendo.ui.showInfoDialog({
+                        message:'<@spring.message "hap.tip.success"/>'
+                    }).done(function (e) {
+                         if(sucData.rows[0].chooseValueFlag=='Y'){
+                             chooseItemSet.delete(viewModel.bomId);
+                             chooseValueSet.add( viewModel.bomId);
+                             noTypeValueSet.delete(viewModel.bomId);
+                         }
+                         if(sucData.rows[0].chooseItemFlag=='Y'){
+                             chooseItemSet.add(viewModel.bomId);
+                             chooseValueSet.delete( viewModel.bomId);
+                             noTypeValueSet.delete(viewModel.bomId);
+                         }
+                        if(sucData.rows[0].chooseItemFlag=='N'){
+                            chooseItemSet.delete(viewModel.bomId);
+                        }
+                        if(sucData.rows[0].chooseValueFlag=='N'){
+                            chooseValueSet.delete(viewModel.bomId);
+                        }
+                        if(sucData.rows[0].chooseValueFlag=='N'&&sucData.rows[0].chooseItemFlag=='N'){
+                            noTypeValueSet.add(viewModel.bomId);
+                        }
+                    })
+                }else{
+                    kendo.ui.showErrorDialog({
+                        message: "保存有误："+sucData.message
+                    })
+                }
+            },
+            error: function (data) {
+
+            }
+
+        });
+
+}
+
+
+/*//给from中的选配数量添加必输校验
+$("#quantity").kendoValidator({
+    rules: {
+        required: function(input){
+            return $.trim(input.val()) !== "";
+        },
+    },
+    messages: {
+        required: "字段必输"
+    }
+});*/
+
+$(document).ready(function() {
+    //选择平台窗口
+    window.platformWindow = function(){
+        var platformWindow = $("#platformWindow").kendoWindow({
+            title: '<@spring.message "bom.platform.selection"/>',
+            width: "680px",
+            height :"380px",
+            content:"${base.contextPath}/rm/platform_choose.html",
+            actions: [
+                "Pin",
+                "Close"
+            ],
+            modal:true,
+            visible:false,
+            iframe:true,
+            close: function() {
+
+            }
+        }).data("kendoWindow");
+        platformWindow.center().open();
+
+    }
+    //打开选择平台窗口
+    platformWindow();
+
+});
+
+
+</script>
+<script>
+//生成视图页面
+function generateAttr(attrCode,dataSource,deleteFlag,description,effectDateFrom,effectFlag,endDate,headerId,widgetType,lookupType,attrName,value,meaning) {
+    var codeId = null;
+	var readlyString  = "";
+    var masterDataFunction = readlyString+"_MASTERDATA";
+    if (widgetType == "NumberField") {
+    	var numberFormat = "0" ;
+    	//渲染数字输入框控件
+    	$("#"+attrCode).kendoNumericTextBox({
+    		format: numberFormat,
+   	 	});
+    	//设置数字输入框值
+    	if(attrValue){
+	    	var thisNumericField = $("#"+attrCode).data("kendoNumericTextBox");
+	    	thisNumericField.value(attrValue);
+    	}
+    	//控制是否可编辑
+    	if (editFlag == "N") {
+            $("#"+attrCode).data("kendoNumericTextBox").enable(false);
+            $("#"+attrCode).attr("gray","gray");
+        }
+        
+    } else if (widgetType == "DatePicker") {
+        //渲染日期框
+        $("#"+attrCode).kendoDatePicker({
+            animation: false
+        });
+        //设置日期框的默认值
+        if (attrValue) {
+            $("#"+attrCode).data("kendoDatePicker").value(FormatDate(attrValue));
+        }
+        //控制是否可编辑
+        if (editFlag == "N") {
+            $("#"+attrCode).data("kendoDatePicker").enable(false);
+            $("#"+attrCode).attr("gray","gray");
+        }
+        $('input[name='+attrCode+']').attr('disabled', true);
+        //$('input.k-input[role=combobox]').attr('disabled', true);
+    } else if (widgetType == "DateTimePicker") {
+        //渲染日期时间框
+        $("#"+attrCode).kendoDateTimePicker({
+            animation: false
+        });
+        if (attrValue) {
+            $("#"+attrCode).data("kendoDateTimePicker").value(FormatDateTime(attrValue));
+        }
+        //控制是否可编辑
+        if (editFlag == "N") {
+            $("#"+attrCode).data("kendoDateTimePicker").enable(false);
+            $("#"+attrCode).attr("gray","gray");
+        }
+    } else if (widgetType == "Checkbox") {
+        $("#"+attrCode).removeAttr('data-role');
+        $("#"+attrCode).removeAttr('style');
+        $("#"+attrCode).attr('type','checkbox');
+        $("#"+attrCode).kendoCheckbox({
+            checkedValue:'Y',
+            uncheckedValue:'N'
+        });
+         if (attrCode != "") {
+            $("#"+attrCode).css("text-align", "center");
+            $("#"+attrCode).css("vertical-align", "middle");
+        }
+        //如果默认值为Y则需将checkbox框勾选上
+        if (attrValue == 'Y') {
+        	$("#"+attrCode).data("kendoCheckbox").value("Y");
+            $("#"+attrCode).attr("value", attrValue);
+        }
+        //控制是否可编辑
+        if (editFlag == "N") {
+            $("#"+attrCode).closest("span").unbind();
+            $("#"+attrCode).data("kendoCheckbox").enable(false);
+        }
+    } else if (widgetType == 'Lov') {
+
+        //查询Lov框的配置
+        $.ajax({
+            type: "GET",
+            url : "${base.contextPath}/CrHmdmCode/queryLov?codeId="+ codeId+"&locale="+"${base.locale}"+"&baseUrl="+"${base.contextPath}",
+            async:false,
+            contentType: "application/json",
+            success : function(data){
+
+                if(data != null && data.success){
+                    //根据查询的配置渲染Lov控件
+                    $("#"+attrCode).kendoLov({
+                    	code : data.rows[1],
+                    	contextPath :'${base.contextPath}',
+               		   	locale : '${base.locale}',
+               		    textField: data.rows[3],
+                        valueField: data.rows[2],
+                        query: function (e) {
+
+            			},
+            			select : function(e){
+            				
+                        },
+                    	
+                
+                    });
+
+                }
+                else{
+                    kendo.ui.showErrorDialog({
+                        message: ""
+                    });
+                }
+
+            }
+        });
+        //控制是否可编辑
+        if (editFlag == "N") {
+            $("#"+attrCode).data("kendoLov").enable(false);
+            $("input[name='"+attrCode+"']").attr("gray","gray");
+        }
+        $("#"+attrCode).attr("disabled","disabled");
+    } else if (widgetType == "DropDownList") {
+        //渲染下拉框
+        $("#"+attrCode).kendoComboBox({
+			//设置显示的值和里面的值
+            dataTextField: "lookupValue",
+            dataValueField: "lookupCode",
+            valuePrimitive: true,
+            autoBind: false,
+			//配置数据源
+            dataSource: dataSource,
+			//设置期初的数据绑定
+            dataBound: function(e) {
+                var dropDownList = $("#"+attrCode).data("kendoComboBox");
+                var dataDropDownList = dropDownList.dataSource._data;
+                var flag=false;
+                if(value != ""){
+
+                    for(var i in dataDropDownList)
+                    {
+                        if(dataDropDownList[i].lookupCode == value)
+                        {
+
+                            this.text(dataDropDownList[i].lookupValue);
+                            this.value(dataDropDownList[i].lookupCode);
+                            flag=true;
+                            break;
+                        }
+                    }
+
+                }
+                if(flag==false){
+                    this.text(value);
+                    this.value(meaning);
+                    var inputId=attrCode+"_input";
+
+                }
+            },
+            change: function(){
+            }
+            
+        });
+
+        $("#"+attrCode).data("kendoComboBox").dataSource.query();
+    }else if(widgetType == 'TextField'){
+    	$("#"+attrCode).kendoMaskedTextBox({
+    		
+    	 });
+    	var thisTextField = $("#"+attrCode).data("kendoMaskedTextBox");
+    	thisTextField.value(attrValue);
+    	if (editFlag == "N") {
+            $("#"+attrCode).data("kendoComboBox").enable(false);
+            $("input[name='"+attrCode+"']").attr("gray","gray");
+        }
+    }
+
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright (C) HAND Enterprise Solutions Company Ltd.
+  ~  All Rights Reserved
+  ~
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallPinAlterMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallPinAlter">
+    <id column="PIN_ALTER_ID" jdbcType="DECIMAL" property="pinAlterId" />
+    <result column="EVENT_CODE" jdbcType="VARCHAR" property="eventCode" />
+    <result column="EVENT_DES" jdbcType="VARCHAR" property="eventDes" />
+    <result column="ALTER_LEVEL1" jdbcType="VARCHAR" property="alterLevel1" />
+    <result column="ALTER_LEVEL2" jdbcType="VARCHAR" property="alterLevel2" />
+    <result column="ALTER_LEVEL3" jdbcType="VARCHAR" property="alterLevel3" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    PIN_ALTER_ID, EVENT_CODE, EVENT_DES, ALTER_LEVEL1, ALTER_LEVEL2, ALTER_LEVEL3, OBJECT_VERSION_NUMBER, 
+    CREATION_DATE, CREATED_BY, LAST_UPDATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, 
+    PROGRAM_APPLICATION_ID, PROGRAM_ID, PROGRAM_UPDATE_DATE, REQUEST_ID, ATTRIBUTE_CATEGORY
+  </sql>
+  <select id="getHmallPinAlter" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from HMALL_PIN_ALTER
+    where EVENT_CODE = #{eventCode,jdbcType=VARCHAR}
+  </select>
+
+</mapper>

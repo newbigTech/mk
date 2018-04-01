@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration status="error">
+    <properties>
+        <property name="LOG_HOME">logs/hpay-api-gateway</property>
+        <property name="FILE_NAME">mylog</property>
+    </properties>
+
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{userId}] %logger - %msg%n"/>
+        </Console>
+
+        <RollingRandomAccessFile name="MyFile"
+                                 fileName="${LOG_HOME}/${FILE_NAME}.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/${FILE_NAME}-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="5 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingRandomAccessFile>
+
+    </appenders>
+    <loggers>
+
+        <root level="info">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="MyFile"/>
+        </root>
+
+        <logger name="com.hand.hmall" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+
+        <logger name="org.apache.tomcat.embed" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+
+        <logger name="org.springframework.core" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.boot.autoconfigure.logging.AutoConfigurationReportLoggingInitializer"
+                level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.beans" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.aop" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.context" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.aop" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.web" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.security" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.boot" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+
+        <logger name="com.netflix.discovery" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="com.netflix.loadbalancer" level="info" additivity="false">
+            <appender-ref ref="MyFile"/>
+        </logger>
+    </loggers>
+</configuration>

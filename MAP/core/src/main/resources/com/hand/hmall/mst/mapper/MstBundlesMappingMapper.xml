@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.MstBundlesMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.MstBundlesMapping">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="BUNDLES_ID" property="bundlesId" jdbcType="DECIMAL"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="productCode" property="productCode" jdbcType="VARCHAR"/>
+        <result column="productName" property="productName" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="selectBundlesMappingByBundlesId" parameterType="com.hand.hmall.mst.dto.MstBundlesMapping" resultMap="BaseResultMap">
+        SELECT
+        HMBM.MAPPING_ID,
+        HMBM.BUNDLES_ID,
+        HMBM.PRODUCT_ID,
+        HMBM.QUANTITY
+        FROM
+        HMALL_MST_BUNDLES_MAPPING HMBM WHERE HMBM.BUNDLES_ID = #{bundlesId} ORDER BY HMBM.MAPPING_ID
+    </select>
+    <!--查询套装对应商品信息  heng-->
+    <select id="selectProduct" parameterType="com.hand.hmall.mst.dto.MstBundlesMapping" resultMap="BaseResultMap">
+        select
+        HMBM.Mapping_Id,
+        HMP.Product_Id,
+        HMBM.bundles_id,
+        HMP.Code as productCode,
+        HMP.Name as productName,
+        HMBM.Quantity
+        from HMALL_MST_PRODUCT HMP
+        inner join HMALL_MST_BUNDLES_MAPPING HMBM
+        on HMP.Product_Id=HMBM.Product_Id
+        where HMBM.Bundles_Id=#{bundlesId} ORDER BY HMBM.Mapping_Id
+    </select>
+    <!--查询商品对应价格，按价格id由高到低排序 heng-->
+    <select id="queryPrice" parameterType="com.hand.hmall.mst.dto.MstBundlesMapping" resultType="com.hand.hmall.mst.dto.MstBundlesMapping">
+        select HMPR.Product_Id as productId,
+        HMPR.Base_Price as productPrice, --基础销售价格
+        HMPR.Pricerow_Id   as pricerowId
+        from HMALL_MST_PRICEROW HMPR
+        where HMPR.Price_Type = '1'
+        and HMPR.Price_Group = '1'
+        and HMPR.Product_Id=#{productId}
+        order by HMPR.Pricerow_Id desc
+    </select>
+
+</mapper>

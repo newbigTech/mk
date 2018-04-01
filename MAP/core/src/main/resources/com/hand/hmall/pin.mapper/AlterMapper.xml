@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.pin.mapper.AlterMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.pin.dto.Alter">
+    <id column="PIN_ALTER_ID" jdbcType="DECIMAL" property="pinAlterId" />
+    <result column="EVENT_CODE" jdbcType="VARCHAR" property="eventCode" />
+    <result column="EVENT_DES" jdbcType="VARCHAR" property="eventDes" />
+    <result column="ALTER_LEVEL1" jdbcType="VARCHAR" property="alterLevel1" />
+    <result column="ALTER_LEVEL2" jdbcType="VARCHAR" property="alterLevel2" />
+    <result column="ALTER_LEVEL3" jdbcType="VARCHAR" property="alterLevel3" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    PIN_ALTER_ID, EVENT_CODE, EVENT_DES, ALTER_LEVEL1, ALTER_LEVEL2, ALTER_LEVEL3
+  </sql>
+
+  <!--
+    根据事件编号查询事件信息
+    @param eventCode
+    @return
+    Map queryByEventCode(String eventCode);
+  -->
+  <select id="queryByEventCode" parameterType="java.lang.String" resultType="java.util.Map">
+    select * from HMALL_PIN_ALTER where event_code = #{eventCode}
+  </select>
+
+</mapper>

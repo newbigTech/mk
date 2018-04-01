@@ -1,0 +1,166 @@
+<#--
+        * description换货单增加换货单行页面
+        * author:zhangmeng01@markor.com.cn
+        * 2017/7/22
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script type="text/javascript">
+            //订单ID
+            var serviceOrderId = "${RequestParameters.serviceOrderId!0}";
+        </script>
+        <body>
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary k-grid-add" style="margin-right:5px;margin-top: 10px;margin-bottom: 10px;margin-left: 5px" onclick="addOrderEnrty()"><@spring.message "添加"/></span>
+        </div>
+        <div style="clear:both">
+            <div id="returnOrderEntryGird"></div>
+        </div>
+        </body>
+        <script>
+            var orderEntries = [];
+            var parentOrderEntries = window.parent.allSwapOrderEntries;
+            $(function () {
+                $.ajax({
+                    url: "${base.contextPath}/hmall/as/order/serviceorderEntry/queryServiceOrderInfo?serviceOrderId=" + serviceOrderId,
+                    type: 'post',
+                    dataType: 'json',
+                    async: false,
+                    success: function (result) {
+                        for (var i in result.rows) {
+                            orderEntries.push(result.rows[i]);
+                        }
+                        refreshServiceOrderEntryGrid();
+                    }
+                });
+            });
+
+            var _grid_ = $("#returnOrderEntryGird").kendoGrid({
+                height: "350px",
+                rownumber: true,
+                resizable: true,
+                navigatable: true,
+                scrollable: true,
+                selectable: 'multiple, rowbox',
+                sortable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 10
+                },
+                columns: [
+                    {
+                        field: "consignmentId",
+                        title: '原配货单号',
+                        width: 120,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {
+                            style: "text-align:center"
+                        }
+                    }, {
+                        field: "lineNumber",
+                        title: '原订单行号',
+                        width: 120,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {
+                            style: "text-align:center"
+                        }
+                    }, {
+                        field: "productCode",
+                        title: '产品编号',
+                        width: 120,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {
+                            style: "text-align:center"
+                        }
+                    }, {
+                        field: "name",
+                        title: '产品描述',
+                        width: 120,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {
+                            style: "text-align:center"
+                        }
+                    }, {
+                        field: "basePrice",
+                        title: '销售价格',
+                        width: 80,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {
+                            style: "text-align:center"
+                        }
+                    }, {
+                        field: "quantity",
+                        title: '数量',
+                        width: 80,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {
+                            style: "text-align:center"
+                        }
+                    }, {
+                        field: "unitFee",
+                        title: '实际销售金额',
+                        format: "{0:n2}",
+                        width: 100,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {
+                            style: "text-align:center"
+                        }
+                    }],
+                editable: false
+            }).data("kendoGrid");
+
+            //根据父页面传来的数据判断是否显示
+            function refreshServiceOrderEntryGrid() {
+                for (var i in parentOrderEntries) {
+                    for (var j in orderEntries) {
+                        if (parentOrderEntries[i].productId == orderEntries[j].productId) {
+                            orderEntries.splice(jQuery.inArray(orderEntries[j], orderEntries), 1);
+                        }
+                    }
+                }
+                var _dataSource_ = new kendo.data.DataSource({
+                    data: orderEntries
+                });
+                //重置数据源
+                _grid_.setDataSource(_dataSource_);
+            }
+
+            //保存选中的订单行
+            function addOrderEnrty() {
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('是否添加选择的服务单行？')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        var selections = $("#returnOrderEntryGird").data("kendoGrid").selectedDataItems();
+                        window.parent.chooseSwapReturn(selections);
+                        kendo.ui.showInfoDialog({
+                            message: "<@spring.message 'hmall.save.success'/>"
+                        });
+                        window.parent.$("#returnSwapOrderEntryDialogEdit").data("kendoWindow").close();
+                    }
+                })
+            }
+        </script>

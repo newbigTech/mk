@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.hmall.mapper.WmsLogisticsMapper">
+
+    <!-- 送货单 -->
+    <resultMap id="CompaniesMap" type="com.hand.hmall.pojo.WmsConsignment">
+        <result column="CONSIGNMENT_ID" jdbcType="DECIMAL" property="consignmentId"/>
+        <result column="SAP_CODE" jdbcType="VARCHAR" property="spaCode"/>
+        <result column="STATUS" jdbcType="VARCHAR" property="status"/>
+        <result column="SHIPPING_DATE" jdbcType="TIMESTAMP" property="shippingDate"/>
+        <result column="LOGISTICS_COMPANIES" jdbcType="DECIMAL" property="logisticsCompanies"/>
+        <result column="LOGISTICS_NUMBER" jdbcType="VARCHAR" property="logisticsNumber"/>
+        <result column="ORDER_TYPE" jdbcType="VARCHAR" property="orderType"/>
+        <result column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result  column="SYNC_ZMALL" jdbcType="VARCHAR" property="syncZmall"/>
+    </resultMap>
+
+    <!-- List<Consignment> queryConsignmentsBySAPCode(String sapCode); -->
+    <!-- 根据SAP_CODE查询送货单 -->
+    <!-- modified by majun @2017/9/23 查询订单类型 -->
+    <!-- modified by majun @2017/9/25 查询订单id，用于查询发货单所关联的订单 -->
+    <select id="queryConsignmentsBySAPCode" parameterType="java.lang.String" resultMap="CompaniesMap">
+        SELECT CON.CONSIGNMENT_ID,
+               CON.SAP_CODE,
+               CON.STATUS,
+               CON.SHIPPING_DATE,
+               CON.LOGISTICS_COMPANIES,
+               CON.LOGISTICS_NUMBER,
+               OD.ORDER_TYPE,
+               OD.ORDER_ID
+          FROM HMALL_OM_CONSIGNMENT CON
+          JOIN HMALL_OM_ORDER OD
+            ON CON.ORDER_ID = OD.ORDER_ID
+         WHERE SAP_CODE = #{sapCode}
+    </select>
+
+    <!-- void updateConsignment(Consignment consignment); -->
+    <!-- 更新送货单信息 -->
+    <!-- modified by liwei 2017/10/13     add SYNCFLAG -->
+    <update id="updateConsignment" parameterType="com.hand.hmall.pojo.WmsConsignment">
+        UPDATE HMALL_OM_CONSIGNMENT
+        <set>
+            <if test="status != null and status != ''">
+                STATUS = #{status},
+            </if>
+            <if test="shippingDate != null">
+                SHIPPING_DATE = #{shippingDate},
+            </if>
+            <if test="logisticsCompanies != null and logisticsCompanies != ''">
+                LOGISTICS_COMPANIES = #{logisticsCompanies},
+            </if>
+            <if test="logisticsNumber != null and logisticsNumber != ''">
+                LOGISTICS_NUMBER = #{logisticsNumber},
+            </if>
+             <if test="syncflag != null and syncflag != ''">
+                SYNCFLAG = #{syncflag},
+            </if>
+            <if test="syncZmall != null and syncZmall != ''">
+                SYNC_ZMALL = #{syncZmall}
+            </if>
+        </set>
+        WHERE CONSIGNMENT_ID = #{consignmentId}
+    </update>
+
+
+    <!--
+      根据发货单ID和发货单行序号查询发货单行
+      consignmentId - 发货单ID
+      lineNumber - 发货单行（订单行）序号
+    -->
+    <!-- List<Map> queryLogisticsOrderEntries(Long consignmentId, String lineNumber); -->
+    <select id="queryLogisticsOrderEntries" resultType="java.util.Map">
+        SELECT * FROM HMALL_OM_ORDER_ENTRY WHERE CONSIGNMENT_ID = #{consignmentId} and LINE_NUMBER = #{lineNumber}
+    </select>
+
+    <!--
+      更新发货单行（订单行）信息
+    -->
+    <!-- void updateConsignmentEntry(Map orderEntry); -->
+    <update id="updateConsignmentEntry" parameterType="java.util.Map">
+        UPDATE HMALL_OM_ORDER_ENTRY
+        <set>
+            <if test="LOGISTICS_NUMBER != null and LOGISTICS_NUMBER != ''">
+                LOGISTICS_NUMBER = #{LOGISTICS_NUMBER,jdbcType=VARCHAR},
+            </if>
+            <if test="TRADE_FINISH_TIME != null">
+                TRADE_FINISH_TIME = #{TRADE_FINISH_TIME,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        WHERE ORDER_ENTRY_ID = #{ORDER_ENTRY_ID}
+    </update>
+
+    <!--
+    /**
+    * 根据物流公司编码查询其对应的ID
+    * @param transCode - 物流公司编码
+    * @return
+    */
+    Long selectLogisticsIdByCode(String transCode);
+    -->
+    <select id="selectLogisticsIdByCode" parameterType="java.lang.String" resultType="java.lang.Long">
+        select LOGISTICSCO_ID from HMALL_MST_LOGISTICSCO WHERE CODE = #{logisticsCode}
+    </select>
+
+    <!-- 订单订单id查询订单（状态） -->
+    <select id="selectOrderByOrderId" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT OD.ORDER_ID, OD.ORDER_STATUS, OD.TRADE_FINISH_TIME
+          FROM HMALL_OM_ORDER OD
+         WHERE OD.ORDER_ID = #{orderId, jdbcType=DECIMAL}
+    </select>
+
+    <!-- modified by liwei 2017/10/13     add SYNC_ZMALL -->
+    <update id="updateOrderStatus" parameterType="java.util.Map">
+        UPDATE HMALL_OM_ORDER OD
+        <set>
+            <if test="ORDER_STATUS != null and ORDER_STATUS != ''">
+                ORDER_STATUS = #{ORDER_STATUS, jdbcType=VARCHAR},
+            </if>
+            <if test="TRADE_FINISH_TIME != null">
+                TRADE_FINISH_TIME = #{TRADE_FINISH_TIME,jdbcType=TIMESTAMP},
+            </if>
+            <if test="SYNC_ZMALL != null and SYNC_ZMALL != ''">
+                SYNC_ZMALL = #{SYNC_ZMALL,jdbcType=VARCHAR},
+            </if>
+        </set>
+        WHERE OD.ORDER_ID = #{ORDER_ID, jdbcType=DECIMAL}
+    </update>
+
+    <!--
+        根据物流公司代码查询相关信息
+        Map queryMstLogisticsoByCode(@Param("transCode") String transCode);
+    -->
+    <select id="queryMstLogisticsoByCode" parameterType="java.lang.String" resultType="java.util.Map">
+        select * from HMALL_MST_LOGISTICSCO where CODE = #{transCode}
+    </select>
+
+</mapper>

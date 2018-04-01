@@ -1,0 +1,8 @@
+# application.yml
+#zuul
+zuul:
+  host:
+    max-per-route-connections: 2000
+    max-total-connections: 3000
+    socket-timeout-millis: 180000
+    connect-timeout-millis: 180000

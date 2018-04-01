@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.CatalogversionMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.dto.Catalogversion">
+    <id column="CATALOGVERSION_ID" jdbcType="DECIMAL" property="catalogversionId" />
+    <result column="CATALOG" jdbcType="DECIMAL" property="catalog" />
+    <result column="CATALOGVERSION" jdbcType="VARCHAR" property="catalogversion" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    cv.CATALOGVERSION_ID, c.CODE, cv.CATALOGVERSION
+  </sql>
+</mapper>

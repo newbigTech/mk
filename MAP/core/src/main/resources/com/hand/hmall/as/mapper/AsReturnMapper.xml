@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsReturnMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsReturn">
+        <result column="AS_RETURN_ID" property="asReturnId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE"/>
+        <result column="EXECUTION_DATE" property="executionDate" jdbcType="DATE"/>
+        <result column="TRANS_FEE" property="transFee" jdbcType="DECIMAL"/>
+        <result column="PACKAGE_FEE" property="packageFee" jdbcType="DECIMAL"/>
+        <result column="RETURN_TYPE" property="returnType" jdbcType="VARCHAR"/>
+        <result column="RETURN_FEE" property="returnFee" jdbcType="DECIMAL"/>
+        <result column="RECEIVE_POSITION" property="receivePosition" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR"/>
+        <result column="RESPONSIBLE_PARTY" property="responsibleParty" jdbcType="VARCHAR"/>
+        <result column="USER_GROUP" property="userGroup" jdbcType="VARCHAR"/>
+        <result column="CUSTOMERID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="ORDER_AMOUNT" property="orderAmount" jdbcType="DECIMAL"/>
+        <result column="CURRENT_AMOUNT" property="currentAmount" jdbcType="DECIMAL"/>
+        <result column="ORDERCODE" property="orderCode" jdbcType="VARCHAR"/>
+        <result column="SERVICEORDERCODE" property="serviceOrderCode" jdbcType="VARCHAR"/>
+        <result column="REFERENCE_FEE" property="referenceFee" jdbcType="DECIMAL"/>
+        <result column="PAYMENT_AMOUNT" property="paymentAmount" jdbcType="DECIMAL"/>
+        <result column="swap_order_id" property="swapOrderId" jdbcType="DECIMAL"/>
+        <result column="SWAP_ORDER_CODE" property="swapOrderCode" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="receive_Position_Text" property="receivePositionText" jdbcType="VARCHAR"/>
+        <result column="CHOSEN_COUPON" property="chosenCoupon" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+    </resultMap>
+
+    <!--根据订单ID查询用户信息-->
+    <select id="selectUserInfoByOrderId" parameterType="com.hand.hmall.as.dto.AsReturn" resultMap="BaseResultMap">
+        SELECT
+        omOrder.USER_ID,
+        omOrder.RECEIVER_NAME NAME,
+        omOrder.RECEIVER_MOBILE MOBILE,
+        omOrder.RECEIVER_ADDRESS ADDRESS,
+        ug.NAME USER_GROUP,
+        omOrder.SHIPPING_TYPE,
+        omOrder.CODE SALES_CODE,
+        omOrder.ORDER_AMOUNT,
+        omOrder.CURRENT_AMOUNT,
+        omOrder.PAYMENT_AMOUNT,
+        omOrder.ESC_ORDER_CODE,
+        u.CUSTOMERID,
+        omOrder.CHOSEN_COUPON
+        FROM HMALL_OM_ORDER omOrder
+        LEFT JOIN HMALL_MST_USER u on to_char(u.USER_ID) = omOrder.USER_ID
+        LEFT JOIN HMALL_MST_USER_MAPPING um ON omOrder.USER_ID = um.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP ug ON um.USERGROUP_ID = ug.USERGROUP_ID
+        <where>
+            <if test="orderId != null">
+                omOrder.ORDER_ID = #{orderId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 更新退货单状态 -->
+    <update id="updateStatus" parameterType="com.hand.hmall.services.as.dto.AsReturnForRetail">
+        UPDATE HMALL_AS_RETURN HAR
+        <set>
+            <if test="status!=null">
+                HAR.STATUS = #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="note!=null">
+                HAR.NOTE = #{note,jdbcType=VARCHAR},
+            </if>
+            <if test="finishTime!=null">
+                HAR.FINISH_TIME = #{finishTime,jdbcType=DATE},
+            </if>
+        </set>
+        where HAR.SAP_CODE = #{sapCode,jdbcType=VARCHAR}
+    </update>
+
+
+    <!--根据退货单id查询对应的退货单-->
+    <select id="selectReturnById" parameterType="com.hand.hmall.as.dto.AsReturn" resultMap="BaseResultMap">
+        SELECT
+        re.*,
+        so.CODE AS SWAP_ORDER_CODE,
+        ug.NAME USER_GROUP,
+        u.CUSTOMERID,
+        omOrder.ESC_ORDER_CODE,
+        omOrder.CHOSEN_COUPON,
+        pos.DISPLAYNAME AS receive_Position_Text
+        FROM HMALL_AS_RETURN re
+        left JOIN HMALL_OM_ORDER omOrder on omOrder.ORDER_ID = RE.ORDER_ID
+        LEFT JOIN HMALL_MST_USER u on to_char(u.USER_ID) = omOrder.USER_ID
+        LEFT JOIN HMALL_MST_USER_MAPPING um ON omOrder.USER_ID = um.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP ug ON um.USERGROUP_ID = ug.USERGROUP_ID
+        LEFT JOIN HMALL_OM_ORDER so ON so.ORDER_ID = re.SWAP_ORDER_ID
+        LEFT JOIN HMALL_MST_POINTOFSERVICE pos ON pos.CODE = re.RECEIVE_POSITION
+        <where>
+            <if test="asReturnId != null">
+                re.AS_RETURN_ID = #{asReturnId}
+            </if>
+        </where>
+    </select>
+
+    <resultMap id="queryForRetailMap" type="com.hand.hmall.as.dto.AsReturn">
+        <result column="AS_RETURN_ID" property="asReturnId" jdbcType="DECIMAL"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR"/>
+        <result column="RETURN_TYPE_TO_RETAIL" property="returnTypeToRetail" jdbcType="VARCHAR"/> <!--  -->
+        <result column="SOLD_PARTY" property="soldParty" jdbcType="VARCHAR"/> <!--  -->
+        <result column="SALES_OFFICE" property="salesOffice" jdbcType="VARCHAR"/> <!--  -->
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="SEX" property="sex" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_DISTRICT" property="receiverDistrict" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE_STRING" property="appointmentDateString" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="CUSTOMER_ID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="RESPONSIBLE_PARTY" property="responsibleParty" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE_STRING" property="creationDateString" jdbcType="VARCHAR"/>
+        <result column="CREATION_TIME_STRING" property="creationTimeString" jdbcType="VARCHAR"/>
+        <result column="VTWEG" property="vtweg" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="RECEIVE_POSITION" property="receivePosition" jdbcType="VARCHAR"/>
+        <collection property="asReturnEntryList" javaType="java.util.List" ofType="com.hand.hmall.as.dto.AsReturnEntry">
+            <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+            <result column="PARENT_LINE_NUMBER" property="parentLineNumber" jdbcType="VARCHAR"/>
+            <result column="ENTRY_RETURN_TYPE" property="entryReturnType" jdbcType="VARCHAR"/>
+            <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+            <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+            <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+            <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+            <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+            <result column="ENTRY_POINT_OF_SERVICE" property="entryPointOfService" jdbcType="VARCHAR"/>
+            <result column="ENTRY_SAP_CODE" property="entrySapCode" jdbcType="VARCHAR"/>
+            <result column="ENTRY_ORDER_LINE_NUMBER" property="entryOrderLineNumber" jdbcType="VARCHAR"/>
+            <result column="TRADE_FINISH_TIME" property="tradeFinishTime" jdbcType="VARCHAR"/>
+            <result column="V_CODE" property="vCode" jdbcType="VARCHAR"/>
+            <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+            <result column="CUSTOMER_MSG" property="customerMsg" jdbcType="VARCHAR"/>
+            <result column="RETURN_FEE" property="returnFee" jdbcType="DECIMAL"/>
+            <result column="RETURN_REASON1" property="returnReason1" jdbcType="VARCHAR"/>
+            <result column="RETURN_REASON2" property="returnReason2" jdbcType="VARCHAR"/>
+            <result column="PRODUCT_SIZE" property="productSize" jdbcType="VARCHAR"/>
+            <result column="PRODUCT_PACKED_SIZE" property="productPackedSize" jdbcType="VARCHAR"/>
+            <result column="RETURNENTRY_STATUS" property="returnEntryStatus" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select resultMap="queryForRetailMap" parameterType="Long" id="queryForRetail">
+        SELECT DISTINCT
+            har.AS_RETURN_ID,
+            har.SAP_CODE,
+            har.SYNCFLAG,
+            CASE har.RETURN_TYPE
+            WHEN 'R01'
+                THEN 'SR01'
+            WHEN 'R02'
+                THEN 'SR08'
+            WHEN 'R03'
+                THEN 'SR01'
+            END                                          AS RETURN_TYPE_TO_RETAIL,
+
+            hmw.SOLD_PARTY AS SOLD_PARTY,
+
+            CASE har.RETURN_TYPE
+            WHEN 'R01'
+                THEN '20'
+            WHEN 'R02'
+                THEN '80'
+            WHEN 'R03'
+                THEN '20'
+            END                                          AS VTWEG,
+            hmw.SALES_OFFICE                             AS SALES_OFFICE,
+            har.NAME,
+            har.RECEIVE_POSITION,
+            CASE hmu.SEX
+            WHEN 'F'
+                THEN '0001'
+            WHEN 'M'
+                THEN '0002'
+            ELSE '0004'
+            END                                          AS SEX,
+            hoo.RECEIVER_DISTRICT                        AS RECEIVER_DISTRICT,
+            har.ADDRESS,
+            har.MOBILE,
+            to_char(har.APPOINTMENT_DATE, 'yyyy-mm-dd')  AS APPOINTMENT_DATE_STRING,
+            har.NOTE,
+            hmu.CUSTOMERID                               AS CUSTOMER_ID,
+            har.CODE,
+            har.LOGISTICS_NUMBER,
+            har.RESPONSIBLE_PARTY,
+            har.CODE,
+            hoo.ESC_ORDER_CODE,
+            to_char(har.CREATION_DATE, 'yyyy-mm-dd')     AS CREATION_DATE_STRING,
+            to_char(har.CREATION_DATE, 'hh24:mi:ss')     AS CREATION_TIME_STRING,
+            hare1.line_number,
+            hare2.line_number                            AS parent_line_number,
+            CASE hmp.is_suit
+            WHEN 'Y'
+                THEN 'ZR03'
+            ELSE CASE har.RETURN_TYPE
+                 WHEN 'R01'
+                     THEN hoetm.Return_Type
+                 WHEN 'R03'
+                     THEN hoetm.Return_Type
+                 WHEN 'R02'
+                     THEN 'ZR18'
+                 END END                                 AS ENTRY_RETURN_TYPE,
+            hmp.code                                     AS PRODUCT_CODE,
+            hare1.quantity,
+            hare1.unit,
+            hare1.note,
+            CASE hoo.shipping_type
+            WHEN 'LOGISTICS'
+                THEN '20'
+            WHEN 'EXPRESS'
+                THEN '30'
+            END                                          AS SHIPPING_TYPE,
+            CASE hare1.RETURNENTRY_STATUS
+            WHEN 'CANCEL'
+                THEN 'DE'
+            ELSE ''
+            END                                          AS RETURNENTRY_STATUS,
+            hmps1.code                                   AS ENTRY_POINT_OF_SERVICE,
+            hoc1.Sap_Code                                AS ENTRY_SAP_CODE,
+            hooe1.line_number                            AS ENTRY_ORDER_LINE_NUMBER,
+            to_char(hoo.trade_finish_time, 'yyyy-mm-dd') AS TRADE_FINISH_TIME,
+            hooe1.vproduct_code                          AS V_CODE,
+            hooe1.pin                                    AS PIN,
+            hooe1.customer_msg                           AS CUSTOMER_MSG,
+            CASE WHEN hare1.PARENT_LINE IS NULL
+                THEN hare1.return_fee
+            ELSE (SELECT CASE
+                         WHEN hooe_head.internal_price = 0
+                             THEN 0
+                         ELSE
+                             round(hare_head.return_fee * hooe_line.internal_price / hooe_head.internal_price, 2)
+                         END
+                  FROM hmall_as_return_entry hare_line
+                      LEFT JOIN hmall_as_return_entry hare_head
+                          ON hare_head.order_entry_id = hare_line.parent_line
+                             AND hare_head.as_return_id = hare_line.as_return_id
+                      LEFT JOIN hmall_om_order_entry hooe_line
+                          ON hooe_line.order_entry_id = hare_line.order_entry_id
+                      LEFT JOIN hmall_om_order_entry hooe_head
+                          ON hooe_head.order_entry_id = hare_head.order_entry_id
+                  WHERE hare_line.as_return_entry_id = hare1.as_return_entry_id)
+            END                                          AS RETURN_FEE,
+            hare1.return_reason1,
+            hare1.return_reason2,
+            hooe1.product_size,
+            hooe1.product_packed_size
+        FROM HMALL_AS_RETURN har
+            LEFT JOIN HMALL_OM_ORDER hoo
+                ON hoo.ORDER_ID = har.ORDER_ID
+            LEFT JOIN HMALL_MST_WEBSITE hmw
+                ON hoo.WEBSITE_ID = hmw.CODE
+            LEFT JOIN HMALL_MST_USER hmu
+                ON hoo.USER_ID = hmu.USER_ID
+            LEFT JOIN HMALL_AS_RETURN_ENTRY hare1
+                ON har.as_return_id = hare1.as_return_id
+            LEFT JOIN HMALL_AS_RETURN_ENTRY hare2
+                ON hare1.parent_line = hare2.order_entry_id
+            LEFT JOIN HMALL_MST_PRODUCT hmp
+                ON hmp.product_id = hare1.product_id
+            LEFT JOIN HMALL_OM_ENTRYTYPEMAPPING hoetm
+                ON hoetm.product_type = hmp.custom_type
+            LEFT JOIN HMALL_OM_ORDER_ENTRY hooe1
+                ON hooe1.order_entry_id = hare1.order_entry_id
+            LEFT JOIN HMALL_MST_POINTOFSERVICE hmps1
+                ON hmps1.point_of_service_id = hooe1.point_of_service_id
+            LEFT JOIN HMALL_OM_CONSIGNMENT hoc1
+                ON hooe1.consignment_id = hoc1.consignment_id
+        WHERE har.AS_RETURN_ID = #{asReturnId}
+    </select>
+
+    <update id="updateSyncFlag" parameterType="com.hand.hmall.as.dto.AsReturn">
+        UPDATE HMALL_AS_RETURN har
+        SET har.SAP_CODE = #{sapCode}, har.SYNCFLAG = 'Y'
+        WHERE har.AS_RETURN_ID = #{asReturnId}
+    </update>
+
+    <!--根据退货单ID查询订单和服务单信息-->
+    <select id="selectOrderAndServiceOrderInfoByReturnId" resultMap="BaseResultMap">
+        SELECT
+            r.ORDER_ID,
+            r.SERVICE_ORDER_ID,
+            o.CODE orderCode,
+            s.CODE serviceOrderCode
+        FROM HMALL_AS_RETURN r
+            LEFT JOIN HMALL_OM_ORDER o
+                ON r.order_id = o.order_id
+            LEFT JOIN HMALL_AS_SERVICEORDER s
+                ON r.service_order_id = s.SERVICE_ORDER_ID
+        WHERE r.AS_RETURN_ID = #{asReturnId}
+    </select>
+
+    <!--筛选退货单同步retail的数据 -->
+    <select id="selectDateForReturnToRetail" resultMap="BaseResultMap">
+        select t.as_return_id,t.sap_code
+          from hmall_as_return t
+         where t.return_type = 'R03'
+           and t.syncflag = 'N'
+    </select>
+
+    <!--根据订单ID查询退款单信息-->
+    <select id="selectReturnByOrderId" parameterType="com.hand.hmall.as.dto.AsReturn" resultType="java.math.BigDecimal">
+        SELECT sum(REFERENCE_FEE) from hmall_as_return
+        WHERE 1 = 1
+        <if test="orderId != null">
+            AND ORDER_ID = #{orderId}
+        </if>
+        AND STATUS != 'CANC'
+    </select>
+
+    <!-- 根据服务单ID，查找退货单列表 -->
+    <!-- 对应接口方法：List<ReturnOrder> selectReturnOrdersByServiceOrderId(@Param("serviceOrderId") Long serviceOrderId); -->
+    <select id="selectReturnOrdersByServiceOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select * from hmall_as_return where service_order_id = #{serviceOrderId}
+    </select>
+
+</mapper>

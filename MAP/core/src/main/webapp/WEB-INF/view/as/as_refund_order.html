@@ -1,0 +1,1262 @@
+<#--
+        * description: 退款单详情界面
+        * author:shoupeng.wei
+        * 2017/7/16
+        * version: 0.1
+        *
+        -->
+    <#include "/include/header.html" >
+        <script src="${base.contextPath}/common/code?yesOrNo=SYS.YES_NO" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?refundScenarioData=HMALL.AS.REFUND_SCENARIO" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?PayTypeData=HMALL.PAYMENT_TYPE&RefundStatusData=HMALL.AS.REFUND.STATUS&ReturnReasonData=	HMALL_AS_REFUND_REASON"
+                type="text/javascript"></script>
+        <body>
+        <script type="text/javascript">
+
+            //界面信息来源于订单和退款单，各自有对应字段，因此定义不同的viewModel绑定
+            var viewModel = kendo.observable({
+                model: {}
+            });
+            //退款单 viewModel
+            var viewModelRefundOrder = kendo.observable({
+                model: {}
+            });
+
+            //服务单界面传递参数,新建时服务单ID，服务单号，订单ID，查询时再增加一个退款单ID
+            var serviceOrderId = '${RequestParameters.serviceOrderId!0}';
+            var linksCode = '${RequestParameters.linksCode!0}';
+            var orderId = '${RequestParameters.orderId!0}';
+            var asRefundId = '${RequestParameters.receiptOrderId!0}';
+            var referenceSum = '${RequestParameters.referenceSum!0}';
+            var returnFee = '${RequestParameters.returnFee!0}';
+            var returnId = '${RequestParameters.asReturnId!0}';
+            var from = '${RequestParameters.from!0}';
+            console.log("[ serviceOrderId = " + serviceOrderId + " ] [ linksCode = " + linksCode + " ] [ orderId = " + orderId + " ] " +
+                    "[ asRefundId = " + asRefundId + " ] [ referenceSum = " + referenceSum + " ] [ returnId = " + returnId + " ]");
+            $(function () {
+                //如果returnFee不为null或者空字符串，将其设置到viewModel中
+//                if (referenceSum != 'null' && referenceSum != '' && referenceSum != 0) {
+//                }
+                if (!(asRefundId != null && asRefundId > 0)) {
+                    viewModelRefundOrder.model.set("referenceSum", referenceSum);
+                }
+                if (returnId != 'null' && returnId != '') {
+                    viewModelRefundOrder.model.set("returnId", returnId);
+                } else {
+                    viewModelRefundOrder.model.set("returnId", null);
+                }
+            });
+
+
+            //保存新建和修改时的退款单行信息
+            var entries = [];
+
+            //                        orderId = 10141;
+            //                        asRefundId = 10024;
+            //退款单上面部分界面,订单相关的信息
+            if (orderId != null && orderId != 0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/om/order/selectRefundOrderInfoByOrderId?orderId=' + orderId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    sync: false,
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                if (asRefundId != null && asRefundId != 0) {
+                                    if (k == "receiverName" || k == "mobile" || k == "address") {
+                                        continue;
+                                    }
+                                }
+                                viewModel.model.set(k, a0[k]);
+                            }
+                        }
+                    }
+                });
+            }
+
+            //查看详情/修改退款单数据时查询初始数据
+            if (asRefundId != null && asRefundId != 0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/refundOrder/queryRefundOrderById?asRefundId=' + asRefundId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                viewModelRefundOrder.model.set(k, a0[k]);
+                            }
+                            //设置客户名称，手机号，地址  同一个字段只能与一个viewModel绑定，这三个字段在新建时与viewModel绑定了，因此修改时需要单独设值
+                            viewModel.model.set("receiverName", a0["name"]);
+                            viewModel.model.set("address", a0["address"]);
+                            viewModel.model.set("mobile", a0["mobile"]);
+                        }
+                    }
+                });
+            } else {
+                viewModelRefundOrder.model.set("serviceCode", linksCode);
+                viewModelRefundOrder.model.set("cs", '${userName}');
+                viewModelRefundOrder.model.set("creationDate", getNowFormatDate());
+                viewModelRefundOrder.model.set("status", "NEW");
+                viewModelRefundOrder.model.set("returnReason", "R03");
+                viewModelRefundOrder.model.set("returnFee", returnFee);
+            }
+
+            //修改表格行序号
+            $(function () {
+                var rownumList = $('[data-index="0"]');
+                for (var i = 0; i < rownumList.length; i++) {
+                    var rownumText = $(rownumList[i]).html();
+                    if ("#" == rownumText) {
+                        $(rownumList[i]).html("序号");
+                        $(rownumList[i]).eq(0).parent().parent().prev().children().eq(0).css("width", "50px");
+                        $(rownumList[i]).eq(0).parent().parent().parent().parent().parent().next().children("table").children("colgroup").children().eq(0).css("width", "50px");
+                    }
+                }
+            })
+
+            function changeBtnVisable() {
+                if (viewModelRefundOrder.model.status == 'NEW' || viewModelRefundOrder.model.status == 'REJECT') {
+                    $("#save_btn").css("display", "inline-block");
+                    $("#commit_btn").css("display", "inline-block");
+                    $("#cancel_btn").css("display", "inline-block");
+                    $("#complete_btn").css("display", "NONE");
+                } else if (viewModelRefundOrder.model.status == 'PROC' || viewModelRefundOrder.model.status == 'FINI' || viewModelRefundOrder.model.status == 'CANC') {
+                    setReadOnly();
+                    $("#save_btn").css("display", "NONE");
+                    $("#commit_btn").css("display", "NONE");
+                    $("#cancel_btn").css("display", "NONE");
+                    $("#complete_btn").css("display", "NONE");
+                } else if (viewModelRefundOrder.model.status == 'APPROVE') {
+                    setReadOnly();
+                    $("#save_btn").css("display", "NONE");
+                    $("#commit_btn").css("display", "NONE");
+                    $("#cancel_btn").css("display", "inline-block");
+                    $("#complete_btn").css("display", "inline-block");
+                }
+            }
+
+            //保存头行信息
+            function saveFun() {
+                entries = [];
+                var validator = $("#conditionForm").kendoValidator().data("kendoValidator");
+                if (!validator.validate()) {
+                    kendo.ui.showInfoDialog({
+                        message: "请选择退款场景。"
+                    });
+                    return;
+                }
+                //页面中的总金额，点击保存按钮时自动计算
+                var sum = 0;
+                //根据退款单ID判断新建/修改，分别封装不同的页面修改信息
+                viewModelRefundOrder.model.set("mobile", viewModel.model.mobile);
+                viewModelRefundOrder.model.set("address", viewModel.model.address);
+                viewModelRefundOrder.model.set("name", viewModel.model.receiverName);
+                viewModelRefundOrder.model.set("orderAmount", viewModel.model.orderAmount);
+                viewModelRefundOrder.model.set("currentAmount", viewModel.model.currentAmount);
+                viewModelRefundOrder.model.set("paymentAmount", viewModel.model.paymentAmount);
+                viewModelRefundOrder.model.set("returnId", (returnId > 0 ? returnId : 0));
+
+                //如果 asRefundId 为0，则界面为新建，设置需要的信息
+                if (asRefundId == 0) {
+                    viewModelRefundOrder.model.__status = 'add';
+                    viewModelRefundOrder.model.set("orderId", orderId);
+                    viewModelRefundOrder.model.set("serviceOrderId", serviceOrderId);
+                    $.each(grid.dataSource._data, function (i, n) {
+                        if (n.canRefundAmount > 0) {
+                            var entry = new Object();
+                            entry.paymentinfoId = n.paymentinfoId;
+                            entry.payMode = n.payMode;
+                            entry.account = n.account;
+                            entry.name = n.name;
+                            entry.payAmount = n.decideRefundAmount;
+                            entry.numberCode = n.numberCode;
+                            entry.couldAmount = n.canRefundAmount;
+                            entries.unshift(entry);
+                            //计算填写的退款金额
+                            if (!isNaN(parseInt(n.decideRefundAmount)) && n.decideRefundAmount > 0) {
+                                sum = sum + parseFloat(n.decideRefundAmount);
+                            }
+                        }
+                    });
+                    viewModelRefundOrder.model.set("refundEntryList", entries);
+                } else {
+                    viewModelRefundOrder.model.__status = 'update';
+                    //修改数据时，计算填写的退款金额
+                    $.each(grid.dataSource._data, function (i, n) {
+                        if (n.payAmount != undefined && n.payAmount > 0) {
+                            sum = sum + Math.floor(parseFloat(n.payAmount * 100)) / 100;
+                        }
+                    })
+                    //code 存储的是订单编号，保存后需要滞空
+//                    viewModelRefundOrder.model.set("code", null);
+                    viewModelRefundOrder.model.set("refundEntryList", grid.dataSource._data);
+                }
+                //sum 用于存储页面中的总金额，点击保存后，由表格退款和
+
+                if (!isNaN(parseInt(sum)) && sum > 0) {
+                    viewModelRefundOrder.model.set("refoundSum", sum);
+                }
+                //如果是从退货单页面流转过来的，refoundSum的值为退货单页面上的实际返回顾客金额
+                if (from == 'asReturnOrderDetail') {
+                    viewModelRefundOrder.model.set("refoundSum", returnFee);
+                    viewModelRefundOrder.model.set("returnFee", returnFee);
+                }
+                //如果状态为已完成，则设置完成时间
+                if (viewModelRefundOrder.model.status == 'FINI') {
+                    viewModelRefundOrder.model.set("finishTime", getNowFormatDate());
+                }
+                //将退款单行信息绑定到model
+
+                if (asRefundId != null && asRefundId != 0) { // 持久层已存在退款单，当前为编辑页面
+                    saveRefundOrderInfo();
+                } else { // 持久层不存在退款单，当前为新建页面
+                    if (from == 'asReturnOrderDetail') {
+                        if (viewModelRefundOrder.model.refoundSum == null || viewModelRefundOrder.model.refoundSum <= 0) {
+                            kendo.ui.showConfirmDialog({
+                                title: '建议退款金额小于或等于0',
+                                message: '继续保存?'
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    saveRefundOrderInfo();
+                                }
+                            });
+                        } else {
+                            saveRefundOrderInfo();
+                        }
+                        return;
+                    }
+                    $.ajax({
+                        type: 'GET',
+                        url: '${base.contextPath}/hmall/as/refundOrder/calculateReferenceSum?code=' + code + '&orderId=' + orderId,
+                        success: function (response) {
+                            if (response.rows[0] <= 0) {
+                                kendo.ui.showConfirmDialog({
+                                    title: '建议退款金额小于或等于0',
+                                    message: '继续保存?'
+                                }).done(function (event) {
+
+                                    if (event.button == 'OK') {
+                                        saveRefundOrderInfo();
+                                    }
+                                });
+                            } else {
+                                saveRefundOrderInfo();
+                            }
+                        }
+                    });
+                }
+
+                function saveRefundOrderInfo() {
+                    viewModelRefundOrder.model.set('from', from);
+                    $.ajax({
+                        url: '${base.contextPath}/hmall/as/refundOrder/saveRefundOrderInfo',
+                        type: 'POST',
+                        contentType: "application/json;charset=utf-8",
+                        dataType: 'json',
+                        data: kendo.stringify([viewModelRefundOrder.model.toJSON()]),
+                        success: function (data) {
+                            if (data.success == false) {
+                                kendo.ui.showErrorDialog({
+                                    message: data.message
+                                });
+                            } else {
+                                kendo.ui.showInfoDialog({
+                                    message: $l("<@spring.message 'hmall.sava.success.info'/>")
+                                }).done(function (event) {
+                                    if (event.button == 'OK') {
+                                        viewModelRefundOrder.model.set("code", data.rows[0].code);
+                                        asRefundId = data.rows[0].asRefundId;
+                                        viewModelRefundOrder.model.set("asRefundId", asRefundId);
+                                        entries.length = 0;
+                                        $('#grid1').remove();
+                                        renderingGrid2(data.rows[0].asRefundId);
+                                        changeBtnVisable()
+                                    }
+                                });
+
+                            }
+                        }
+                    });
+                }
+            }
+
+            //确认退款按钮
+            function refundFun(asRefundEntryId, payAmount) {
+                var gridData = grid.dataSource.data();
+
+                var requestFlag = false, refundData;
+                if (asRefundId == null || asRefundId == 0) {
+                    kendo.ui.showInfoDialog({
+                        message: '<@spring.message "hmall.refund.save.check.info"/>'
+                    })
+                    return;
+                }
+                ;
+                $.each(gridData, function (i, n) {
+                    if (n.asRefundEntryId == asRefundEntryId) {
+                        refundData = n;
+                        return false;
+                    }
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/refundEntry/saveEntryInfo',
+                    contentType: "application/json;charset=utf-8",
+                    dataType: 'json',
+                    async: false,
+                    data: JSON.stringify(refundData),
+                    success: function (data) {
+                        if (!data.success) {
+                            kendo.ui.showErrorDialog({
+                                message: "<@spring.message 'hmall.sava.failed.info'/>"
+                            })
+                        } else {
+                            requestFlag = true;
+                        }
+                    }
+                });
+
+                if (requestFlag) {
+                    $.ajax({
+                        url: '${base.contextPath}/hmall/as/refundEntry/sendToHPAY?asRefundEntryId=' + asRefundEntryId,
+                        type: "POST",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        success: function (data) {
+                            if (data.success) {
+                                kendo.ui.showInfoDialog({
+                                    message: "<@spring.message 'hmall.refund.success'/>"
+                                })
+                            } else {
+                                kendo.ui.showWarningDialog({
+                                    message: "<@spring.message 'hmall.refund.fail'/> " + data.msg
+                                })
+                            }
+                            grid.dataSource.read(1);
+                            renderingGrid2(asRefundId);
+                        }
+                    })
+                }
+
+            }
+
+            //获取当前时间
+            function getNowFormatDate() {
+                var date = new Date();
+                var seperator1 = "-";
+                var seperator2 = ":";
+                var month = date.getMonth() + 1;
+                if (month >= 1 && month <= 9) {
+                    month = "0" + month;
+                }
+
+                var currentdate = date.getFullYear() + seperator1 + month + seperator1 + excheageTimeFormat(date.getDate())
+                        + " " + excheageTimeFormat(date.getHours()) + seperator2 + excheageTimeFormat(date.getMinutes())
+                        + seperator2 + excheageTimeFormat(date.getSeconds());
+                return currentdate;
+            }
+
+            function excheageTimeFormat(strDate) {
+                if (strDate >= 0 && strDate <= 9) {
+                    strDate = "0" + strDate;
+                }
+                return strDate;
+            }
+            function commitFun() {
+                kendo.ui.showConfirmDialog({
+                    title: '提交审核之前请先保存',
+                    message: '继续提交?'
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/as/refund/commitApprove?asRefundId=' + viewModelRefundOrder.model.asRefundId,
+                            type: "POST",
+                            dataType: 'json',
+                            contentType: 'application/json',
+                            success: function (data) {
+                                if (data.success) {
+                                    viewModelRefundOrder.model.set("status", "PROC");
+                                    kendo.ui.showInfoDialog({
+                                        message: "提交成功。"
+                                    })
+                                    changeBtnVisable();
+                                } else {
+                                    kendo.ui.showWarningDialog({
+                                        message: "提交失败。"
+                                    })
+                                }
+                            }
+                        })
+                    }
+                });
+            }
+            function cancelFun() {
+                kendo.ui.showConfirmDialog({
+                    title: '取消退款单',
+                    message: '确定取消此退款单吗?'
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/as/refund/cancelRefund?asRefundId=' + viewModelRefundOrder.model.asRefundId,
+                            type: "POST",
+                            dataType: 'json',
+                            contentType: 'application/json',
+                            success: function (data) {
+                                if (data.success) {
+                                    viewModelRefundOrder.model.set("status", "CANC");
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: '${base.contextPath}/hmall/as/refundOrder/queryRefundOrderById?asRefundId=' + asRefundId,
+                                        dataType: "json",
+                                        contentType: "application/json",
+                                        success: function (data) {
+                                            if (data.success) {
+                                                var a0 = data.rows[0] || {};
+                                                viewModelRefundOrder.model.set("finishTime", a0["finishTime"]);
+                                            }
+                                        }
+                                    });
+                                    kendo.ui.showInfoDialog({
+                                        message: "退款单已取消。"
+                                    })
+                                    changeBtnVisable();
+                                } else {
+                                    kendo.ui.showWarningDialog({
+                                        message: data.message
+                                    })
+                                }
+                            }
+                        })
+                    }
+                });
+            }
+            function completeFun() {
+                kendo.ui.showConfirmDialog({
+                    title: '完成退款',
+                    message: '确定完成退款吗？'
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/as/refund/completeRefund?asRefundId=' + viewModelRefundOrder.model.asRefundId,
+                            type: "POST",
+                            dataType: 'json',
+                            contentType: 'application/json',
+                            success: function (data) {
+                                if (data.success) {
+                                    viewModelRefundOrder.model.set("status", "FINI");
+                                    kendo.ui.showInfoDialog({
+                                        message: "退款单已完成。"
+                                    })
+                                    changeBtnVisable();
+                                } else {
+                                    kendo.ui.showWarningDialog({
+                                        message: "完成退款失败。"
+                                    })
+                                }
+                            }
+                        })
+                    }
+                });
+            }
+            function setReadOnly() {
+                $("#receiverName").attr("readonly", "readonly");
+                $("#mobile").attr("readonly", "readonly");
+                $("#note").attr("readonly", "readonly");
+                $("#address").attr("readonly", "readonly");
+                $("#receiverName").css("background", "#DCDCDC");
+                $("#mobile").css("background", "#DCDCDC");
+                $("#note").css("background", "#DCDCDC");
+                $("#address").css("background", "#DCDCDC");
+                $("#returnReason").data("kendoDropDownList").enable(false);
+                var dataSource = $("#grid2").data("kendoGrid").dataSource;
+                $("#grid2").data("kendoGrid").setOptions({dataSource: dataSource, editable: false});
+            }
+        </script>
+        <div id="content-container">
+            <div id="page-content">
+                <div class="panel" id="panel-top" style="padding: 0px;">
+                    <div class="panel-footer text-left">
+                        <button id="save_btn" onclick="saveFun()" class="btn btn-primary" style="margin-right: 12px;">保存</button>
+                        <button id="submitApprovalBtn" onclick="asRefundWorkflow()" class="btn btn-primary" data-bind="invisible: isInvisible">提交审批</button>
+                        <button id="cancel_btn" onclick="cancelFun()" class="btn btn-primary" style="display:none">取消</button>
+                        <button id="complete_btn" onclick="completeFun()" class="btn btn-primary" style="display:none">完成退款</button>
+
+                        <script type="text/javascript">
+
+                            // 创建退款审批流程实例，并执行
+                            function asRefundWorkflow() {
+
+                                kendo.ui.showConfirmDialog({
+                                    title: '提示',
+                                    message: '确认提交审批?'
+                                }).done(function (e) {
+                                    if (e.button == 'OK') {
+                                        $.ajax({
+                                            type: 'GET',
+                                            url: '${base.contextPath}/hmall/as/refundOrder/approval?id=' + asRefundId,
+                                            success: function (response) {
+                                                if (response.success) {
+                                                    console.log("触发退款单审批流程");
+                                                    console.log(response.rows);
+                                                    kendo.ui.showInfoDialog({
+                                                        message: '提交成功!'
+                                                    }).done(function (e) {
+                                                        location.reload();
+                                                    });
+                                                } else {
+                                                    kendo.ui.showErrorDialog({
+                                                        message: '错误：' + response.message
+                                                    });
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+
+                            $(function () {
+
+                                // 新建退款单时（asRefundId <= 0，数据库没有记录），默认不显示提交退款审批按钮
+                                if (asRefundId <= 0) {
+                                    kendo.bind($("#submitApprovalBtn"), kendo.observable({isInvisible: true}));
+                                    return;
+                                }
+
+                                // 根据退款单状态和当前操作员岗位信息，用以确定是否显示[提交审批]按钮
+                                $.ajax({
+                                    type: 'GET',
+                                    url: '${base.contextPath}/hmall/as/refund/showExecuteRefundFlag?asRefundId=' + asRefundId,
+                                    dataType: "json",
+                                    contentType: "application/json",
+                                    success: function (response) {
+//                                        var asRefundOrder = response.rows[0];
+//                                        console.log("### 退款单 " + asRefundId + " ########################## " + asRefundOrder.status);
+//                                        console.log(asRefundOrder);
+//                                        var display = (asRefundOrder.status != 'NEW' && asRefundOrder.status != 'REJECT');
+                                        var vm = kendo.observable({
+                                            isInvisible: response.rows[0] == 'hide'
+                                        });
+                                        kendo.bind($("#submitApprovalBtn"), vm);
+                                    }
+                                });
+                            });
+
+                        </script>
+                    </div>
+                    <form class="form-horizontal" id="conditionForm">
+                        <div class="panel-body" id="baseInfo">
+                            <div>
+                                <label><@spring.message 'hmall.base.info'/></label>
+                            </div>
+                            <div>
+                                <div class="row">
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">退款单单号:</label>
+                                            <div class="col-sm-8">
+                                                <input id="code" type="text" style="width: 100%;background:#DCDCDC"
+                                                       data-bind="value:model.code" class="k-textbox" readonly>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($("#code"), viewModelRefundOrder)</script>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">服务单单号:</label>
+                                            <div class="col-sm-8">
+                                                <input id="serviceCode" data-bind="value:model.serviceCode"
+                                                       style="width: 100%;background:#DCDCDC" readonly
+                                                       class="k-textbox"/>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($('#serviceCode'), viewModelRefundOrder);</script>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">原销售订单号:</label>
+                                            <div class="col-sm-8">
+                                                <input id="orderCode" data-bind="value:model.orderCode"
+                                                       style="width: 100%;background:#DCDCDC" readonly
+                                                       class="k-textbox"/>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($('#orderCode'), viewModel);</script>
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">用户账户:</label>
+                                            <div class="col-sm-8">
+                                                <input id="customerId" data-bind="value:model.customerid"
+                                                       data-value-primitive="true" readonly
+                                                       class="k-textbox" style="width: 100%;background:#DCDCDC"/>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($('#customerId'), viewModel);</script>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">用户组:</label>
+                                            <div class="col-sm-8">
+                                                <input id="groupName" data-bind="value:model.name" data-value-primitive="true" readonly
+                                                       class="k-textbox" style="width: 100%;background:#DCDCDC"/>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($('#groupName'), viewModel);</script>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">客户名称:</label>
+                                            <div class="col-sm-8">
+                                                <input id="receiverName" data-bind="value:model.receiverName"
+                                                       style="width: 100%;" class="k-textbox"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>kendo.bind($('#receiverName'), viewModel);</script>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">手机号:</label>
+                                            <div class="col-sm-8">
+                                                <input id="mobile" data-bind="value:model.mobile"
+                                                       style="width: 100%;" class="k-textbox"/>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($('#mobile'), viewModel);</script>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">客户地址:</label>
+                                            <div class="col-sm-8">
+                                                <input id="address" data-bind="value:model.address" class="k-textbox" style="width: 100%;"/>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($('#address'), viewModel);</script>
+                                    </div>
+
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">状态:</label>
+                                            <div class="col-sm-8">
+                                                <input id="status" type="text" style="width: 100%;background: #DCDCDC"
+                                                       data-bind="value:model.status" readonly disabled>
+                                            </div>
+                                            <script>
+                                                $("#status").kendoDropDownList({
+                                                    dataTextField: "meaning",
+                                                    dataValueField: "value",
+                                                    valuePrimitive: true,
+                                                    dataSource: RefundStatusData
+                                                });
+                                                kendo.bind($("#status"), viewModelRefundOrder)
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">退款场景:</label>
+                                            <div class="col-sm-8">
+                                                <input id="refundScenario" type="text" style="width: 100%"
+                                                       data-bind="value:model.refundScenario" required>
+                                            </div>
+                                            <script>
+                                                $("#refundScenario").kendoDropDownList({
+                                                    required: true,
+                                                    dataTextField: "meaning",
+                                                    dataValueField: "value",
+                                                    valuePrimitive: true,
+                                                    dataSource: refundScenarioData
+                                                });
+                                                kendo.bind($("#refundScenario"), viewModelRefundOrder)
+                                            </script>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label">备注:</label>
+                                            <div class="col-sm-10">
+                                                <input id="note" data-bind="value:model.note" class="k-textbox"
+                                                       style="width: 100%;"/>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($("#note"), viewModelRefundOrder)</script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel" id="refundInfo" style="padding: 10px;">
+                <div style="margin-bottom:8px;">
+                    <label>退款信息</label>
+                </div>
+                <form class="form-horizontal">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">退款总金额:</label>
+                                <div class="col-sm-8">
+                                    <input id="refoundSum" data-bind="value:model.refoundSum" readonly
+                                           style="width: 100%;background:#DCDCDC" class="k-textbox"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">建议退款金额:</label>
+                                <div class="col-sm-8">
+                                    <input id="referenceSum" data-bind="value:model.referenceSum" readonly
+                                           style="width: 100%;background:#DCDCDC" class="k-textbox"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">退款原因:</label>
+                                <div class="col-sm-8">
+                                    <input id="returnReason" data-bind="value:model.returnReason" style="width: 100%;"/>
+                                </div>
+                            </div>
+                            <script>
+                                $("#returnReason").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: ReturnReasonData
+                                });
+                            </script>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">实际返回客户金额:</label>
+
+                                <div class="col-sm-8">
+                                    <input data-bind="value:model.returnFee" readonly style="width: 100%;background:#DCDCDC" class="k-textbox"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <script>kendo.bind($('#refundInfo'), viewModelRefundOrder);</script>
+
+            <div class="panel" id="otherInfo" style="padding: 10px;">
+                <div style="margin-bottom:8px;">
+                    <label>其他信息</label>
+                </div>
+                <form class="form-horizontal">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">受理客服:</label>
+                                <div class="col-sm-8">
+                                    <input id="cs" data-bind="value:model.cs" style="width: 100%;background:#DCDCDC"
+                                           readonly
+                                           class="k-textbox"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">创建时间:</label>
+                                <div class="col-sm-8">
+                                    <input id="creationDate" class="k-textbox" readonly
+                                           data-bind="value:model.creationDate" style="width: 100%;background:#DCDCDC"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">完成时间:</label>
+                                <div class="col-sm-8">
+                                    <input id="finishTime" class="k-textbox" readonly data-bind="value:model.finishTime" style="width: 100%;background:#DCDCDC"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <script>kendo.bind($('#otherInfo'), viewModelRefundOrder);</script>
+
+            <div style="margin-bottom: -10px;">
+                <label style="padding-bottom: -10px;margin-top:10px;margin-left: 10px;">退款行信息</label>
+            </div>
+
+            <hr style="width: 100%;padding-bottom: -5px;">
+
+            <script>kendo.bind($('#grid-button'), viewModel);</script>
+
+            <div id='grid-container'>
+                <div id="grid1" style="clear: both;height: 100%;"></div>
+                <div id="grid2" style="clear: both;height: 100%;"></div>
+            </div>
+        </div>
+        <div id="editWin"></div>
+        </div>
+
+        <script type="text/javascript">
+            //退款单新增和查询时分别显示不同的表格
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var grid = null;
+
+            function renderingGrid1(asRefundId) {
+                if (asRefundId > 0) {
+                    return;
+                }
+
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: crudServiceBaseUrl + '/hmall/as/refundOrder/selectRefundOrderEntry?orderId=' + orderId,
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type === "read") {
+                                return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    serverSorting: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            fields: {
+                                paymentinfoId: {},
+                                numberCode: {editable: false},
+                                payMode: {editable: false},
+                                account: {editable: false},
+                                name: {editable: false},
+                                payAmount: {editable: false},
+                                refundAmount: {editable: false},
+                                canRefundAmount: {editable: false},
+                                decideRefundAmount: {
+                                    validation: {
+                                        numValidate: function (input) {
+                                            if (input.is("[name = 'decideRefundAmount']") && input.val() != '') {
+                                                var num1 = parseFloat(input.context.previousElementSibling.innerText);
+                                                var num2 = parseFloat(input.val());
+
+                                                if (num2 > num1) {
+                                                    input.attr("data-numValidate-msg", '退款金额应不超过可退金额');
+                                                    return false;
+                                                }
+                                            }
+                                            return true;
+                                        }
+
+                                    },
+                                },
+                            }
+                        }
+                    }
+                });
+                grid = $("#grid1").kendoGrid({
+                    dataSource: dataSource,
+                    navigatable: false,
+                    height: '300',
+                    weight: '180',
+                    resizable: true,
+                    scrollable: true,
+                    rownumber: true,
+//                selectable: "multiple,rowbox",
+                    pageable: {
+                        pageSizes: [5, 10, 20, 50],
+                        refresh: true,
+                        buttonCount: 5
+                    },
+                    sortable: true,
+                    columns: [
+                        {
+                            field: "paymentinfoId",
+                            hidden: true,
+                        },
+                        {
+                            field: "numberCode",
+                            attributes: {style: "text-align:center"},
+                            title: '支付流水号',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "payMode",
+                            title: '退款方式',
+                            attributes: {style: "text-align:center"},
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            },
+                            width: 100,
+                            template: function (dataItem) {
+                                var v = dataItem.payMode;
+                                $.each(PayTypeData, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                })
+                                return v;
+                            }
+                        },
+                        {
+                            field: "account",
+                            attributes: {style: "text-align:center"},
+                            title: '支付账户',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            },
+                            editor: function (container, options) {
+                                container.html(options.model.paiedAmount);
+                                container.removeClass('k-edit-cell');
+                            }
+                        },
+                        {
+                            field: "name",
+                            attributes: {style: "text-align:center"},
+                            title: '名称',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "payAmount",
+                            attributes: {style: "text-align:center"},
+                            title: '支付金额',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "refundAmount",
+                            attributes: {style: "text-align:center"},
+                            title: '已退款金额',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "canRefundAmount",
+                            attributes: {style: "text-align:center"},
+                            title: '可退款金额',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+
+                        },
+                        {
+                            field: "decideRefundAmount",
+                            title: '退款金额',
+                            attributes: {style: "text-align:center"},
+                            width: 100,
+                            editor: function (container, options) {
+                                $('<input name="' + options.field + '" />')
+                                        .appendTo(container)
+                                        .kendoNumericTextBox({
+                                            min: 0,
+                                        }).data("kendoNumericTextBox");
+                            }
+                        }
+                    ],
+                    editable: true
+                }).data("kendoGrid");
+            }
+
+            function renderingGrid2(asRefundId) {
+                if (asRefundId <= 0) {
+                    return;
+                }
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: crudServiceBaseUrl + '/hmall/as/refundEntry/selectEntryByRefundId?asRefundId=' + asRefundId,
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type === "read") {
+                                return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    serverSorting: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            fields: {
+                                refundHeaderCode: {editable: false},
+                                payMode: {editable: false},
+                                account: {editable: false},
+                                name: {editable: false},
+                                payAmount: {
+                                    validation: {
+                                        numberValidate: function (input) {
+                                            if (input.is("[name = 'payAmount']") && input.val() != '') {
+                                                var num1 = parseFloat(input.context.previousElementSibling.innerText);
+                                                var num2 = parseFloat(input.val());
+                                                if (num2 > num1) {
+                                                    input.attr("data-numberValidate-msg", '退款金额应不超过可退金额');
+                                                    return false;
+                                                }
+                                            }
+                                            return true;
+                                        }
+                                    }
+
+                                },
+                                couldAmount: {type: 'number', editable: false}
+                            }
+                        }
+                    }
+
+                });
+
+                grid = $("#grid2").kendoGrid({
+                    dataSource: dataSource,
+                    navigatable: false,
+                    height: '300',
+                    weight: '180',
+                    resizable: true,
+                    scrollable: true,
+                    rownumber: true,
+                    pageable: {
+                        pageSizes: [5, 10, 20, 50],
+                        refresh: true,
+                        buttonCount: 5
+                    },
+                    sortable: true,
+                    columns: [
+                        {
+                            field: "asRefundEntryId",
+                            hidden: true
+                        },
+                        {
+                            field: "refundHeaderCode",
+                            attributes: {style: "text-align:center"},
+                            title: '退款单号',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "payMode",
+                            title: '退款方式',
+                            attributes: {style: "text-align:center"},
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            },
+                            width: 100,
+                            template: function (dataItem) {
+                                var v = dataItem.payMode;
+                                $.each(PayTypeData, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                })
+                                return v;
+                            }
+                        },
+                        {
+                            field: "account",
+                            attributes: {style: "text-align:center"},
+                            title: '支付账户',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "name",
+                            attributes: {style: "text-align:center"},
+                            title: '名称',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "couldAmount",
+                            attributes: {style: "text-align:center"},
+                            title: '可退款金额',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            field: "payAmount",
+                            attributes: {style: "text-align:center"},
+                            title: '退款金额',
+                            width: 100,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            },
+                            editor: function (container, options) {
+                                var oriNum = options.model.payAmount;
+                                $('<input name="' + options.field + '" />')
+                                        .appendTo(container)
+                                        .kendoNumericTextBox({
+                                            min: 0,
+                                            change: function () {
+                                                if (options.model.payAmount != oriNum) {
+                                                    entries.unshift({"asRefundEntryId": options.model.asRefundEntryId, "payAmount": options.model.payAmount})
+                                                }
+                                            }
+                                        }).data("kendoNumericTextBox");
+                            }
+                        }, {
+                            field: "changeReason",
+                            attributes: {style: "text-align:center"},
+                            title: '修改退款原因',
+                            width: 150,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        },
+                        {
+                            title: '<@spring.message "退款"/>',
+                            width: 50,
+                            //如果该行id不为空，则添加一个编辑超链接
+                            template: function (rowdata) {
+                                if (viewModelRefundOrder.model.status == 'CANC') {
+                                    return '';
+                                }
+                                if (viewModelRefundOrder.model.status == 'FINI' && rowdata.payStatus != 'Y') {
+                                    return '';
+                                }
+                                if (rowdata.payStatus == 'Y') {
+                                    return '已退款';
+                                }
+                                if (viewModelRefundOrder.model.status != 'APPROVE') {
+                                    return '待审批';
+                                }
+                                if (!!rowdata.asRefundEntryId) {
+                                    //点击链接后不会跳转，会调用 onClick 方法。
+                                    return '<a href="javascript:void(0);" onclick="refundFun(\'' + rowdata.asRefundEntryId + '\',\'' + rowdata.payAmount + '\')"><@spring.message "退款"/></a>'
+                                }
+                                return '';
+                            },
+                            attributes: {style: "text-align:center"},
+                            headerAttributes: {style: "text-align:center"}
+                        },
+
+                    ],
+                    editable: true
+                }).data("kendoGrid");
+
+            }
+
+            renderingGrid1(asRefundId);
+            renderingGrid2(asRefundId);
+            //查看详情/修改退款单数据时查询初始数据
+            if (asRefundId != null && asRefundId != 0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/refundOrder/queryRefundOrderById?asRefundId=' + asRefundId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                viewModelRefundOrder.model.set(k, a0[k]);
+                            }
+                            changeBtnVisable();
+                        }
+                    }
+                });
+            } else {
+                viewModelRefundOrder.model.set("serviceCode", linksCode);
+                viewModelRefundOrder.model.set("cs", '${userName}');
+                viewModelRefundOrder.model.set("creationDate", getNowFormatDate());
+                viewModelRefundOrder.model.set("status", "NEW");
+                $("#save_btn").css("display", "inline-block");
+                $("#commit_btn").css("display", "NONE");
+                $("#cancel_btn").css("display", "NONE");
+                $("#complete_btn").css("display", "NONE");
+                viewModelRefundOrder.model.set("returnReason", "R03");
+            }
+
+            /** 新建退款单时，根据关联的售后单再关联到退货单获得 '实际返回客户金额' **/
+            /* $(function () {
+             // 关联到退货单，退货单的RETURN_FEE就是 '实际返回客户金额'
+             $.ajax({
+             type: 'POST',
+
+             url: '${base.contextPath}/hmall/as/return/queryReturnByServiceOrderId?serviceOrderId=' + serviceOrderId,
+             dataType: "json",
+             contentType: "application/json",
+             success: function (response) {
+
+             if (response.resp.length > 0) {
+             var ro = response.resp[0]; // return order, 退款单对象
+             viewModelRefundOrder.set('model.returnFee', ro.returnFee);
+             returnId = ro.asReturnId;
+             }
+
+             }
+             });
+             });*/
+
+        </script>
+        </body>
+        </html>

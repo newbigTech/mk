@@ -1,0 +1,239 @@
+<#include "include/header.html">
+<link rel="stylesheet" href="/lib/jqwidgets/styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="/lib/jqwidgets/styles/jqx.bootstrap.css" type="text/css" />
+<script type="text/javascript" src="/lib/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxcore.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxdata.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxbuttons.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxscrollbar.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxdatatable.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxtreegrid.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxcheckbox.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxlistbox.js"></script>
+<script type="text/javascript" src="/lib/jqwidgets/jqxdropdownlist.js"></script>
+<script type="text/javascript" src="/lib/demos.js"></script>
+<!--进度条-->
+<link rel="stylesheet" href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.css">
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.js"></script>
+<style>
+    #treeGrid span[id] {
+        display: none !important;
+    }
+    #page-content{
+        position: relative;
+        margin-top: 40px;
+    }
+    #toolbar-btn{
+        position: fixed;
+        z-index: 1000;
+        width: 100%;
+        top:0;
+        padding: 10px;
+        background: #fff;
+    }
+
+    #page-content span.btn{
+        border-radius: 6px;
+    }
+    #left-toolbar{
+        position: fixed;
+        left:20px;
+    }
+    #treeGrid{
+        position: relative;
+        left: 150px;
+        top:22px;
+    }
+</style>
+</head>
+<body>
+<div id="page-content">
+    <div class="pull-left" id="toolbar-btn">
+        <span id="expandOne" class="btn btn-primary" data-bind="click:expandFunction" style="float:left;margin-right:5px;">
+            <i class="fa fa-expand" style="margin-right:3px;"></i>展开</span>
+        <span id="collapseOne" class="btn btn-warning" data-bind="click:compressFunction" style="float:left;margin-right:5px;">
+            <i class="fa fa-compress" style="margin-right:3px;"></i>收缩</span>
+        <span id="expandAll" class="btn btn-primary" data-bind="click:expandAllFunction" style="float:left;margin-right:5px;">
+            <i class="fa fa-expand" style="margin-right:3px;"></i>展开全部</span>
+        <span id="collapseAll" class="btn btn-warning" data-bind="click:compressAllFunction" style="float:left;margin-right:5px;">
+            <i class="fa fa-compress" style="margin-right:3px;"></i>收缩全部</span>
+    </div>
+    <div id="left-toolbar">
+        <span style="width: 120px;text-align: center;display: inline-block;font-size: 14px;margin-bottom: 2px;">显示/隐藏列</span>
+        <div id="jqxlistbox">
+        </div>
+        <span style="width: 120px;text-align: center;display: inline-block;font-size: 14px;margin-bottom: 2px;margin-top: 5px;">锁定/解锁列</span>
+        <div id="jqxlistbox2">
+        </div>
+    </div>
+    <div id="treeGrid"></div>
+</div>
+
+</body>
+<script type="text/javascript">
+    NProgress.start();
+    var dataJson = null;
+    $.ajax({
+        url:'${base.contextPath}/hap/mdm/bom/queryPlatform',
+        async:false,
+        success:function (data) {
+            dataJson = data.rows;
+        }
+    });
+    $(document).ready(function () {
+        NProgress.done();
+        var source =
+                {
+                    dataType: "json",
+                    dataFields: [
+                        { name: 'id', type: 'number' },
+                        { name: 'parentid', type: 'number' },
+                        { name: 'state', type: 'string' },
+                        { name: 'total', type: 'number' },
+                        { name: 'linenum', type: 'number' },
+                        { name: 'amount', type: 'number' },
+                        { name: 'childnum', type: 'string' },
+                        { name: 'childname', type: 'string' },
+                        { name: 'partstate', type: 'string' },
+                        { name: 'status', type: 'string' },
+                        { name: 'version', type: 'string' },
+                        { name: 'view', type: 'string' },
+                        { name: 'cadtype', type: 'string' },
+                        { name: 'hasChildren', type: 'boolean' }
+                    ],
+                    hierarchy:
+                            {
+                                keyDataField: { name: 'id' },
+                                parentDataField: { name: 'parentid' }
+                            },
+                    id: 'id',
+                    localData: dataJson
+                };
+        var dataAdapter = new $.jqx.dataAdapter(source);
+        // create Tree Grid
+        $("#treeGrid").jqxTreeGrid(
+                {
+                    width: 900,
+                    source: dataAdapter,
+                    sortable: true,
+                    theme: 'bootstrap',
+                    hierarchicalCheckboxes: true,
+                    altRows: true,
+                    checkboxes:true,
+                    columnsResize:true,
+                    filterable: true,
+                    ready: function()
+                    {
+                        // expand row with 根节点id
+                        $("#treeGrid").jqxTreeGrid('expandRow', 32);
+                    },
+                    columns: [
+                        { text: '子件编号',dataField: 'childnum', minWidth: 100, width: 200 ,pinned: true},
+                        { text: '子件名称', dataField: 'childname', minWidth: 100, width: 200 ,pinned: false},
+                        { text: '状态', dataField: 'state', minWidth: 100, width: 120,pinned: false },
+                        { text: '总数', dataField: 'total', minWidth: 100, width: 120 ,pinned: false},
+                        { text: '行号', dataField: 'linenum', minWidth: 100, width: 120 ,pinned: false},
+                        { text: '数量', dataField: 'amount', minWidth: 100, width: 120 ,pinned: false},
+                        { text: '状态2', dataField: 'partstate', minWidth: 100, width: 120,pinned: false },
+                        { text: '状况', dataField: 'status', minWidth: 100, width: 120 ,pinned: false},
+                        { text: '版本', dataField: 'version', minWidth: 100, width: 120 ,pinned: false},
+                        { text: '视图', dataField: 'view', minWidth: 100, width: 120 ,pinned: false},
+                        { text: '图纸类型', dataField: 'cadtype', minWidth: 100, width: 120 ,pinned: false}
+                    ]
+                });
+    });
+
+
+    var listSource = [
+        {label: '子件编号', value: 'childnum', checked: true },
+        {label: '子件名称', value: 'childname', checked: true },
+        { label: '状态', value: 'state', checked: true },
+        { label: '总数', value: 'total', checked: true },
+        {label: '行号', value: 'linenum', checked: true },
+        {label: '数量', value: 'amount', checked: true },
+        {label: '状态2', value: 'partstate', checked: true },
+        {label: '状况', value: 'status', checked: true },
+        {label: '版本', value: 'version', checked: true },
+        {label: '视图', value: 'view', checked: true },
+        {label: '图纸类型', value: 'cadtype', checked: true},
+    ];
+
+    var listSource2 = [
+        {label: '子件编号', value: 'childnum', checked: true },
+        {label: '子件名称', value: 'childname', checked: false },
+        { label: '状态', value: 'state', checked: false },
+        { label: '总数', value: 'total', checked: false },
+        {label: '行号', value: 'linenum', checked: false },
+        {label: '数量', value: 'amount', checked: false },
+        {label: '状态2', value: 'partstate', checked: false },
+        {label: '状况', value: 'status', checked: false },
+        {label: '版本', value: 'version', checked: false },
+        {label: '视图', value: 'view', checked: false },
+        {label: '图纸类型', value: 'cadtype', checked: false},
+    ];
+
+
+    $("#jqxlistbox").jqxListBox({source: listSource, width: 120, height: 200,  checkboxes: true });
+    $("#jqxlistbox").on('checkChange', function (event) {
+        NProgress.start();
+        $("#treeGrid").jqxTreeGrid('beginUpdate');
+        if (event.args.checked) {
+            $("#treeGrid").jqxTreeGrid('showColumn', event.args.value);
+        }
+        else {
+            $("#treeGrid").jqxTreeGrid('hideColumn', event.args.value);
+        }
+        $("#treeGrid").jqxTreeGrid('endUpdate');
+        NProgress.done();
+    });
+
+    $("#jqxlistbox2").jqxListBox({source: listSource2, width: 120, height: 200,  checkboxes: true });
+    $("#jqxlistbox2").on('checkChange', function (event) {
+        NProgress.start();
+        $("#treeGrid").jqxTreeGrid('beginUpdate');
+        $("#treeGrid").jqxTreeGrid('setColumnProperty', event.args.value, 'pinned', event.args.checked);
+        $("#treeGrid").jqxTreeGrid('endUpdate');
+        NProgress.done();
+    });
+
+
+
+    $("#collapseAll").click(function () {
+        NProgress.start();
+        $("#treeGrid").jqxTreeGrid('collapseAll');
+        NProgress.done();
+    });
+
+
+    $("#expandAll").click(function () {
+        NProgress.start();
+        $("#treeGrid").jqxTreeGrid('expandAll');
+        NProgress.done();
+    });
+
+    $("#expandOne").click(function () {
+        NProgress.start();
+        var selection = $("#treeGrid").jqxTreeGrid('getCheckedRows');
+        for (var i = 0; i < selection.length; i++) {
+            if(selection[i].total>0){
+                $("#treeGrid").jqxTreeGrid('expandRow',selection[i].id);
+            }
+        }
+        NProgress.done();
+    });
+
+    $("#collapseOne").click(function () {
+        NProgress.start();
+        var selection = $("#treeGrid").jqxTreeGrid('getCheckedRows');
+        for (var i = 0; i < selection.length; i++) {
+            if(selection[i].total>0){
+                $("#treeGrid").jqxTreeGrid('collapseRow',selection[i].id);
+            }
+        }
+        NProgress.done();
+    });
+
+    $('#treeGrid').on('bindingComplete', function (event) { NProgress.done(); });
+
+</script>
+</html>

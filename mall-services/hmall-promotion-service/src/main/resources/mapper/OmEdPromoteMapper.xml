@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.promotion.mapper.OmEdPromoteMapper">
+    <resultMap id="BaseResultMap" type="com.hand.promotion.dto.OmEdPromote">
+        <result column="PROMO_ID" property="promoId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+        <result column="INFO" property="info" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="CHANNEL" property="channel" jdbcType="VARCHAR" />
+        <result column="WEBSITE" property="website" jdbcType="VARCHAR" />
+        <result column="STORE" property="store" jdbcType="VARCHAR" />
+        <result column="ORDER_AMOUNT" property="orderAmount" jdbcType="DECIMAL" />
+        <result column="ORDER_START_TIME" property="orderStartTime" jdbcType="DATE" />
+        <result column="ORDER_END_TIME" property="orderEndTime" jdbcType="DATE" />
+        <result column="PAY_START_TIME" property="payStartTime" jdbcType="DATE" />
+        <result column="PAY_END_TIME" property="payEndTime" jdbcType="DATE" />
+        <result column="SPACE" property="space" jdbcType="DECIMAL" />
+        <result column="PRIORITY" property="priority" jdbcType="DECIMAL" />
+        <result column="COUPON" property="coupon" jdbcType="VARCHAR" />
+        <result column="GIFT" property="gift" jdbcType="VARCHAR" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="MAX" property="max" jdbcType="DECIMAL" />
+    </resultMap>
+
+
+    <select id="queryCondition" resultMap="BaseResultMap" parameterType="com.hand.promotion.dto.OmEdPromote">
+
+        SELECT * FROM HMALL_OM_ED_PROMO WHERE (ORDER_AMOUNT &lt;= #{orderAmount,jdbcType=DECIMAL}) AND (to_date(#{orderCreateTime,jdbcType=DATE},'yyyy-mm-dd hh24:mi:ss')
+        BETWEEN ORDER_START_TIME AND ORDER_END_TIME ) AND (CHANNEL ='ALL' OR CHANNEL = #{channel,jdbcType=VARCHAR}) AND (WEBSITE ='ALL' OR WEBSITE = #{website,jdbcType=VARCHAR})
+        AND (STORE ='ALL' OR STORE = #{store,jdbcType=VARCHAR})
+        AND STATUS = 'ACTIVITY' ORDER BY PRIORITY ASC
+
+    </select>
+
+
+</mapper>

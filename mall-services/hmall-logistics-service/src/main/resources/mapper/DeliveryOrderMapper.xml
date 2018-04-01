@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.DeliveryOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.hand.hmall.pojo.DeliveryOrder">
+        <result column="DELIVERY_ORDER_ID" property="deliveryOrderId" jdbcType="DECIMAL" />
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL" />
+    </resultMap>
+    <!-- 根据发货单code查询发货单Id -->
+    <select id="selectDeliveryOrderByCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+          DELIVERY_ORDER_ID,
+          CONSIGNMENT_ID
+        FROM
+        HMALL_OM_DELIVERY_ORDER do
+        WHERE
+        DELIVERY_NOTE = #{deliveryNote}
+    </select>
+
+    <!--
+        根据交货单号和发货单ID查询交货单信息
+        DeliveryOrder queryByConsignment(@Param("deliveryCode") String deliveryCode, @Param("consignmentId") Long consignmentId);
+    -->
+    <select id="queryByConsignment" resultMap="BaseResultMap" parameterType="java.util.Map">
+        SELECT
+          DELIVERY_ORDER_ID,
+          DELIVERY_NOTE,
+          CONSIGNMENT_ID
+        FROM
+        HMALL_OM_DELIVERY_ORDER do
+        WHERE DELIVERY_NOTE = #{deliveryCode}
+          AND CONSIGNMENT_ID = #{consignmentId}
+    </select>
+
+    <!--
+        根据发货单ID查询其下关联的交货单信息
+        @param consignmentId - 发货单ID
+        @return
+        List<Map> queryExistDeliveryOrdersByConsignmentId(@Param("consignmentId") Long consignmentId);
+    -->
+    <select id="queryExistDeliveryOrdersByConsignmentId" parameterType="java.lang.Long" resultType="java.util.Map">
+        SELECT * FROM HMALL_OM_DELIVERY_ORDER do WHERE CONSIGNMENT_ID = #{consignmentId}
+    </select>
+
+</mapper>

@@ -1,0 +1,19 @@
+.h-radio {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url(../images/radio_disabled.png);
+  background-size: 100%;
+  vertical-align: sub;
+  input {
+    display: block;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+  }
+  &.checked {
+    background-image: url(../images/radio_selected.png);
+  }
+}

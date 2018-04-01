@@ -1,0 +1,33 @@
+/*店铺推荐页面*/
+.h-v-recommend {
+   width: 270px;
+  .scroll-wrapper {
+    height: 948px;
+    overflow: hidden;
+    padding: 0 15px;
+    ul {
+      transition: margin-top 0.5s;
+      li {
+        height: 316px;
+      }
+    }
+  }
+
+  .recommend-footer {
+    height: 59px;
+    text-align: center;
+    .slide {
+      display: inline-block;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      &.up {
+        background-image: url(../images/recommend_front.png);
+      }
+      &.down {
+        margin-left: 50px;
+        background-image: url(../images/recommend_last.png);
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hand.hmall.logistics.mapper.LgsPinMapper">
+
+    <resultMap id="BaseResultMap" type="com.hand.hmall.logistics.pojo.LgsPin">
+        <result column="CODE" property="entryCode" jdbcType="VARCHAR" />
+        <result column="PIN" property="code" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 根据发货单code查询订单行Code和Pin码 -->
+    <select id="selectPinByDelivery" resultMap="BaseResultMap" parameterType="com.hand.hmall.logistics.pojo.DeliveryOrder">
+        SELECT
+        hooe.CODE,
+        hooe.PIN
+        FROM
+        HMALL_OM_ORDER_ENTRY hooe
+        WHERE
+        hooe.ORDER_ENTRY_ID in (SELECT ORDER_ENTRY_ID FROM HMALL_OM_DELIVERY_ENTRY de WHERE de.DELIVERY_ORDER_ID = #{deliveryOrderId})
+    </select>
+
+    <insert id="insertPin" parameterType="com.hand.hmall.logistics.pojo.LgsPin">
+        INSERT INTO HMALL_PIN_INFO (PIN_INFO_ID, CODE, ENTRY_CODE, EVENT_CODE, EVENT_DES, SYSTEM, OPERATOR, MOBILE, OPERATION_TIME, EVENT_INFO)
+                VALUES (HMALL_PIN_INFO_S.nextval,
+                #{code},
+                #{entryCode},
+                (select v.description from sys_code_value_b v left join sys_code_b b on b.code_id = v.code_id where b.code = 'HMALL.OM.TMS_STATUS' and v.value = #{eventCode}),
+                (SELECT EVENT_DES FROM HMALL_PIN_ALTER WHERE EVENT_CODE = (select v.description from sys_code_value_b v left join sys_code_b b on b.code_id = v.code_id where b.code = 'HMALL.OM.TMS_STATUS' and v.value = #{eventCode})),
+                'RRS',
+                #{operator},
+                #{mobile},
+                #{operationTime},
+                #{eventInfo})
+    </insert>
+
+</mapper>

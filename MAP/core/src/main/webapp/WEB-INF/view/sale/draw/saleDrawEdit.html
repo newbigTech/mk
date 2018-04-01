@@ -1,0 +1,428 @@
+<#include "/include/header.html"/>
+<body>
+<script src="${base.contextPath}/common/code?DrawType=HMALL.DROOLS.DRAW.TYPE&DrawStatus=HMALL.DROOLS.DRAW.STATUS&DrawNode=HMALL.DROOLS.DRAW.NODE" type="text/javascript"></script>
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        disabled:"false",
+        selectType:"DRAW",
+        submitResource: function(e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        returnResource        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+
+    viewModel.model.set("draw",{});
+    var baseId='${RequestParameters.baseId}';
+    var type='${RequestParameters.type}';
+
+    var createType='CREATE';
+    var editType='EDIT';
+    var templateType='TEMPLATE';
+
+    var addConditions="ADD_CONDITIONS";
+    var addActions="ADD_ACTIONS";
+
+    viewModel.model.draw.drawCount=1;
+    viewModel.model.draw.drawNode='PAID';
+</script>
+
+<div id="content-container">
+    <div class="panel" style="padding: 10px;">
+
+
+        <div class="panel" style="padding: 0px;">
+            <div class="panel-footer text-left">
+                <span class="btn btn-success" id="query" onclick="submitResource()" type="submit"><i class="fa fa-plus"></i> 创建并启用</span>
+                <span class="btn btn-primary" id="resetForm" onclick="returnResource()" type="button"><i class="fa fa-refresh"></i> 取消</span>
+            </div>
+        </div>
+
+        <div id="tabStrip" >
+            <ul>
+                <li>字段编辑</li>
+                <li>条件编辑</li>
+            </ul>
+            <div>
+                <div class="panel" style="padding: 4px;">
+
+                    <form class="form-horizontal" id="baseInfo">
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">抽奖活动ID</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawId" disabled="true" placeholder="抽奖活动ID" style="background: rgb(222, 222, 222);width: 200px;" type="text" data-bind="value:model.draw.drawId"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">抽奖活动名称</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawName" type="text" style="width: 200px" placeholder="抽奖活动名称" data-bind="value:model.draw.drawName"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">活动详情</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawDes" type="text" style="width: 200px" placeholder="活动详情" data-bind="value:model.draw.drawDes"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">每人可抽奖次数</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawCount" type="text" placeholder="每人可抽奖次数" style="width: 200px" data-bind="value:model.draw.drawCount">
+                                            <script>
+                                                $("#drawCount").kendoNumericTextBox({
+                                                    format: "n0",
+                                                    min:0
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">抽奖总次数</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawTotal"  type="text" placeholder="抽奖总次数" style="width: 200px;" data-bind="value:model.draw.drawTotal">
+                                            <script>
+                                                $("#drawTotal").kendoNumericTextBox({
+                                                    format: "n0",
+                                                    min:0
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">活动奖品及概率</label>
+                                        <div class="col-sm-8">
+                                            <input id="awardProbability" onfocus="openAwardProbabilityWin()" placeholder="活动奖品及概率" type="text" style="width: 200px" data-bind="value:model.draw.awardProbability"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">抽奖类型</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawType"  type="text" style="width: 200px;" data-bind="value:model.draw.drawType" data-value-primitive="true" >
+                                            <script>
+                                                $("#drawType").kendoDropDownList({
+                                                    dataTextField  : "meaning",
+                                                    dataValueField : "value",
+                                                    dataSource     : DrawType
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">状态</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawStatus"  type="text" style="width: 200px;" data-bind="value:model.draw.drawStatus" data-value-primitive="true" >
+                                            <script>
+                                                $("#drawStatus").kendoDropDownList({
+                                                    dataTextField  : "meaning",
+                                                    dataValueField : "value",
+                                                    dataSource     : DrawStatus
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">抽奖节点</label>
+                                        <div class="col-sm-8">
+                                            <input id="drawNode"  type="text" style="width: 200px;" data-bind="value:model.draw.drawNode"
+                                                   data-value-primitive="true" >
+                                            <script>
+                                                $("#drawNode").kendoDropDownList({
+                                                    dataTextField  : "meaning",
+                                                    dataValueField : "value",
+                                                    dataSource     : DrawNode
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">关联URL</label>
+                                    <div class="col-sm-8">
+                                        <input id="url"  type="text" placeholder="关联URL" style="width: 200px;" data-bind="value:model.draw.url"
+                                               class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+
+                                <div class="col-sm-8">
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">有效时间</label>
+                                        <div class="col-sm-10">
+                                            <input id="startDate"  type="text" placeholder="有效开始时间" style="width: 200px" data-bind="value:model.draw.startDate">
+                                            <a> 一 </a>
+                                            <input id="endDate"  type="text" placeholder="有效结束时间" style="width: 200px" data-bind="value:model.draw.endDate">
+
+                                            <script>
+                                                $("#startDate").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss",
+                                                    change:function () {
+                                                        var startDate = $("#startDate").val();
+                                                        $('#endDate').data('kendoDateTimePicker').min(startDate);
+                                                    }
+                                                });
+                                                $("#endDate").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss",
+                                                    change:function () {
+                                                        var endDate = $("#endDate").val();
+                                                        $('#startDate').data('kendoDateTimePicker').max(endDate);
+                                                    }
+                                                });
+                                            </script>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">创建时间</label>
+                                        <div class="col-sm-8">
+                                            <input id="creationTime" type="text" disabled="true" style="background: rgb(222, 222, 222);width: 200px;" data-bind="value:model.draw.creationTime">
+                                            <script>
+                                                $("#creationTime").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss"
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">上次修改时间</label>
+                                        <div class="col-sm-8">
+                                            <input id="lastModifyTime"  type="text" disabled="true" style="background: rgb(222, 222, 222);width: 200px;" data-bind="value:model.draw.lastModifyTime">
+                                            <script>
+                                                $("#lastModifyTime").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss"
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <#include "/sale/record/saleRecord.html"/>
+
+            </div>
+
+            <div>
+                <#include "/sale/conditions/saleConditionActionInclude.html"/>
+            </div>
+
+        </div>
+        </div>
+</div>
+
+<div id="awardProWin"></div>
+<div id="addTempWin"></div>
+<div id="addTempConditionDataWin"></div>
+<div id="addTempActionDataWin"></div>
+<div id="productChooseWin"></div>
+<div id="productContainerWin"></div>
+
+
+<script>
+    kendo.bind($('#content-container'), viewModel);
+
+    var validator = $("#baseInfo").kendoValidator({
+
+        invalidMessageType : "default"
+    }).data("kendoValidator");
+
+    if(type != createType) {
+        $.ajax({
+            url:"${base.contextPath}/sale/draw/detail?id="+baseId,
+            type:"GET",
+            success:function (data) {
+                if(data.success) {
+                    var resp = data.resp;
+                    if (resp[0].draw != undefined) {
+                        var draw = resp[0].draw;
+                        viewModel.model.draw.set('drawId', draw.drawId);
+                        viewModel.model.draw.set('drawName', draw.drawName);
+                        viewModel.model.draw.set('drawDes', draw.drawDes);
+                        viewModel.model.draw.set('drawCount', draw.drawCount);
+                        viewModel.model.draw.set('drawTotal', draw.drawTotal);
+                        viewModel.model.draw.set('url', draw.url);
+                        viewModel.model.draw.set('drawType', draw.drawType);
+                        viewModel.model.draw.set('drawStatus', draw.drawStatus);
+                        viewModel.model.draw.set('drawNode', draw.drawNode);
+                        viewModel.model.draw.set('startDate', timeToDate(draw.startDate));
+                        viewModel.model.draw.set('endDate', timeToDate(draw.endDate));
+                        viewModel.model.draw.set('creationTime', timeToDate(draw.creationTime));
+                        viewModel.model.draw.set('lastModifyTime', timeToDate(draw.lastModifyTime));
+                        appendConditions(resp[0].conditions || [], resp[0].actions || [])
+                    }
+                }else {
+                    kendo.ui.showErrorDialog({
+                        title:"错误",
+                        message:data.msg
+                    })
+                }
+            }
+        })
+    }else {
+        today = new Date();
+        viewModel.model.draw.set('startDate', new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours(), today.getMinutes(), today.getMilliseconds()));
+        viewModel.model.draw.set('endDate', new Date(2099, today.getMonth(), today.getDate(), today.getHours(), today.getMinutes(), today.getMilliseconds()));
+    }
+
+    $("#tabStrip").kendoTabStrip({
+        animation: {
+            close: {
+                duration: 200,
+                effects: "fadeOut"
+            }
+        }
+    });
+    var tabStrip = $("#tabStrip").kendoTabStrip().data("kendoTabStrip");
+    tabStrip.select(0);
+
+
+    function submitAjax() {
+        $('#query').removeAttr("onclick");
+        $('#query').attr("disabled","true");
+        $.ajax({
+            url: "${base.contextPath}/sale/draw/submit",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(viewModel.model),
+            success: function (data) {
+                if (data.success) {
+                    viewModel.model.draw.set("drawId", data.resp[0].drawId);
+                    viewModel.model.draw.set("creationTime", timeToDate(data.resp[0].creationTime));
+                    viewModel.model.draw.set("lastModifyTime", timeToDate(data.resp[0].lastModifyTime));
+                    baseId = data.resp[0].drawId;
+                    kendo.ui.showInfoDialog({
+                        title: "提示",
+                        message: "保存成功！"
+                    }).done(function (e) {
+//                            tabStrip.select(0);
+//                            $('#gridRecord').data('kendoGrid').dataSource.query();
+                        window.parent.$("#editDraw").data("kendoWindow").close();
+
+                    })
+                } else {
+                    kendo.ui.showErrorDialog({
+                        title: "提示",
+                        message: "保存失败！"
+                    }).done(function (e) {
+                        $('#query').attr("onclick","submitResource()");
+                        $('#query').removeAttr("disabled");
+                    })
+                }
+            }
+        })
+    }
+
+    function submitResource() {
+        var validator = $("#baseInfo").data("kendoValidator");
+        if(validator.validate()) {
+            var conditions=viewModel.model.conditions;
+            if(conditions!=undefined&&conditions.length>0) {
+                submitAjax();
+            }else{
+                kendo.ui.showWarningDialog({
+                    title:"警告",
+                    message:"当前未设定条件，确定还要提交吗?",
+                    buttons: [{
+                        text: "确定",
+                        type: 'primary',
+                        click: function (e) {
+                            submitAjax();
+                            e.dialog.destroy();
+                        }
+                    },{
+                        text: "取消",
+                        type: 'default',
+                        click: function (e) {
+                            e.dialog.destroy();
+                        }
+                    }]
+                })
+            }
+
+
+        }
+    }
+
+    //取消
+    function returnResource() {
+        window.parent.$("#editDraw").data("kendoWindow").close();
+    }
+
+    function openAwardProbabilityWin() {
+        var onClose = function () {
+            $("#awardProWin").empty();
+        };
+
+        $("#awardProWin").kendoWindow({
+            actions: ["Close"],
+            title: '奖品及概率设计',
+            draggable: true,
+            height: "75%",
+            width: "80%",
+            close: onClose,
+            content: "${base.contextPath}/sale/draw/saleDrawAwardPro.html",
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#awardProWin").data("kendoWindow");
+        win.center().open();
+    }
+
+
+</script>
+</body>
+</html>

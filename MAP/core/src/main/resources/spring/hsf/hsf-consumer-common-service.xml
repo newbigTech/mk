@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!-- 公共接口 -->
+    <dubbo:reference id="iFndRegionsCommonExternalService"
+                     interface="com.markor.map.external.fndregionservice.service.IFndRegionsCommonExternalService"
+                     group="common-service" version="1.0.0"/>
+
+    <dubbo:reference id="iPointOfServiceExternalService"
+                     interface="com.markor.map.external.pointservice.service.IPointOfServiceExternalService" group="common-service"
+                     version="1.0.0"/>
+
+    <dubbo:reference id="iSetupSequenceHeaderExternalService"
+                     interface="com.markor.map.external.setupservice.service.ISetupSequenceHeaderExternalService"
+                     group="common-service" version="1.0.0"/>
+
+    <dubbo:reference id="createSetupSequenceExternalService"
+                     interface="com.markor.map.external.setupservice.service.CreateSetupSequenceExternalService"
+                     group="common-service" version="1.0.0"/>
+
+    <!-- web接口 -->
+    <dubbo:reference id="iRegionService" lazy="true" check="false"
+                     interface="com.markor.map.fndregionservice.service.IRegionService" group="common-service-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iRegionTlService" lazy="true" check="false"
+                     interface="com.markor.map.fndregionservice.service.IRegionTlService" group="common-service-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMstPointofServiceService" lazy="true" check="false"
+                     interface="com.markor.map.pointservice.service.IMstPointofServiceService" group="common-service-4w"
+                     version="1.0.0"/>
+
+    <dubbo:reference id="iSetupSequenceHeaderService" lazy="true" check="false"
+                     interface="com.markor.map.setupservice.service.ISetupSequenceHeaderService" group="common-service-4w"
+                     version="1.0.0"/>
+
+    <dubbo:reference id="iSetupSequenceLinesService" lazy="true" check="false"
+                     interface="com.markor.map.setupservice.service.ISetupSequenceLinesService" group="common-service-4w"
+                     version="1.0.0"/>
+</beans>

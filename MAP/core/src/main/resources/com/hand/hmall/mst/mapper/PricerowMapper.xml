@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.PricerowMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Pricerow">
+        <result column="PRICEROW_ID" property="pricerowId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="USER_ID" property="userId" jdbcType="DECIMAL"/>
+        <result column="USER_GROUP_ID" property="userGroupId" jdbcType="DECIMAL"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="BOTTOM_PRICE" property="bottomPrice" jdbcType="DECIMAL"/>
+        <result column="SALE_UNIT" property="saleUnit" jdbcType="VARCHAR"/>
+        <result column="RATE" property="rate" jdbcType="DECIMAL"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="userName" property="userName" jdbcType="VARCHAR"/>
+        <result column="productName" property="productName" jdbcType="VARCHAR"/>
+        <result column="creation_date" property="creationsDate" jdbcType="DATE"/>
+        <result column="price_type" property="priceType" jdbcType="VARCHAR"/>
+        <result column="product_grade" property="productGrade" jdbcType="VARCHAR"/>
+        <result column="is_bottom" property="isBottom" jdbcType="VARCHAR"/>
+        <result column="start_time" property="startTime" jdbcType="DATE"/>
+        <result column="end_time" property="endTime" jdbcType="DATE"/>
+        <result column="CUSTOMERID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="product_type" property="productType" jdbcType="VARCHAR"/>
+        <result column="price_group" property="priceGroup" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL" />
+        <result column="ODTYPE" property="odtype" jdbcType="VARCHAR" />
+        <result column="CATALOG_NAME" property="catalogName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="pricerowMap" type="com.hand.hmall.mst.dto.PricerowDto">
+        <result column="PRICEROW_ID" property="pricerowId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="BOTTOM_PRICE" property="bottomPrice" jdbcType="DECIMAL"/>
+        <result column="start_time" property="priceStartTime" jdbcType="DATE"/>
+        <result column="end_time" property="priceEndTime" jdbcType="DATE"/>
+        <!-- 推送M3D的dto-->
+        <result column="number_m3d" property="number" jdbcType="VARCHAR"/>
+        <result column="basePrice" property="base_price" jdbcType="DECIMAL"/>
+        <result column="activefyPrice" property="activefy_price" jdbcType="DECIMAL"/>
+        <result column="startTime" property="activefy_start_time" jdbcType="DATE"/>
+        <result column="endTime" property="activefy_end_time" jdbcType="DATE"/>
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+       PR.PRICEROW_ID, PR.PRODUCT_ID, PR.USER_ID, PR.USER_GROUP_ID, PR.BASE_PRICE, PR.BOTTOM_PRICE, PR.SALE_UNIT,
+       PR.RATE, PR.SYNCFLAG, PR.START_TIME, PR.END_TIME, PR.PRICE_TYPE, PR.PRODUCT_GRADE,
+       PR.IS_BOTTOM, PR.PRICE_GROUP, PR.CATALOGVERSION_ID, PR.ODTYPE
+    </sql>
+
+    <!-- 推送价格行信息至商城 -->
+    <select id="selectPushingPricerow" resultMap="pricerowMap">
+                select hmp.pricerow_id,
+                       hmp.product_id,
+                       result.code,
+                       hmp.base_price,
+                       hmp.start_time,
+                       hmp.end_time
+                  from hmall_mst_pricerow hmp,
+                       (select max(p.pricerow_id) max_pricerow_id,
+                               r.product_id,
+                               r.code,
+                               r.price_group,
+                               r.endtime
+                          from hmall_mst_pricerow p,
+                               (select t.product_id,
+                                       t.code,
+                                       t.price_group,
+                                       max(t.end_time) endtime
+                                  from (select price.product_id,
+                                               product.code,
+                                               price.price_group,
+                                               price.end_time
+                                          from hmall_mst_pricerow       price,
+                                               hmall_mst_product        product,
+                                               hmall_mst_catalogversion catalog,
+                                               hmall_mst_catalogs       c
+                                         where price.product_id = product.product_id
+                                           and product.catalogversion_id =
+                                               catalog.catalogversion_id
+                                           and catalog.catalog = c.catalogs_id
+                                           and c.code = 'markor'
+                                           and catalog.catalogversion = 'online'
+                                           and product.approval_status = 'APPROVED' --已审批
+                                           and product.CUSTOM_TYPE = 'A4' -- 常规商品
+                                           and product.SYNCFLAG = 'Y' --已推送过商城的商品
+                                           and price.price_group = '1' --原价
+                                           and price.end_time > sysdate) t
+                                 group by (t.product_id, t.price_group, t.code)) r
+                         where p.product_id = r.product_id
+                           and p.price_group = r.price_group
+                           and p.end_time = r.endtime
+                           and p.price_type = '1' --销售价格
+                         group by (r.product_id, r.code, r.price_group, r.endtime)) result
+                 where hmp.pricerow_id = result.max_pricerow_id
+	</select>
+
+    <!-- 推送定制商品的价格行信息到M3D-->
+    <select id="pushPricerowToM3D" resultMap="pricerowMap">
+			select product.PRODUCT_ID, product.code number_m3d, p.base_price basePrice, p.start_time startTime, p.end_time endTime
+			  from hmall_mst_pricerow p,
+				   (select t.product_id, t.price_group, max(t.end_time) endtime
+					  from (select price.*
+							  from hmall_mst_pricerow       price,
+								   hmall_mst_product        product,
+								   hmall_mst_catalogversion catalog,
+								   hmall_mst_catalogs       c
+							 where price.product_id = product.product_id
+							   and product.catalogversion_id = catalog.catalogversion_id
+							   and catalog.catalog = c.catalogs_id
+							   and c.code = 'markor'
+							   and catalog.catalogversion = 'online'
+							   and product.approval_status = 'APPROVED'
+							   and product.product_type = 'A020'
+							   and price.price_group = '1'
+							   and price.price_type = '1'
+							   and price.end_time > sysdate) t
+					 group by (t.product_id, t.price_group)) r,
+				   hmall_mst_product product
+			 where p.product_id = r.product_id
+			   and p.price_group = r.price_group
+			   and p.end_time = r.endtime
+			   and p.product_id = product.product_id
+
+	</select>
+
+    <!--通过productId来查找是否含有该商品的促销价的价格行信息 -->
+    <select id="selectDiscountPricerow" parameterType="com.hand.hmall.mst.dto.PricerowDto" resultMap="pricerowMap">
+        SELECT price.PRICEROW_ID,
+        price.product_id,
+        price.base_price,
+        price.start_time,
+        price.end_time
+        FROM (select p.product_id,
+                        p.end_time,
+                        p.pricerow_id,
+                        p.base_price,
+                        p.start_time
+                        from hmall_mst_pricerow p
+                        where p.price_group = '2' --促销价
+                        and p.price_type = '1' --销售价格
+                        <if test="productId != null">
+                            and p.product_id = #{productId}
+                        </if>
+                        order by p.end_time desc, p.pricerow_id desc) price
+        where rownum = 1
+    </select>
+
+    <!--更新价格行接口推送标志-->
+    <update id="updatePricerowSyncflag" parameterType="java.util.List">
+        UPDATE hmall_mst_pricerow
+        <set>
+            SYNCFLAG ='Y'
+        </set>
+        <where>
+            PRICEROW_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.pricerowId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+    <!-- 商品价格界面查询 -->
+    <select id="queryInfo" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Pricerow">
+        SELECT mp.pricerow_id,
+        mp.product_id,
+        mp.start_time,
+        mp.end_time,
+        mp.price_type,
+        mp.price_group,
+        mp.is_bottom,
+        pro.code,
+        pro.name productName,
+        mp.user_id,
+        us.name userName,
+        mu.name,
+        mp.PRODUCT_GRADE,
+        mp.base_price,
+        mp.bottom_price,
+        mp.sale_unit,
+        mp.rate,
+        mp.creation_date,
+        mp.odtype
+        FROM hmall_mst_pricerow mp
+        LEFT JOIN hmall_mst_product pro
+        ON mp.product_id = pro.product_id
+        LEFT JOIN hmall_mst_user us
+        ON mp.user_id = us.user_id
+        LEFT JOIN hmall_mst_usergroup mu
+        ON mp.user_group_id = mu.usergroup_id
+        where 1=1
+        <if test="productId != null">
+            and mp.product_id = #{productId}
+        </if>
+        <if test="userId != null">
+            and mp.user_id = #{userId}
+        </if>
+        <if test="userGroupId != null">
+            and mp.user_group_id = #{userGroupId}
+        </if>
+
+    </select>
+
+    <!-- 价格维护界面查询功能 -->
+    <select id="selectPricerow" parameterType="com.hand.hmall.mst.dto.Pricerow" resultMap="BaseResultMap">
+        SELECT mp.pricerow_id,
+        mp.product_id,
+        pro.code,
+        pro.name productName,
+        pro.product_type,
+        mp.price_type,
+        mp.price_group,
+        mp.PRODUCT_GRADE,
+        mp.user_id,
+        us.CUSTOMERID,
+        ug.name,
+        mp.START_TIME,
+        mp.END_TIME,
+        mp.IS_BOTTOM,
+        mp.base_price,
+        mp.bottom_price,
+        mp.sale_unit,
+        mp.odtype,
+        c.name_zh||'-'||ca.catalogversion CATALOG_NAME
+        FROM hmall_mst_pricerow mp
+        LEFT JOIN hmall_mst_product pro
+        ON mp.product_id = pro.product_id
+        left join hmall_mst_catalogversion ca
+        on pro.catalogversion_id = ca.catalogversion_id
+        left join hmall_mst_catalogs c
+        on ca.catalog = c.catalogs_id
+        LEFT JOIN hmall_mst_user us
+        ON mp.user_id = us.user_id
+        left join hmall_mst_usergroup ug
+        on mp.user_group_id = ug.usergroup_id
+        where 1=1
+        <if test="code != null and code!=''">
+            and upper(pro.code) LIKE upper('%'||#{code}||'%')
+        </if>
+        <if test="productName != null and productName !=''">
+            and pro.name LIKE '%'||#{productName}||'%'
+        </if>
+        <if test="priceType != null and priceType !=''">
+            and mp.price_type = #{priceType}
+        </if>
+        <if test="priceGroup != null and priceGroup !=''">
+            and mp.price_group = #{priceGroup}
+        </if>
+
+    </select>
+
+
+    <!-- 商品详情信息中 删除价格行关联-->
+    <update id="updatePricerow" parameterType="com.hand.hmall.mst.dto.Pricerow">
+        update hmall_mst_pricerow
+        <set>
+            PRODUCT_ID=#{productId}
+        </set>
+        <where>
+            pricerow_id=#{pricerowId}
+        </where>
+    </update>
+
+    <!-- 删除商品时，同时删除价格行记录-->
+    <delete id="deletePricerowByProductId" parameterType="com.hand.hmall.mst.dto.Product">
+		DELETE FROM  hmall_mst_pricerow
+		WHERE PRODUCT_ID = #{productId}
+	</delete>
+
+    <!-- 删除指定目录版本的价格行-->
+    <delete id="deletePricerowByProductAndVersion" parameterType="com.hand.hmall.mst.dto.Product">
+        DELETE FROM  hmall_mst_pricerow
+        WHERE PRODUCT_ID = #{productId}
+        AND CATALOGVERSION_ID = #{catalogversionId}
+    </delete>
+
+    <!-- 根据商品ID删除价格行 -->
+    <delete id="deleteByProductId" parameterType="java.util.List">
+        delete from hmall_mst_pricerow p
+        <where>
+            p.product_id in
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.syncProductId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </delete>
+
+    <select id="selectAllById" parameterType="java.util.List" resultMap="BaseResultMap">
+        select
+        p.product_id,
+        p.user_id,
+        p.user_group_id,
+        p.base_price,
+        p.bottom_price,
+        p.sale_unit,
+        p.rate,
+        p.syncflag,
+        p.start_time,
+        p.end_time,
+        p.price_type,
+        p.product_grade,
+        p.is_bottom,
+        p.price_group from hmall_mst_pricerow p
+        where p.product_id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.productId,jdbcType=DECIMAL}
+        </foreach>
+    </select>
+
+    <!-- 导入价格行时，若是否覆盖原纪录为Y时，则删除与本条记录商品编号、价格类型、框架等级、用户、用户组、销售单位相同的价格行 -->
+    <delete id="coverPricerow" parameterType="com.hand.hmall.mst.dto.Pricerow">
+        delete from HMALL_MST_PRICEROW price
+        where price.pricerow_id in
+        (select price.pricerow_id
+            from HMALL_MST_PRICEROW  price
+            left join hmall_mst_product   product
+            on price.product_id=product.product_id
+            left join hmall_mst_user      u
+            on u.user_id = price.user_id
+            left join Hmall_Mst_Usergroup ug
+            on price.user_group_id = ug.usergroup_id
+        where 1=1
+        <if test="code != null and code !=''">
+            and product.code = #{code}
+        </if>
+        <if test="priceType != null and priceType !=''">
+            and price.price_type = #{priceType}
+        </if>
+        <if test="productGrade != null and productGrade !=''">
+            and price.product_grade = #{productGrade}
+        </if>
+        <if test="productGrade == null">
+            and price.product_grade is null
+        </if>
+        <if test="odtype != null and odtype !=''">
+            and price.odtype = #{odtype}
+        </if>
+        <if test="saleUnit != null and saleUnit !=''">
+            and price.sale_unit = #{saleUnit}
+        </if>
+        <if test="catalogversionId != null">
+            and price.catalogversion_id = #{catalogversionId}
+        </if>
+        <if test="userId != null and userId !=''">
+            and price.user_id = #{userId}
+        </if>
+        <if test="userId == null">
+            and price.user_id is null
+        </if>
+        <if test="userGroupId != null and userGroupId !=''">
+            and price.user_group_id = #{userGroupId}
+        </if>
+        <if test="userGroupId == null">
+            and price.user_group_id is null
+        </if>
+        )
+
+    </delete>
+
+    <select id="selectUnsyncPricerows" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+          FROM HMALL_MST_PRODUCT P
+          JOIN HMALL_MST_PRICEROW PR
+            ON PR.PRODUCT_ID = P.PRODUCT_ID
+         WHERE PR.SYNCFLAG = 'N'
+           AND P.CATALOGVERSION_ID = #{catalogversionId, jdbcType=DECIMAL}
+           AND (P.CUSTOM_TYPE != 'A4' OR P.CUSTOM_TYPE IS NULL)
+           AND pr.price_type = '1'
+    </select>
+
+</mapper>

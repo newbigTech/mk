@@ -1,0 +1,1000 @@
+<#include "/include/header.html"/>
+<body>
+<script src="${base.contextPath}/common/code?saleChannel=HMALL.SALE_CHANNEL&saleYesNo=SALE_YES_NO&saleGroupOperator=HMALL.SALE_GROUP_OPERATOR" type="text/javascript"></script>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        groups_data:[],
+        submitResource: function(e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        returnResource        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+
+    var groupId='${RequestParameters.id}';
+    var parentId='${RequestParameters.parentId}';
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var openType='${RequestParameters.openType}';
+
+    var groupLvl='${RequestParameters.groupLvl}';
+    var selectType="ACTIVITY";
+
+    var groups_data=[];
+
+    if(groupLvl=='FIRST') {
+        for (var i in window.parent.groups_data) {
+            if (window.parent.groups_data[i].id == parentId && window.parent.groups_data[i].definitionId == 'GROUP') {
+                var flag = false;
+                for (var j in window.parent.groups_data[i].child) {
+                    if (window.parent.groups_data[i].child[j].id == groupId) {
+                        groups_data.push(window.parent.groups_data[i].child[j]);
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+            if (flag) {
+                break;
+            }
+        }
+    }else{
+
+        for(var i in window.parent.groups_data[0].child){
+            if (window.parent.groups_data[0].child[i].id == parentId) {
+                var flag = false;
+
+                for(var j in window.parent.groups_data[0].child[i].child){
+                    if(window.parent.groups_data[0].child[i].child[j].id==groupId){
+                        groups_data.push(window.parent.groups_data[0].child[i].child[j]);
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag){
+                    break;
+                }
+            }
+
+        }
+    }
+
+
+
+    var createType='CREATE';
+    var editType='EDIT';
+    var templateType='TEMPLATE';
+
+    var addConditions="ADD_CONDITIONS";
+    var addActions="ADD_ACTIONS";
+    var addGroups="ADD_GROUPS";
+    var addContainers="ADD_CONTAINERS";
+</script>
+
+<div id="content-container">
+    <div class="panel" style="padding: 10px;">
+        <div>
+            <div class="panel-footer text-left">
+                <span class="btn btn-primary" id="addTemplateRow" onclick="addTemplateCondition(addConditions,-1,selectType)" type="submit"><i class="fa fa-plus"></i> 添加条件</span>
+                <!--<span class="btn btn-success" id="addActionRow" onclick="addTemplateCondition(addActions,-1)" type="submit"><i class="fa fa-plus"></i> 添加结果</span>-->
+                <!--<span class="btn btn-success" id="saveTemplateRow" data-bind="click:submitResource" type="submit"><i class="fa fa-save"></i> 保存</span>-->
+                <!--<span class="btn btn-warning" id="rollback" data-bind="click:returnResource" type="button"><i class="fa fa-refresh"></i> 取消</span>-->
+
+            </div>
+            <form class="form-horizontal" id="ruleTableDev">
+                <div class="panel-body">
+                    <div class="row">
+                        <div id="jointStr"></div>
+
+
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <table class="table table-bordered table-striped table-condensed">
+                                        <thead>
+                                        <tr>
+
+                                            <th style="text-align: center;"   width="600px">条件</th>
+                                            <th style="text-align: center;" width="200px">编辑</th>
+                                            <th style="text-align: center;"width="200px">删除</th>
+
+                                        </tr>
+                                        </thead>
+                                        <tbody id="ruleTable">
+
+
+                                        </tbody>
+                                    </table>
+                                    <div id="groupDiv">
+
+
+
+                                    </div>
+
+                                    <div id="containerDiv">
+
+                                    </div>
+
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="panel-footer text-right">
+            <span class="btn btn-success" id="query" onclick="submitGroup()" type="submit"><i class="fa fa-search"></i> 创建</span>
+            <span class="btn btn-primary" id="resetForm" onclick="returnGroup()" type="button"><i class="fa fa-refresh"></i> 返回</span>
+
+        </div>
+    </div>
+</div>
+<div id="addTempWin"></div>
+<div id="addTempConditionDataWin"></div>
+<div id="addTempActionDataWin"></div>
+<div id="productChooseWin"></div>
+<div id="productContainerWin"></div>
+<div id="groupWin"></div>
+
+<script>
+
+    function submitGroup()
+    {
+
+        if(groupLvl=='FIRST'){
+            for(var i in window.parent.groups_data)
+            {
+                if(window.parent.groups_data[i].id==parentId) {
+                    if (window.parent.groups_data[i].child != undefined) {
+                        for (var j in window.parent.groups_data[i].child) {
+                            if (window.parent.groups_data[i].child[j].id == groupId) {
+                                    window.parent.groups_data[i].child[j].child=groups_data[0].child;
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            for(var i in window.parent.groups_data[0].child)
+            {
+                if(window.parent.groups_data[0].child[i].id==parentId) {
+                    for (var j in window.parent.groups_data[0].child[i].child) {
+                        if (window.parent.groups_data[0].child[i].child[j].id == groupId) {
+                            window.parent.groups_data[0].child[i].child[j].child=groups_data[0].child;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        window.parent.$('#addTempConditionDataWin').data('kendoWindow').close();
+
+    }
+
+    function timeToDate(time){
+        var date = new Date(time);
+        return new Date(date.getFullYear(),date.getMonth(),date.getDay(),date.getHours(),date.getMinutes(),date.getMilliseconds());
+    }
+
+    function addTemplateCondition(codeType,id,selectType) {
+
+        var onClose = function () {
+            jointConditionActionStr();
+
+            $("#addTempWin").empty();
+        };
+
+        $("#addTempWin").kendoWindow({
+            actions: ["Close"],
+            title:'添加条件' ,
+            draggable: true,
+            height: "80%",
+            width: "50%",
+            close: onClose,
+            content: "${base.contextPath}/sale/conditions/saleConditionEdit.html?code="+codeType+"&id="+id+"&selectType="+selectType,
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#addTempWin").data("kendoWindow");
+        win.center().open();
+    }
+
+
+    function addConditionRow(definitionId,meaning,code,id,showType)
+    {
+        if(definitionId=='CONTAINER') {
+//            addContainer(definitionId,'容器 '+viewModel.containerFlag,id,showType);
+        }else if(definitionId=='GROUP'){
+            addGroup(definitionId,meaning,id,showType);
+        }else {
+            addTableRow(definitionId,meaning,id,showType)
+        }
+    }
+
+
+
+    function addTableRow(definitionId,meaning,id,showType)
+    {
+        if(disabled!='true') {
+            $('#ruleTable').append('<tr id="tr_' + id + '">' +
+                    '<td id="id_meaning_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold">' + meaning + '</td>' +
+                    '<td id="id_edit_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold"><span style="cursor:pointer;text-decoration:underline; color:#3399CC;" id="' + id + '"  onclick=editConditionTableRow(this.id,disabled,"' + definitionId + '") >编辑</span></td>' +
+                    '<td id="id_delete_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold"><span style="cursor:pointer;text-decoration:underline ;color:#3399CC;" id="' + id + '" onclick="deleteConditionTableRow(this.id)">删除</span></td>' +
+                    '</tr>');
+        }else{
+            $('#ruleTable').append('<tr id="tr_' + id + '">' +
+                    '<td id="id_meaning_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold">' + meaning + '</td>' +
+                    '<td id="id_edit_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold"><span style="cursor:pointer;text-decoration:underline; color:#3399CC;" id="' + id + '"  onclick=editConditionTableRow(this.id,disabled,"' + definitionId + '") >查看</span></td>' +
+                    '</tr>');
+        }
+       if(showType!='EDIT') {
+
+           var ruleCondition = {};
+           ruleCondition.id = id;
+           ruleCondition.definitionId = definitionId;
+           ruleCondition.meaning = meaning;
+           console.log("groupId:"+groupId);
+           for(var i in groups_data)
+           {
+               if(groups_data[i].id==groupId)
+               {
+                   groups_data[i].child.push(ruleCondition);
+               }
+
+           }
+        }
+        jointConditionActionStr();
+
+    }
+
+
+    function addGroup(definitionId,meaning,id,showType)
+    {
+        if(disabled!='true') {
+            $('#groupDiv').append('<table id="group_' + id + '" class="table table-bordered table-striped table-condensed">' +
+                    '<thead ><tr>' +
+                    '<th style="text-align: center;" width="600px" height="38px">' +
+                    '<div><a class="col-sm-6"> 组 </a>' +
+                    '<div class="col-sm-6">' +
+                    '<span class="btn-sm btn-primary" style="cursor:pointer;" id="' + id + '" onclick="addTemplateCondition(addGroups,this.id,selectType)" >' +
+                    '<i class="fa fa-plus"></i> 添加条件</span>' +
+                    '</div></div></th>' +
+                    '<th style="text-align: center; " width="200px">' +
+                    '<input id="input_is_overlay_' + id + '"  data-value-primitive="true"/>' +
+                    '</th><th style="text-align: center;" width="200px">' +
+                    '<span class="btn-sm btn-danger" style="cursor:pointer;" id="' + id + '"  onclick="deleteGroupTable(this.id)" >' +
+                    '<i class="fa fa-trash-o"></i> 删除</span>' +
+                    '</th></tr></thead>' +
+                    '<tbody id="group_table_' + id + '"></tbody></table>');
+        }else{
+            $('#groupDiv').append('<table id="group_' + id + '" class="table table-bordered table-striped table-condensed">' +
+                    '<thead ><tr>' +
+                    '<th style="text-align: center;" width="600px" height="38px">' +
+                    '<div><a class="col-sm-6"> 组 </a>' +
+                    '<div class="col-sm-6">' +
+
+                    '</div></div></th>' +
+                    '<th style="text-align: center; " width="200px">' +
+                    '<input id="input_is_overlay_' + id + '" disabled="false"  data-value-primitive="true"/>' +
+                    '</th><th style="text-align: center;" width="200px">' +
+
+                    '</th></tr></thead>' +
+                    '<tbody id="group_table_' + id + '"></tbody></table>');
+        }
+
+        $("#input_is_overlay_"+id).kendoDropDownList({
+            dataSource: saleGroupOperator,
+            dataTextField: "meaning",
+            dataValueField: "value"
+        });
+
+        if(showType!='EDIT') {
+
+            var ruleGroup = {};
+            ruleGroup.id = id;
+            ruleGroup.definitionId = definitionId;
+            ruleGroup.meaning = '组';
+            ruleGroup.operator= 'or';
+            ruleGroup.child= [];
+            for(var i in groups_data) {
+                if(groups_data[i].id==groupId) {
+                    if(groups_data[i].child!=undefined) {
+                        groups_data[i].child.push(ruleGroup);
+                    }
+                }
+            }
+        }
+        jointConditionActionStr();
+
+    }
+
+    function addGroupRow(definitionId,meaning,id,parentId,showType)
+    {
+        if(disabled!='true') {
+            $('#group_table_' + parentId).append('<tr id="tr_' + id + '">' +
+                    '<td id="id_meaning_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold">' + meaning + '</td>' +
+                    '<td id="id_edit_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold"><span style="cursor:pointer;text-decoration:underline; color:#3399CC;" id="' + id + '" onclick=editGroupTableRow(this.id,"' + parentId + '",disabled) >编辑</span></td>' +
+                    '<td id="id_delete_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold"><span style="cursor:pointer;text-decoration:underline; color:#3399CC;" id="' + id + '" onclick=deleteGroupRow(this.id,"' + parentId + '")>删除</span></td>' +
+                    '</tr>');
+        }else{
+            $('#group_table_' + parentId).append('<tr id="tr_' + id + '">' +
+                    '<td id="id_meaning_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold">' + meaning + '</td>' +
+                    '<td id="id_edit_' + id + '" style="text-align:center;vertical-align:middle;font-weight:bold"><span style="cursor:pointer;text-decoration:underline; color:#3399CC;" id="' + id + '" onclick=editGroupTableRow(this.id,"' + parentId + '",disabled) >查看</span></td>' +
+                    '</tr>');
+        }
+
+        if(showType!='EDIT')
+        {
+            for(var i in groups_data) {
+                if (groups_data[i].id == groupId) {
+                    for(var j in groups_data[i].child) {
+                        if (groups_data[i].child[j].id == parentId) {
+                            if (groups_data[i].child == undefined) {
+                                groups_data[i].child[j].child=[];
+                            }
+                            var groupCondition = {};
+                            groupCondition.id = id;
+                            groupCondition.definitionId = definitionId;
+                            groupCondition.meaning = meaning;
+                            groupCondition.child=[];
+                            groupCondition.parentId=parentId;
+                            groups_data[i].child[j].child.push(groupCondition);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        jointConditionActionStr();
+
+
+    }
+
+    function deleteGroupRow(id,parentId)
+    {
+        kendo.ui.showConfirmDialog({
+            title:"删除提示",
+            message:"你确定要删除吗？"
+        }).done(function (e) {
+            if(e.button=='OK')
+            {
+                var actionTable = document.getElementById("group_table_"+parentId);
+                var cell = document.getElementById("tr_"+id);
+                if(cell!=undefined){
+                    actionTable.removeChild(cell);
+                    for(var i in groups_data[0].child)
+                    {
+                        if(groups_data[0].child[i].id==parentId)
+                        {
+                            for(var j in groups_data[0].child[i].child) {
+                                if(groups_data[0].child[i].child[j].id==id) {
+                                    groups_data[0].child[i].child.splice(j, 1);
+                                    jointConditionActionStr();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+
+    function deleteConditionTableRow(id)
+    {
+
+        kendo.ui.showConfirmDialog({
+            title:"删除提示",
+            message:"你确定要删除吗？"
+        }).done(function (e) {
+            if(e.button=='OK')
+            {
+                var ruleTable = document.getElementById("ruleTable");
+                var cell = document.getElementById("tr_"+id);
+                if(cell!=undefined){
+                    ruleTable.removeChild(cell);
+                    for(var i in groups_data[0].child)
+                    {
+                        if( groups_data[0].child[i].id==id)
+                        {
+                            groups_data[0].child.splice(i,1);
+                            jointConditionActionStr();
+                            break;
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    function deleteGroupTable(id)
+    {
+        kendo.ui.showConfirmDialog({
+            title:"删除提示",
+            message:"你确定要删除该组吗？"
+        }).done(function (e) {
+            if(e.button=='OK')
+            {
+                var groupTable = document.getElementById("groupDiv");
+                var cell = document.getElementById("group_"+id);
+                if(cell!=undefined){
+                    groupTable.removeChild(cell);
+                    for(var i in groups_data[0].child)
+                    {
+                        if(groups_data[0].child[i].id==id)
+                        {
+                            groups_data[0].child.splice(i,1);
+                            jointConditionActionStr();
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+        })
+    }
+
+
+
+    function openAddConditionDataWin(id,url,definitionId,height,width,disabled,openType)
+    {
+        var onClose = function () {
+            jointConditionActionStr();
+
+            $("#addTempConditionDataWin").empty();
+        };
+
+        $("#addTempConditionDataWin").kendoWindow({
+            actions: ["Close"],
+            title:'添加条件' ,
+            draggable: true,
+            height: height,
+            width: width,
+            close: onClose,
+            content: "${base.contextPath}/sale/conditions/"+url+"?id="+id+"&definitionId="+definitionId+"&disabled="+disabled+"&openType="+openType,
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#addTempConditionDataWin").data("kendoWindow");
+        win.setOptions(
+                {
+                    actions: ["Close"],
+                    title:'添加条件' ,
+                    draggable: true,
+                    height: height,
+                    width: width,
+                    close: onClose,
+                    content: "${base.contextPath}/sale/conditions/"+url+"?id="+id+"&definitionId="+definitionId+"&disabled="+disabled+"&openType="+openType,
+                    iframe: true,
+                    modal: true
+                });
+        win.center().open();
+    }
+
+
+
+
+
+    function editGroupTableRow(id,parentId,disabled) {
+
+        for(var i in groups_data)
+        {
+            if(groups_data[i].id==groupId)
+            {
+
+                if(groups_data[i].child!=undefined) {
+                    for(var j in groups_data[i].child) {
+                        if(groups_data[i].child[j].id==parentId) {
+
+                            for(var k in  groups_data[i].child[j].child) {
+                                if(groups_data[i].child[j].child[k].id==id) {
+                                    if (groups_data[i].child[j].child[k].definitionId == 'GROUP') {
+                                        openAddGroupConditionDataWin(id, parentId, "saleGroupConditionIterater.html", groups_data[i].child[j].definitionId, '95%', '95%', disabled, "GROUP_EXT")
+                                    } else if (groups_data[i].child[j].child[k].definitionId == 'o_total_reached' || groups_data[i].child[j].child[k].definitionId == 'o_quantity_reached') {
+                                        //订单满X元||订单满X件
+                                        openAddConditionDataWin(id, "saleNumberCondition.html", groups_data[i].child[j].child[k].definitionId, '50%', '50%', disabled, "GROUP_EXT");
+                                    } else if (groups_data[i].child[j].child[k].definitionId == 'o_product_range' || groups_data[i].child[j].child[k].definitionId == 'o_type_range') {
+                                        //商品范围||类别范围
+                                        openAddConditionDataWin(id, "saleRangeCondition.html", groups_data[i].child[j].child[k].definitionId, '45%', '80%', disabled, "GROUP_EXT");
+                                    } else if (groups_data[i].child[j].child[k].definitionId == 'o_front_number') {
+                                        //商品购买前X件
+                                        openAddConditionDataWin(id, "saleSingleNumberCondition.html", groups_data[i].child[j].child[k].definitionId, '45%', '50%', disabled, "GROUP_EXT");
+                                    } else if (groups_data[i].child[j].child[k].definitionId == 'o_user_range') {
+                                        //客户范围
+                                        openAddConditionDataWin(id, "saleUserChoose.html", groups_data[i].child[j].child[k].definitionId, '90%', '95%', disabled, "GROUP_EXT");
+                                    } else if (groups_data[i].child[j].child[k].definitionId == 'o_area_range') {
+                                        //地区范围
+                                        openAddConditionDataWin(id, "saleAreaChoose.html", groups_data[i].child[j].child[k].definitionId, '80%', '50%', disabled, "GROUP_EXT");
+                                    } else if (groups_data[i].child[j].child[k].definitionId == 'o_channel_range') {
+                                        //渠道范围
+                                        openAddConditionDataWin(id, "saleChannelChoose.html", groups_data[i].child[j].child[k].definitionId, '40%', '80%', disabled, "GROUP_EXT");
+                                    }
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    function openAddGroupConditionDataWin(id,parentId,url,definitionId,height,width,disabled,openType)
+    {
+        var onClose = function () {
+            jointConditionActionStr();
+
+            $("#addTempConditionDataWin").empty();
+        };
+
+        $("#addTempConditionDataWin").kendoWindow({
+            actions: ["Close"],
+            title:'添加条件' ,
+            draggable: true,
+            height: height,
+            width: width,
+            close: onClose,
+            content: "${base.contextPath}/sale/conditions/"+url+"?id="+id+"&parentId="+parentId+"&definitionId="+definitionId+"&disabled="+disabled+"&openType="+openType+"&groupLvl=ITERATE",
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#addTempConditionDataWin").data("kendoWindow");
+        win.setOptions(
+                {
+                    actions: ["Close"],
+                    title:'添加条件' ,
+                    draggable: true,
+                    height: height,
+                    width: width,
+                    close: onClose,
+                    content: "${base.contextPath}/sale/conditions/"+url+"?id="+id+"&definitionId="+definitionId+"&disabled="+disabled+"&openType="+openType+"&groupLvl=ITERATE",
+                    iframe: true,
+                    modal: true
+                });
+        win.center().open();
+    }
+
+
+    function editConditionTableRow(id,disabled,definitionId)
+    {
+
+        if (definitionId == 'o_total_reached' || definitionId == 'o_quantity_reached') {
+            //订单满X元||订单满X件
+            openAddConditionDataWin(id, "saleNumberCondition.html", definitionId, '50%', '50%', disabled, "GROUP");
+
+        } else if (definitionId == 'o_product_range' || definitionId == 'o_type_range') {
+            //商品范围||类别范围
+            openAddConditionDataWin(id, "saleRangeCondition.html", definitionId, '45%', '80%', disabled, "GROUP");
+
+        } else if (definitionId == 'o_front_number') {
+            //商品购买前X件
+            openAddConditionDataWin(id, "saleSingleNumberCondition.html", definitionId, '45%', '50%', disabled, "GROUP");
+
+        } else if (definitionId == 'o_user_range') {
+            //客户范围
+            openAddConditionDataWin(id, "saleUserChoose.html", definitionId, '90%', '95%', disabled, "GROUP");
+
+        } else if (definitionId == 'o_area_range') {
+            //地区范围
+            openAddConditionDataWin(id, "saleAreaChoose.html", definitionId, '80%', '50%', disabled, "GROUP");
+
+        } else if (definitionId == 'o_channel_range') {
+            //渠道范围
+            openAddConditionDataWin(id, "saleChannelChoose.html", definitionId, '40%', '80%', disabled, "GROUP");
+
+        }
+    }
+
+    function saveNumberCondition(data,id,openType) {
+        if(openType=='GROUP_EXT'){
+            if (groups_data != undefined) {
+                for (var i in groups_data) {
+                    if(groups_data[i].id==groupId) {
+                        if (groups_data[i].child != undefined) {
+                            var flag = false;
+                            for (var j in groups_data[i].child) {
+
+                                if(groups_data[i].child[j].child!=undefined) {
+                                    for (var k in groups_data[i].child[j].child) {
+                                        if (groups_data[i].child[j].child[k].id == id) {
+                                            if (groups_data[i].child[j].child[k].parameters == undefined) {
+                                                groups_data[i].child[j].child[k].parameters={};
+                                            }
+                                            if (groups_data[i].child[j].child[k].parameters.value == undefined) {
+                                                groups_data[i].child[j].child[k].parameters.value= {};
+                                            }
+
+                                            if (groups_data[i].child[j].child[k].parameters.operator == undefined) {
+                                                groups_data[i].child[j].child[k].parameters.operator={};
+                                            }
+
+                                            groups_data[i].child[j].child[k].parameters.value.value = data.value;
+                                            groups_data[i].child[j].child[k].parameters.operator.value = data.operator;
+                                            flag = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (flag) {
+                                break;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }else if(openType=='GROUP')
+        {
+            if (groups_data != undefined) {
+                for (var i in groups_data) {
+
+                    var flag=false;
+                    for(var j in groups_data[i].child)
+                    {
+
+                        if(groups_data[i].child[j].id==id)
+                        {
+
+                            if (groups_data[i].child[j].parameters == undefined) {
+                                groups_data[i].child[j].parameters={};
+                            }
+                            if (groups_data[i].child[j].parameters.value == undefined) {
+                                groups_data[i].child[j].parameters.value= {};
+                            }
+
+                            if (groups_data[i].child[j].parameters.operator == undefined) {
+                                groups_data[i].child[j].parameters.operator= {};
+                            }
+                            groups_data[i].child[j].parameters.value.value = data.value;
+                            groups_data[i].child[j].parameters.operator.value = data.operator;
+                            flag=true;
+                            break;
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    function saveDataCondition(data,id,openType) {
+
+        if(openType=='GROUP_EXT'){
+            if (groups_data != undefined) {
+                for (var i in groups_data) {
+                    if(groups_data[i].id==groupId) {
+                        if (groups_data[i].child != undefined) {
+                            var flag = false;
+                            for (var j in groups_data[i].child) {
+
+                                if(groups_data[i].child[j].child!=undefined) {
+                                    for (var k in groups_data[i].child[j].child) {
+                                        if (groups_data[i].child[j].child[k].id == id) {
+                                            if (groups_data[i].child[j].child[k].parameters == undefined) {
+                                                groups_data[i].child[j].child[k].parameters={};
+                                            }
+                                            if (groups_data[i].child[j].child[k].parameters.value == undefined) {
+                                                groups_data[i].child[j].child[k].parameters.value= {};
+                                            }
+
+                                            if (groups_data[i].child[j].child[k].parameters.operator == undefined) {
+                                                groups_data[i].child[j].child[k].parameters.operator={};
+                                            }
+                                            if (groups_data[i].child[j].child[k].parameters.rangeOperator == undefined) {
+                                                groups_data[i].child[j].child[k].parameters.rangeOperator={};
+                                            }
+                                            if (groups_data[i].child[j].child[k].parameters.rangeValue == undefined) {
+                                                groups_data[i].child[j].child[k].parameters.rangeValue={};
+                                            }
+                                            groups_data[i].child[j].child[k].parameters.value.value = data.value;
+                                            groups_data[i].child[j].child[k].parameters.operator.value = data.operator;
+                                            groups_data[i].child[j].child[k].parameters.rangeOperator.value = data.rangeOperator;
+                                            flag = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (flag) {
+                                break;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }else if(openType=='GROUP')
+        {
+            if (groups_data != undefined) {
+                for (var i in groups_data) {
+
+                    var flag=false;
+                    for(var j in groups_data[i].child)
+                    {
+
+                        if(groups_data[i].child[j].id==id)
+                        {
+
+                            if (groups_data[i].child[j].parameters == undefined) {
+                                groups_data[i].child[j].parameters={};
+                            }
+                            if (groups_data[i].child[j].parameters.value == undefined) {
+                                groups_data[i].child[j].parameters.value= {};
+                            }
+
+                            if (groups_data[i].child[j].parameters.operator == undefined) {
+                                groups_data[i].child[j].parameters.operator= {};
+                            }
+                            if (groups_data[i].child[j].parameters.rangeOperator == undefined) {
+                                groups_data[i].child[j].parameters.rangeOperator= {};
+                            }
+                            groups_data[i].child[j].parameters.value.value = data.value;
+                            groups_data[i].child[j].parameters.operator.value = data.operator;
+                            groups_data[i].child[j].parameters.rangeOperator.value = data.rangeOperator;
+                            flag=true;
+                            break;
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+
+                }
+            }
+        }
+    }
+
+    function saveNumberAction(data,id) {
+        if(viewModel.model.actions!=undefined)
+        {
+            for(var i in viewModel.model.actions)
+            {
+                if(viewModel.model.actions[i].id==id)
+                {
+
+                    if(viewModel.model.actions[i].parameters==undefined)
+                    {
+                        viewModel.model.actions[i].parameters={};
+                        if(viewModel.model.actions[i].parameters.value==undefined)
+                        {
+                            viewModel.model.actions[i].parameters.value={};
+                        }
+                    }
+
+                    viewModel.model.actions[i].parameters.value.value=data.value;
+                    break;
+                }
+            }
+        }
+    }
+
+    function appendConditions() {
+
+        for(var i in groups_data[0].child)
+        {
+            if(groups_data[0].child[i].definitionId!='GROUP') {
+                addTableRow(groups_data[0].child[i].definitionId, groups_data[0].child[i].meaning, groups_data[0].child[i].id, 'EDIT');
+            }else{
+                addGroup(groups_data[0].child[i].definitionId,groups_data[0].child[i].meaning,groups_data[0].child[i].id,'EDIT');
+                for(var j in groups_data[0].child[i].child){
+                    addGroupRow( groups_data[0].child[i].child[j].definitionId, groups_data[0].child[i].child[j].meaning,
+                            groups_data[0].child[i].child[j].id,groups_data[0].child[i].child[j].parentId, 'EDIT');
+                }
+
+            }
+        }
+    }
+
+    appendConditions();
+
+    function changeOperator(operator){
+        switch(operator)
+        {
+            case 'GEATER_THAN_OR_EQUAL':
+                return ">=";
+                break;
+            case 'GEATER_THAN':
+                return ">";
+                break;
+            case 'EQUAL':
+                return "==";
+                break;
+            case 'LESS_THAN_OR_EQUAL':
+                return "<=";
+                break;
+            case 'LESS_THAN':
+                return "<";
+                break;
+            case 'MEMBER_OF':
+                return "包含";
+                break;
+            case 'NOT_MEMBER_OF':
+                return "排除";
+                break;
+            case 'contains':
+                return "contains";
+                break;
+            case 'NOT_CONTAINS':
+                return "not contains";
+                break;
+            case 'IN':
+                return "in";
+                break;
+            case 'NOT_IN':
+                return "not in";
+                break;
+            case 'or':
+                return "或";
+                break;
+            case '且':
+                return "或";
+                break;
+            default:
+                return '';
+        }
+    }
+
+    function jointConditionActionStr(){
+        var totalStr="";
+        var conditionStr="条件：";
+        var actionStr="结果：";
+        var groupStr="分组：";
+        var containerStr="容器：";
+        var content="- 内容：{ ";
+        var contentEnd=" };  ";
+        var actionExceptList=["o_giver_coupon","o_free_number","o_giver_product","o_target_price","o_fixed_rate_buy","o_fixed_price_buy"]
+
+
+        if(viewModel.model.conditions!=undefined){
+            for(var i in viewModel.model.conditions) {
+                if (viewModel.model.conditions[i].id != undefined){
+                    conditionStr += "【" + viewModel.model.conditions[i].meaning ;
+                    if (viewModel.model.conditions[i].parameters != undefined) {
+                        conditionStr += content;
+                        if (viewModel.model.conditions[i].parameters.operator != undefined) {
+                            conditionStr += "操作符:" + changeOperator(viewModel.model.conditions[i].parameters.operator.value) ;
+                        }
+                        if (viewModel.model.conditions[i].parameters.value != undefined) {
+                            conditionStr += ", 值:" + viewModel.model.conditions[i].parameters.value.value || "";
+                        }
+                        if(viewModel.model.conditions[i].parameters.rangeOperator != undefined){
+                            conditionStr += ", 范围操作符:" + changeOperator(viewModel.model.conditions[i].parameters.rangeOperator.value );
+                        }
+                        if(viewModel.model.conditions[i].parameters.rangeValue != undefined){
+                            conditionStr += ", 范围:" + "见详情";
+                        }
+                        conditionStr += contentEnd;
+                    }
+                    conditionStr+="】";
+                }
+            }
+        }
+
+
+
+        if(groups_data!=undefined) {
+            for (var i in groups_data) {
+
+                if (groups_data[i].child != undefined) {
+                    for(var k in groups_data[i].child) {
+                        if (groups_data[i].child[k].id != undefined) {
+                            if (groups_data[i].child[k].definitionId != 'GROUP') {
+                                conditionStr += "【" + groups_data[i].child[k].meaning;
+                                if (groups_data[i].child[k].parameters != undefined) {
+                                    conditionStr += content;
+                                    if (groups_data[i].child[k].parameters.operator != undefined) {
+                                        conditionStr += "操作符:" + changeOperator(groups_data[i].child[k].parameters.operator.value);
+                                    }
+                                    if (groups_data[i].child[k].parameters.value != undefined) {
+                                        conditionStr += ", 值:" + groups_data[i].child[k].parameters.value.value || "";
+                                    }
+                                    if (groups_data[i].child[k].parameters.rangeOperator != undefined) {
+                                        conditionStr += ", 范围操作符:" + changeOperator(groups_data[i].child[k].parameters.rangeOperator.value);
+                                    }
+                                    if (groups_data[i].child[k].parameters.rangeValue != undefined) {
+                                        conditionStr += ", 范围:" + "见详情";
+                                    }
+                                    conditionStr += contentEnd;
+                                }
+                                conditionStr += "】";
+
+                            } else {
+                                if(groups_data[i].child[k].child!=undefined) {
+                                    groupStr += "#(" + groups_data[i].meaning ;
+                                    groupStr +=" , 操作符: "+changeOperator(groups_data[i].child[k].operator);
+                                    if(groups_data[i].child[k].child.length>0) {
+                                        groupStr += " ,组内条件:";
+
+                                        for (var j in groups_data[i].child[k].child) {
+                                            groupStr += "【" + groups_data[i].child[k].child[j].meaning;
+                                            if (groups_data[i].child[k].child[j].definitionId != 'GROUP') {
+
+                                                if (groups_data[i].child[k].child[j].parameters != undefined) {
+                                                    groupStr += content;
+                                                    if (groups_data[i].child[k].child[j].parameters.operator != undefined) {
+                                                        groupStr += "操作符:" + changeOperator(groups_data[i].child[k].child[j].parameters.operator.value);
+                                                    }
+                                                    if (groups_data[i].child[k].child[j].parameters.value != undefined) {
+                                                        groupStr += ", 值:" + groups_data[i].child[k].child[j].parameters.value.value || "";
+                                                    }
+                                                    if (groups_data[i].child[k].child[j].parameters.rangeOperator != undefined) {
+                                                        groupStr += ", 范围操作符:" + changeOperator(groups_data[i].child[k].child[j].parameters.rangeOperator.value);
+                                                    }
+                                                    if (groups_data[i].child[k].child[j].parameters.rangeValue != undefined) {
+                                                        groupStr += ", 范围:" + "见详情";
+                                                    }
+                                                    groupStr += contentEnd;
+                                                }
+
+                                            } else {
+                                                groupStr += content;
+                                                groupStr += "分组:见详情";
+                                                groupStr += contentEnd;
+
+                                            }
+
+                                            groupStr += "】";
+                                        }
+                                    }
+
+                                    groupStr += ")#";
+
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+            }
+        }
+
+
+
+        var div = document.getElementById("jointStr");
+        while (div.hasChildNodes()) //当div下还存在子节点时 循环继续
+        {
+            div.removeChild(div.firstChild);
+        }
+
+        if (conditionStr != '条件：') {
+            $('#jointStr').append('<p>' + conditionStr + '</p>')
+        }
+
+        if (groupStr != "分组：") {
+            $('#jointStr').append('<p>' + groupStr + '</p>')
+        }
+
+
+
+    }
+
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:config.properties"/>
+
+    <bean id="mQApplicationConfig" class="com.markor.map.framework.rocketmq.MQApplicationConfig">
+        <property name="applicationName" value="${applicationName}"></property>
+        <property name="nameServerAddr" value="${rocketmq.nameserver}"></property>
+    </bean>
+
+    <!-- 消息生产者配置 -->
+    <bean id="rocketMQProducer" class="com.markor.map.framework.rocketmq.RocketMQProducer" init-method="init"
+          destroy-method="destroy">
+        <property name="producerGroup" value="PID_hmall" />
+        <property name="retryTimesWhenSendFailed" value="3" />
+    </bean>
+
+    <!-- 消息消费者配置 -->
+    <bean id="rocketMQConsumerManager" class="com.markor.map.framework.rocketmq.RocketMQConsumerManager"
+          init-method="init"
+          destroy-method="destroy">
+        <constructor-arg name="configList">
+            <!--  可配置多个Consumer -->
+            <list>
+                <bean class="com.markor.map.framework.rocketmq.ConsumerConfig">
+                    <!--  消费模型： CLUSTERING:集群消费(默认) /  BROADCASTING:广播消费 -->
+                    <property name="messageModel" value="CLUSTERING"/>
+                    <!--  消费者（组）ID -->
+                    <property name="consumerGroup" value="CID_hmall"/>
+                    <property name="topics">
+                        <!--  订阅的topic列表  -->
+                        <list>
+                            <!--  格式为： TOPIC_NAME:TAG， 只写TOPIC_NAME则订阅该topic下的所有tag  -->
+                            <!--物流跟踪-->
+                            <value>logistics:TRADE_RRS_ZIZAIJIA</value>
+                            <!--BOM审核-->
+                            <value>MAP_BOM_REVIEW:ZEST_approved || ZEST_rejected</value>
+                        </list>
+                    </property>
+                    <!--  消费监听处理类（实现MessageListenerConcurrently接口） -->
+                    <property name="listener" ref="mqListener"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mqListener" class="com.hand.common.mq.RocketMQMessageListener"/>
+
+</beans>

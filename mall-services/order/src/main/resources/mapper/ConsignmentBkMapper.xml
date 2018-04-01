@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.ConsignmentBkMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.ConsignmentBk">
+    <id column="CONSIGNMENT_ID" jdbcType="DECIMAL" property="consignmentId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="SAP_CODE" jdbcType="VARCHAR" property="sapCode" />
+    <result column="STATUS" jdbcType="VARCHAR" property="status" />
+    <result column="BRAND" jdbcType="VARCHAR" property="brand" />
+    <result column="ORDER_ID" jdbcType="DECIMAL" property="orderId" />
+    <result column="LOGISTICS_COMPANIES" jdbcType="DECIMAL" property="logisticsCompanies" />
+    <result column="LOGISTICS_NUMBER" jdbcType="VARCHAR" property="logisticsNumber" />
+    <result column="POINT_OF_SERVICE_ID" jdbcType="DECIMAL" property="pointOfServiceId" />
+    <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType" />
+    <result column="SHIPPING_DATE" jdbcType="TIMESTAMP" property="shippingDate" />
+    <result column="RECEIVER_NAME" jdbcType="VARCHAR" property="receiverName" />
+    <result column="RECEIVER_COUNTRY" jdbcType="VARCHAR" property="receiverCountry" />
+    <result column="RECEIVER_STATE" jdbcType="DECIMAL" property="receiverState" />
+    <result column="RECEIVER_CITY" jdbcType="DECIMAL" property="receiverCity" />
+    <result column="RECEIVER_DISTRICT" jdbcType="DECIMAL" property="receiverDistrict" />
+    <result column="RECEIVER_TOWN" jdbcType="VARCHAR" property="receiverTown" />
+    <result column="RECEIVER_ADDRESS" jdbcType="VARCHAR" property="receiverAddress" />
+    <result column="RECEIVER_ZIP" jdbcType="VARCHAR" property="receiverZip" />
+    <result column="RECEIVER_MOBILE" jdbcType="VARCHAR" property="receiverMobile" />
+    <result column="RECEIVER_PHONE" jdbcType="VARCHAR" property="receiverPhone" />
+    <result column="NOTE" jdbcType="VARCHAR" property="note" />
+    <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime" />
+    <result column="SPLIT_ALLOWED" jdbcType="VARCHAR" property="splitAllowed" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="APPROVED_BY" jdbcType="DECIMAL" property="approvedBy" />
+    <result column="APPROVED_DATE" jdbcType="TIMESTAMP" property="approvedDate" />
+    <result column="APPROVED_TIMES" jdbcType="DECIMAL" property="approvedTimes" />
+    <result column="SPLIT_REASON" jdbcType="VARCHAR" property="splitReason" />
+    <result column="ABNORMAL_REASON" jdbcType="VARCHAR" property="abnormalReason" />
+    <result column="CS_APPROVED" jdbcType="VARCHAR" property="csApproved" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    CONSIGNMENT_ID, CODE, SAP_CODE, STATUS, BRAND, ORDER_ID, LOGISTICS_COMPANIES, LOGISTICS_NUMBER,
+    POINT_OF_SERVICE_ID, SHIPPING_TYPE, SHIPPING_DATE, RECEIVER_NAME, RECEIVER_COUNTRY,
+    RECEIVER_STATE, RECEIVER_CITY, RECEIVER_DISTRICT, RECEIVER_TOWN, RECEIVER_ADDRESS,
+    RECEIVER_ZIP, RECEIVER_MOBILE, RECEIVER_PHONE, NOTE, ESTIMATE_DELIVERY_TIME, SPLIT_ALLOWED,
+    SYNCFLAG, APPROVED_BY, APPROVED_DATE, APPROVED_TIMES, SPLIT_REASON,
+    ABNORMAL_REASON, CS_APPROVED
+  </sql>
+</mapper>

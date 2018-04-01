@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.InstallationMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Installation">
+        <result column="INSTALLATION_ID" property="installationId" jdbcType="DECIMAL" />
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL" />
+        <result column="INSTALLATION_FEE" property="installationFee" jdbcType="DECIMAL" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="CATEGORY_CODE" property="categoryCode" jdbcType="VARCHAR" />
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 安装费界面查询功能 -->
+    <select id="selectInstallation" parameterType="com.hand.hmall.mst.dto.Installation" resultMap="BaseResultMap">
+        select hmi.installation_id,
+       hmi.category_id,
+       hmc.category_code,
+       hmc.category_name,
+       hmi.installation_fee,
+       hmi.status
+      from hmall_mst_installation hmi
+            left join hmall_mst_category hmc
+            on hmi.category_id = hmc.category_id
+     where 1 = 1
+        <if test="categoryCode != null and categoryCode!=''">
+            and upper(hmc.category_code) LIKE  upper('%'||#{categoryCode}||'%')
+        </if>
+        <if test="categoryName != null and categoryName !=''">
+            and hmc.category_name  LIKE '%'||#{categoryName}||'%'
+        </if>
+        <if test="status != null and status !=''">
+            and hmi.status = #{status}
+        </if>
+
+    </select>
+
+
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:reference id="iAtpCalculateChangeService" interface="com.hand.hap.atp.service.IAtpCalculateChangeService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpCalculateService" interface="com.hand.hap.atp.service.IAtpCalculateService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpCapacityInfoService" interface="com.hand.hap.atp.service.IAtpCapacityInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpCapacityReservedService" interface="com.hand.hap.atp.service.IAtpCapacityReservedService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpInvSourceInfoService" interface="com.hand.hap.atp.service.IAtpInvSourceInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpItemMakingInfoService" interface="com.hand.hap.atp.service.IAtpItemMakingInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpMoReservedInfoService" interface="com.hand.hap.atp.service.IAtpMoReservedInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpOccupyHistoryService" interface="com.hand.hap.atp.service.IAtpOccupyHistoryService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpPartsInvInfoService" interface="com.hand.hap.atp.service.IAtpPartsInvInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpPartsPoInfoService" interface="com.hand.hap.atp.service.IAtpPartsPoInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpPartsPoReservedService" interface="com.hand.hap.atp.service.IAtpPartsPoReservedService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpPartsReservedService" interface="com.hand.hap.atp.service.IAtpPartsReservedService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpPoInvInfoService" interface="com.hand.hap.atp.service.IAtpPoInvInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpPoReservedService" interface="com.hand.hap.atp.service.IAtpPoReservedService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpProductInvInfoService" interface="com.hand.hap.atp.service.IAtpProductInvInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpProductReservedService" interface="com.hand.hap.atp.service.IAtpProductReservedService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iAtpProductStockService" interface="com.markor.map.configurator.api.atp.IAtpProductStockService"
+                     group="configurator-service" version="1.0.0"/>
+</beans>

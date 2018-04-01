@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OmDiscountNoticeMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OmDiscountNotice">
+        <result column="NOTICE_ID" property="noticeId" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT_ID" property="discountId" jdbcType="DECIMAL"/>
+        <result column="PLATFROM_CODE" property="platfromCode" jdbcType="VARCHAR"/>
+        <result column="VCODE" property="vcode" jdbcType="VARCHAR"/>
+        <result column="NOTICE_TIME" property="noticeTime" jdbcType="DATE"/>
+    </resultMap>
+
+    <!--根据折扣行ID删除数据-->
+    <delete id="deleteByDiscountId" parameterType="com.hand.hmall.om.dto.OmDiscountNotice">
+        DELETE FROM HMALL_OM_DISCOUNT_NOTICE
+        WHERE DISCOUNT_ID = #{discountId,jdbcType=DECIMAL}
+    </delete>
+
+</mapper>

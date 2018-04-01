@@ -1,0 +1,212 @@
+<#include "/include/header.html">
+    <style>
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+        button, input, optgroup, select, textarea {
+            margin: 0;
+            font: inherit;
+            color: inherit;
+        }
+        .form-control {
+            display: block;
+            width: 100%;
+            height: 34px;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+            -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #337ab7;
+            border-color: #2e6da4;
+            margin: 8px;
+        }
+
+        .wrap {
+            padding: 30px 60px;
+        }
+
+        .vcode {
+            margin-bottom: 10px;
+        }
+
+        .info_wrap {
+            padding: 10px 60px;
+        }
+    </style>
+    <body>
+    <div class="wrap">
+        <input class="form-control vcode" style="height: 30px;" type="text" placeholder="请输入V码" />
+        <select class="form-control odtype" >
+            <option value="">无</option>
+            <option value="1">普通定制</option>
+            <option value="2">超级定制</option>
+
+        </select>
+
+        <button class="btn btn-primary size">计算尺寸</button>
+        <button class="btn btn-primary price">计算价格</button>
+    </div>
+    <div class="info_wrap">
+        <span>产品净尺寸:</span><span class="product_size"></span>
+    </div>
+    <div class="info_wrap">
+        <span>产品包装尺寸:</span><span class="product_package_size"></span>
+    </div>
+    <div class="info_wrap">
+        <span>产品销售价格:</span><span class="product_sales_price"></span>
+    </div>
+    <div class="info_wrap">
+        <span>产品采购价格:</span><span class="product_price"></span>
+    </div>
+    <div class="info_wrap">
+        <span>产品折扣价格:</span><span class="product_discount_price"></span>
+    </div>
+    <div class="info_wrap">
+        <span>折扣开始时间:</span><span class="startTime"></span>
+    </div>
+    <div class="info_wrap">
+        <span>折扣结束时间:</span><span class="endTime"></span>
+    </div>
+    </body>
+    <script>
+        $(function() {
+            $(".size").click(function() {
+                if($(".vcode").val() == "") {
+                    alert("请输入v码");
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/api/public/volumeCal',
+                    dataType: "json",
+                    async: false,
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        vcode: $(".vcode").val()
+                    }),
+                    success: function(data) {
+                        if(data.code == 200) {
+                            $(".product_size").text(data.returnValue);
+                        } else {
+                            alert(data.msgDetail);
+                        }
+                    }
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/api/public/outPackVolumeCal',
+                    dataType: "json",
+                    async: false,
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        vcode: $(".vcode").val()
+                    }),
+                    success: function(data) {
+                        if(data.code == 200) {
+                            $(".product_package_size").text(data.returnValue);
+                        } else {
+                            alert(data.msgDetail);
+                        }
+                    }
+                });
+            });
+
+            $(".price").click(function() {
+                if($(".vcode").val() == "") {
+                    alert("请输入v码");
+                    return;
+                }
+                console.log($(".odtype").val());
+
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/price/calculateSalePrice',
+                    dataType: "json",
+                    async: false,
+                    contentType: "application/json",
+                    data: JSON.stringify([{
+                        vCode: $(".vcode").val(),
+                        odtype:$(".odtype").val()
+                    }]),
+                    success: function(data) {
+                        if(data.success ) {
+                            if(data.resp[0].success){
+                                $(".product_sales_price").text(data.resp[0].totalPrice);
+                                $(".product_discount_price").text(data.resp[0].discountPrice);
+                                $(".startTime").text(data.resp[0].startTime);
+                                $(".endTime").text(data.resp[0].endTime);
+                            }else{
+                                alert(data.resp[0].message);
+                            }
+
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                });
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/price/calculateOrderPrice',
+                    dataType: "json",
+                    async: false,
+                    contentType: "application/json",
+                    data: JSON.stringify([{
+                        vCode: $(".vcode").val(),
+                        odtype:$(".odtype").val()
+                    }]),
+                    success: function(data) {
+                        if(data.success ) {
+                            if(data.resp[0].success){
+                                $(".product_price").text(data.resp[0].totalPrice);
+                            }else{
+                                alert(data.resp[0].message);
+                            }
+
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+    </html>

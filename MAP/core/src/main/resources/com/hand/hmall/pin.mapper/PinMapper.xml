@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hand.hmall.pin.mapper.PinMapper">
+
+    <resultMap id="pinInfo4ZMallMap" type="com.hand.hmall.pin.dto.PinInfo4SendZmall">
+        <result column="PIN_CODE" property="pinCode" jdbcType="VARCHAR"/>
+        <result column="ZMALL_ORDER_CODE" property="zmallOrderCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_ENTRY_CODE" property="orderEntryCode" jdbcType="VARCHAR"/>
+        <result column="EVENT_CODE" property="eventCode" jdbcType="VARCHAR"/>
+        <result column="EVENT_DES" property="eventDes" jdbcType="VARCHAR"/>
+        <result column="SYSTEM" property="system" jdbcType="VARCHAR"/>
+        <result column="OPERATOR" property="operator" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="OPERATION_TIME" property="operationTime" jdbcType="VARCHAR"/>
+        <result column="EVENT_INFO" property="eventInfo" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="Pin_Map" type="com.hand.hmall.pin.dto.Pin">
+        <result column="PIN_INFO_ID" property="pinInfoId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="ENTRY_CODE" property="entryCode" jdbcType="VARCHAR"/>
+        <result column="EVENT_CODE" property="eventCode" jdbcType="VARCHAR"/>
+        <result column="EVENT_DES" property="eventDes" jdbcType="VARCHAR"/>
+        <result column="SYSTEM" property="system" jdbcType="VARCHAR"/>
+        <result column="OPERATOR" property="operator" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="OPERATION_TIME" property="operationTime" jdbcType="DATE"/>
+        <result column="EVENT_INFO" property="eventInfo" jdbcType="VARCHAR"/>
+        <result column="FLAG_LEVEL1" property="flagLevel1" jdbcType="VARCHAR"/>
+        <result column="FLAG_LEVEL2" property="flagLevel2" jdbcType="VARCHAR"/>
+        <result column="FLAG_LEVEL3" property="flagLevel3" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Pin_columns">
+        pintbl.PIN_INFO_ID,
+        pintbl.CODE,
+        pintbl.ENTRY_CODE,
+        pintbl.EVENT_CODE,
+        pintbl.EVENT_DES,
+        pintbl.SYSTEM,
+        pintbl.OPERATOR,
+        pintbl.MOBILE,
+        pintbl.OPERATION_TIME,
+        pintbl.EVENT_INFO,
+        pintbl.FLAG_LEVEL1,
+        pintbl.FLAG_LEVEL2,
+        pintbl.FLAG_LEVEL3
+    </sql>
+
+    <select id="queryByCode" resultMap="Pin_Map" parameterType="java.lang.String">
+        SELECT
+        <include refid="Pin_columns"/>
+        FROM HMALL_PIN_INFO pintbl
+        WHERE pintbl.CODE = #{code}
+        order by pintbl.operation_time
+    </select>
+
+    <!-- 用于soap接口 -->
+    <insert id="insertOne" parameterType="com.hand.hmall.services.pin.dto.PinZest">
+        <selectKey resultType="long" order="BEFORE" keyProperty="pinInfoId">
+            SELECT HMALL_PIN_INFO_S.Nextval FROM DUAL
+        </selectKey>
+        INSERT INTO HMALL_PIN_INFO(PIN_INFO_ID,CODE,EVENT_CODE,EVENT_DES,SYSTEM,OPERATOR,OPERATION_TIME,EVENT_INFO,MOBILE)
+        VALUES (#{pinInfoId},#{code},#{eventCode},#{eventDes},#{system},#{operator},#{operationTime},#{eventInfo},#{mobile})
+    </insert>
+
+    <!-- List<Pin> queryNotSyncPinInfo(); -->
+    <!--
+        TODO: zmall接受pin码接口的orderEntryCode实际上对应的是 Hmall_Om_Order_Entry.line_number
+        modified by majun @2017/9/23 添加条件hmall_om_order.order_type = 'NORMAL'
+    -->
+    <select id="queryNotSyncPinInfo" resultMap="pinInfo4ZMallMap">
+        SELECT PIN.CODE PIN_CODE,
+               O.ESC_ORDER_CODE ZMALL_ORDER_CODE,
+               OE.ESC_LINE_NUMBER ORDER_ENTRY_CODE,
+               PIN.EVENT_CODE EVENT_CODE,
+               PIN.EVENT_DES EVENT_DES,
+               PIN.SYSTEM SYSTEM,
+               PIN.OPERATOR OPERATOR,
+               PIN.MOBILE MOBILE,
+               TO_CHAR(PIN.OPERATION_TIME, 'yyyy-mm-dd hh24:mi:ss') OPERATION_TIME,
+               PIN.EVENT_INFO EVENT_INFO
+          FROM HMALL_PIN_INFO PIN
+          JOIN HMALL_OM_ORDER_ENTRY OE
+            ON PIN.ENTRY_CODE = OE.CODE
+          JOIN HMALL_OM_ORDER O
+            ON OE.ORDER_ID = O.ORDER_ID
+          JOIN HMALL_PIN_ALTER PA
+            ON PIN.EVENT_CODE = PA.EVENT_CODE
+         WHERE PIN.SYNC_ZMALL_FLAG = 'N'
+           AND PA.ZMALL_NEED_FLAG = 'Y'
+           AND OE.PARENT_LINE IS NULL
+           AND o.order_type = 'NORMAL'
+           AND o.WEBSITE_ID = '1'
+    </select>
+
+    <!--
+        更新Zmall同步标志位
+        void updateSynvZmallFlag(String syncFlag);
+    -->
+    <update id="updateSynvZmallFlag" parameterType="java.lang.String">
+        update HMALL_PIN_INFO set SYNC_ZMALL_FLAG = #{syncFlag}
+        where pin_info_id in
+        (select
+          pin.pin_info_id
+        from HMALL_PIN_INFO pin join Hmall_Om_Order_Entry oe on pin.entry_code = oe.code
+        join Hmall_Om_Order o on oe.order_id = o.order_id
+        join hmall_pin_alter pa on pin.event_code = pa.event_code
+        where pin.SYNC_ZMALL_FLAG = 'N' AND pa.Zmall_Need_Flag = 'Y' and oe.parent_line is null  AND o.order_type = 'NORMAL'
+           AND o.WEBSITE_ID = '1')
+    </update>
+
+</mapper>

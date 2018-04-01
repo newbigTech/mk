@@ -1,0 +1,421 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        notIn:[],
+        notInCount:[]
+
+    });
+
+    var id='${RequestParameters.id}';
+    var value=[];
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    viewModel.set("disabled",disabled);
+
+    for(var i in window.parent.viewModel.model.actions)
+    {
+        if(window.parent.viewModel.model.actions[i].id==id)
+        {
+            definitionId=window.parent.viewModel.model.actions[i].definitionId;
+
+            if(window.parent.viewModel.model.actions[i].parameters!=undefined) {
+                if(window.parent.viewModel.model.actions[i].parameters.value!=undefined) {
+                    value=window.parent.viewModel.model.actions[i].parameters.value.value;
+                }
+            }
+            break;
+        }
+    }
+
+    if(value!=null&&value!=undefined&&value!="")
+    {
+        viewModel.notInCount =value;
+        for(var i in value)
+        {
+            viewModel.notIn.push(value[i].id);
+        }
+    }
+
+
+
+
+
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div id='grid-container'>
+            <div id="grid" style="clear: both"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="addCoupon"></div>
+<script type="text/javascript">
+
+
+    kendo.bind($('#page-content'),viewModel);
+    kendo.bind($('#grid-container'),viewModel);
+
+    var countEditor = function (container, options) {
+        $('<input name="countEditor" data-bind="value:' + options.field + '"/>')
+                .appendTo(container)
+                .kendoNumericTextBox({
+                    format: "n0",
+                    min: 0
+
+                });
+    };
+
+
+    var BaseUrl = "${base.contextPath}/sale/coupon/",
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"queryByNotIn",
+                        type : "POST",
+                        contentType: "application/json"
+
+                    },
+                    update:  {
+                        url: BaseUrl+"submitCountNumber",
+                        type : "POST",
+                        contentType: "application/json"
+
+                    },
+
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            if(type =='create' || type =='update'){
+                                var map = viewModel.model.toJSON();
+                                datas = options.models.map(function(data){
+                                    data['__status'] = (type =='create' ? 'add' : 'update');
+                                    return data;
+
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+                            var map={};
+                            map.notIn =viewModel.notInCount;
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+                            for (var k in map) {
+                                if (map[k] === '' || map[k] === null || map[k] === undefined)
+                                    delete map[k]
+                            }
+                            return kendo.stringify(map);
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    var response = e.response;
+                    var type = e.type;
+                    if(type=='update')
+                    {
+                        console.log(response);
+                        if(response.success) {
+                            var notInData=response.resp;
+                            if (notInData != undefined && notInData != null) {
+                                for (var i in notInData) {
+                                    for (var j in viewModel.notInCount) {
+                                        if (viewModel.notInCount[j].id == notInData[i].id) {
+                                            viewModel.notInCount[j].countNumber = notInData[i].countNumber;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }else {
+                            $('#grid').data('kendoGrid').dataSource.read();
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging : true,
+                pageSize: 10,
+                schema: {
+                    data:'resp',
+                    total:'total',
+                    model: {
+                        id: "id",
+                        fields: {
+                            couponId:{editable:false, validation: { required: true }},
+                            couponCode: {editable:false, validation: { required: true } },
+                            couponName: {editable:false, validation: { required: true } },
+                            isOverlay: {editable:false, validation: { required: true } },
+                            status: {editable:false, validation: { required: true } },
+                            startDate:{editable:false, validation: { required: true } },
+                            endDate:{editable:false, validation: { required: true } },
+                            countNumber:{editable:true, validation: { required: true },defaultValue:1}
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+
+    var grid=$("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+        selectable : 'multiple, rowbox',
+        pageable: {
+            pageSizes: ['All', 5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                template: '<span  id="addButton" disabled="true"   class="btn btn-primary"><i class="fa fa-plus"></i> 添加</span>'
+            },{
+                template:'<button  id="deleteButton"  disabled="true"   class="btn btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> <@spring.message "hap.delete"/></button>'
+            },{
+                template:'<button  id="addCouponDataAction"  disabled="true"    class="btn btn-success"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i> 确定</button>'
+            }
+        ],
+        columns: [
+            {
+                field: "couponId",
+                title: '优惠券ID',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+
+            },
+            {
+                field: "couponCode",
+                title: '优惠券码',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+            {
+                field: "couponName",
+                title: '优惠券名称',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+            {
+                field: "startDate",
+                title: '开始时间',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                template :function (dataItem) {
+                    if(dataItem.startDate!=null||dataItem.startDate!=undefined||dataItem.startDate!="") {
+                        var date=new Date(dataItem.startDate);
+                        return date.getFullYear()+"-"+date.getMonth()+"-"+date.getDay()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getMilliseconds()
+                    }else {
+                        return ""
+                    }
+                }
+            },
+            {
+                field: "endDate",
+                title: '结束时间',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                template: function (dataItem) {
+                    if (dataItem.endDate != null || dataItem.endDate != undefined || dataItem.endDate != "") {
+                        var date=new Date(dataItem.endDate);
+                        return date.getFullYear()+"-"+date.getMonth()+"-"+date.getDay()+" "+date.getHours()+":"+date.getMinutes()+":"+date.getMilliseconds()
+                    }else
+                    {
+                        return "";
+                    }
+                }
+            },
+            {
+                field: "isOverlay",
+                title: '是否与促销叠加',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                template:function (dataItem) {
+                    if(dataItem.isOverlay) {
+                        if(dataItem.isOverlay=='Y')
+                        {
+                            return "是"
+                        }else {
+                            return "否"
+                        }
+                        return "";
+
+                    }
+                }
+            },
+            {
+                field: "countNumber",
+                title: '数量',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                editor:countEditor,
+                template:function (dataItem) {
+                    if(dataItem.countNumber)
+                    {
+                        return dataItem.countNumber
+                    }else {
+                        return 0;
+                    }
+                }
+            },
+            {
+                command: [
+                    {
+                        name: "edit"
+                    }
+                ],
+                title: "操作",
+                headerAttributes: {
+                    style: "text-align:center"
+                },
+                attributes: {
+                    style: "text-align:center"
+                }
+            }
+
+        ],
+        editable:{
+            mode:"inline"},
+
+    }).data("kendoGrid");
+
+
+
+    function deleteCheckedData(){
+        var grid = $("#grid").data("kendoGrid");
+        if (!grid.selectedDataItems().length) {
+            kendo.ui.showInfoDialog({
+                title: '提示信息',
+                message: '你未选中任何要删除的项!'
+            });
+            return ;
+        }
+        kendo.ui.showConfirmDialog({
+            title:'<@spring.message "hmdm.org_type_confirm_dialog_title"/>',
+            message: '<@spring.message "hmdm.org_type_confirm_dialog_message"/>'
+        }).done(function(event){
+
+            if(event.button == 'OK'){
+                var data = grid.selectedDataItems();
+                for(var i=0;i<data.length;i++)
+                {
+                    grid.dataSource.remove(data[i]);
+                    viewModel.notIn.remove(data[i].id);
+
+                    for(var j in viewModel.notInCount)
+                    {
+                        if(viewModel.notInCount[j].id==data[i].id)
+                        {
+                            viewModel.notInCount.splice(j,1);
+                            break;
+                        }
+                    }
+
+                }
+            }
+        })
+
+    }
+
+
+
+
+    function addCoupon() {
+        var onClose = function () {
+            $("#addCoupon").empty();
+        };
+
+        $("#addCoupon").kendoWindow({
+            actions: ["Close"],
+            title: '模板编辑',
+            draggable: true,
+            height: "95%",
+            width: "100%",
+            close: onClose,
+            content: "${base.contextPath}/sale/actions/saleGiveCouponAdd.html",
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#addCoupon").data("kendoWindow");
+        win.center().open();
+
+
+    }
+
+    function addCouponData(data)
+    {
+        var grid=$('#grid').data('kendoGrid');
+        for(var i in data)
+        {
+            var notIn={};
+            notIn.id=data[i].id;
+            notIn.countNumber=data[i].countNumber;
+            notIn.couponName=data[i].couponName;
+
+            viewModel.notIn.push(notIn.id);
+            viewModel.notInCount.push(notIn);
+            grid.dataSource._data.push(data[i]);
+            grid.refresh();
+
+        }
+    }
+
+    function addCouponDataAction()
+    {
+
+        var map={};
+        map.value=viewModel.notInCount;
+        window.parent.saveNumberAction(map,id);
+        window.parent.$("#addTempActionDataWin").data("kendoWindow").close();
+    }
+
+    if(disabled!='true'){
+        $('#addButton').removeAttr("disabled");
+        $('#addButton').attr("onclick","addCoupon()");
+        $('#deleteButton').removeAttr("disabled");
+        $('#deleteButton').attr("onclick","deleteCheckedData()");
+        $('#addCouponDataAction').removeAttr("disabled");
+        $('#addCouponDataAction').attr("onclick","addCouponDataAction()");
+    }
+
+    $('.k-input').attr("disabled",true);
+
+</script>
+</body>
+</html>

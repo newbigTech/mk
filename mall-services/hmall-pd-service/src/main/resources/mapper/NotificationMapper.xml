@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.NotificationMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.Notification">
+    <id column="NOTIFICATION_ID" jdbcType="DECIMAL" property="notificationId" />
+    <result column="NOTIFICATION_STATUS" jdbcType="VARCHAR" property="notificationStatus" />
+    <result column="NOTIFICATION_TYPE" jdbcType="VARCHAR" property="notificationType" />
+    <result column="NOTIFICATION_TIME" jdbcType="TIMESTAMP" property="notificationTime" />
+    <result column="NOTIFICATION_CONTENT" jdbcType="VARCHAR" property="notificationContent" />
+    <result column="CONFIRM_PERSON" jdbcType="DECIMAL" property="confirmPerson" />
+    <result column="CONFIRM_TIME" jdbcType="TIMESTAMP" property="confirmTime" />
+    <result column="RELATED_DATAID" jdbcType="DECIMAL" property="relatedDataid" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    NT.NOTIFICATION_ID, NT.NOTIFICATION_STATUS, NT.NOTIFICATION_TYPE, NT.NOTIFICATION_TIME, NT.NOTIFICATION_CONTENT,
+    NT.CONFIRM_PERSON, NT.CONFIRM_TIME, NT.RELATED_DATAID
+  </sql>
+</mapper>

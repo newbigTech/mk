@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OmBalanceMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OmBalance">
+        <result column="BALANCE_ID" property="balanceId" jdbcType="DECIMAL"/>
+        <result column="INFO_ID" property="infoId" jdbcType="DECIMAL"/>
+        <result column="ACCOUNT_ID" property="accountId" jdbcType="DECIMAL"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="IS_BALANCE" property="isBalance" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="BalancesInfoResultMap" type="com.hand.hmall.om.dto.BalanceInfo">
+        <result column="BALANCE_ID" property="balanceId" jdbcType="DECIMAL"/>
+        <result column="INFO_ID" property="infoId" jdbcType="DECIMAL"/>
+        <result column="ACCOUNT_ID" property="accountId" jdbcType="DECIMAL"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="IS_BALANCE" property="isBalance" jdbcType="VARCHAR"/>
+        <result column="transaction" property="transaction" jdbcType="VARCHAR"/>
+        <result column="serial_num" property="serialNum" jdbcType="VARCHAR"/>
+        <result column="out_trade_no" property="outTradeNo" jdbcType="VARCHAR"/>
+        <result column="type" property="accountsType" jdbcType="VARCHAR"/>
+        <result column="channel" property="channel" jdbcType="VARCHAR"/>
+        <result column="userCode" property="userCode" jdbcType="VARCHAR"/>
+        <result column="accountsDate" property="accountsDate" jdbcType="VARCHAR"/>
+        <result column="accountsTime" property="accountsTime" jdbcType="VARCHAR"/>
+        <result column="accountsAmount" property="accountsAmount" jdbcType="DECIMAL"/>
+        <result column="voucherno" property="voucherno" jdbcType="VARCHAR"/>
+        <result column="esc_order_code" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="infoCode" property="infoCode" jdbcType="VARCHAR"/>
+        <result column="infoNumberCode" property="infoNumberCode" jdbcType="VARCHAR"/>
+        <result column="infoOutTradeCode" property="infoOutTradeCode" jdbcType="VARCHAR"/>
+        <result column="infoTime" property="infoTime" jdbcType="VARCHAR"/>
+        <result column="infoAmount" property="infoAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!--界面列表显示数据查询，根据界面上方填写的搜索条件查询数据-->
+    <select id="selectBalances" parameterType="com.hand.hmall.om.dto.BalanceInfo" resultMap="BalancesInfoResultMap">
+        SELECT ob.BALANCE_ID, ob.is_balance, ob.account_id, ob.INFO_ID, ob.type, oa.transaction, oa.serial_num, oa.out_trade_no,
+        oa.type accountsType, oa.channel, to_char(oa.time, 'yyyy-MM-dd') accountsDate,
+        to_char(oa.time, 'HH24:mi:ss') accountsTime, oa.amount accountsAmount, oa.voucherno, op.number_code
+        infoNumberCode, op.out_trade_no infoOutTradeCode,
+        to_char(op.pay_time, 'yyyy-MM-dd') infoTime, op.pay_amount infoAmount, oo.esc_order_code, oo.code infoCode
+        FROM hmall_om_balance ob
+        left join hmall_om_accounts oa on oa.accounts_id = ob.account_id
+        left join hmall_om_paymentinfo op on op.paymentinfo_id = ob.info_id
+        left join hmall_om_order oo on oo.order_id = op.order_id
+        WHERE ob.type = '1'
+        <if test="type != null and type != ''">
+            and ob.type = #{type}
+        </if>
+        <if test="accountsDateFrom != null and accountsDateFrom != ''">
+            and to_char(oa.time, 'yyyy-MM-dd HH24:mi:ss') &gt;= #{accountsDateFrom}
+        </if>
+        <if test="accountsDateTo != null and accountsDateTo != ''">
+            and to_char(oa.time, 'yyyy-MM-dd HH24:mi:ss') &lt;= #{accountsDateTo}
+        </if>
+        <if test="escOrderCode != null and escOrderCode !=''">
+            AND oo.esc_order_code like CONCAT('%',CONCAT(#{escOrderCode},'%') )
+        </if>
+        <if test="transaction != null and transaction !=''">
+            AND oa.transaction like CONCAT('%',CONCAT(#{transaction},'%') )
+        </if>
+        union
+        SELECT ob.BALANCE_ID, ob.is_balance, ob.INFO_ID, ob.account_id, ob.type, oa.transaction, oa.serial_num, oa.out_trade_no,
+        oa.type accountsType, oa.channel, to_char(oa.time, 'yyyy-MM-dd') accountsDate,
+        to_char(oa.time, 'HH24:mi:ss') accountsTime, oa.amount accountsAmount, oa.voucherno, ar.number_code
+        infoNumberCode, ar.out_trade_no infoOutTradeCode,
+        to_char(ar.refund_time, 'yyyy-MM-dd') infoTime, ar.REQUEST_SUM infoAmount, oo.esc_order_code, oo.code infoCode
+        FROM hmall_om_balance ob
+        left join hmall_om_accounts oa on oa.accounts_id = ob.account_id
+        left join hmall_as_refundinfo ar on ar.refundinfo_id = ob.info_id
+        left join hmall_as_refund_entry are on are.as_refund_entry_id = ar.as_refund_entry_id
+        left join HMALL_AS_REFUND har on har.as_refund_id = are.as_refund_id
+        left join hmall_om_order oo on oo.ORDER_ID = har.order_id
+        WHERE ob.type = '2'
+        <if test="type != null and type != ''">
+            and ob.type = #{type}
+        </if>
+        <if test="accountsDateFrom != null and accountsDateFrom != ''">
+            and to_char(oa.time, 'yyyy-MM-dd HH24:mi:ss') &gt;= #{accountsDateFrom}
+        </if>
+        <if test="accountsDateTo != null and accountsDateTo != ''">
+            and to_char(oa.time, 'yyyy-MM-dd HH24:mi:ss') &lt;= #{accountsDateTo}
+        </if>
+        <if test="escOrderCode != null and escOrderCode !=''">
+            AND oo.esc_order_code like CONCAT('%',CONCAT(#{escOrderCode},'%') )
+        </if>
+        <if test="transaction != null and transaction !=''">
+            AND oa.transaction like CONCAT('%',CONCAT(#{transaction},'%') )
+        </if>
+        ORDER BY 1 DESC
+    </select>
+
+    <!--筛选出账单与支付记录表匹配的数据(不存在于HMALL_OM_BALANCE表中的数据) add by zhangyanan 2017-11-14 -->
+    <select id="selectMatchPaymentInfo" resultMap="BaseResultMap">
+        SELECT a.ACCOUNTS_ID AS accountId,p.PAYMENTINFO_ID AS infoId,a.TYPE AS type FROM HMALL_OM_ACCOUNTS
+        a,HMALL_OM_PAYMENTINFO p
+        <where>
+            a.TRANSACTION = p.NUMBER_CODE AND to_char(a.TIME,'yyyy-MM-dd HH24:mi') = to_char(p.PAY_TIME,'yyyy-MM-dd HH24:mi') AND a.AMOUNT = p.PAY_AMOUNT AND a.CHANNEL =
+            p.PAY_MODE AND a.TYPE = '1' AND a.VOUCHERNO IS NOT NULL
+            <if test="accountIdList != null and accountIdList.size() > 0">
+                AND a.ACCOUNTS_ID NOT IN
+                <foreach item="item" index="index" collection="accountIdList" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--筛选出账单与退款记录表匹配的数据(不存在于HMALL_OM_BALANCE表中的数据) add by zhangyanan 2017-11-14 -->
+    <select id="selectMatchRefundInfo" resultMap="BaseResultMap">
+        SELECT a.ACCOUNTS_ID AS accountId,r.REFUNDINFO_ID AS infoId,a.TYPE AS type FROM HMALL_OM_ACCOUNTS
+        a,HMALL_AS_REFUNDINFO r
+        <where>
+            a.TRANSACTION = r.NUMBER_CODE AND to_char(a.TIME,'yyyy-MM-dd HH24:mi') = to_char(r.REFUND_TIME,'yyyy-MM-dd HH24:mi') AND a.AMOUNT = r.REQUEST_SUM AND a.CHANNEL =
+            r.PAY_MODE AND a.TYPE = '2' AND a.VOUCHERNO IS NOT NULL
+            <if test="accountIdList != null and accountIdList.size() > 0">
+                AND a.ACCOUNTS_ID NOT IN
+                <foreach item="item" index="index" collection="accountIdList" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询出hmall_om_balance表中所有的accountId add by zhangyanan 2017-11-14 -->
+    <select id="getAccountIds" resultType="java.lang.String">
+        SELECT ACCOUNT_ID FROM HMALL_OM_BALANCE
+    </select>
+
+</mapper>

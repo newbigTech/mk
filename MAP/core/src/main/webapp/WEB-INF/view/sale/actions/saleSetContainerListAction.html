@@ -1,0 +1,154 @@
+<#include "/include/header.html"/>
+<body>
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        queryResource: function(e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        resetForm        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+
+        <div id='grid-container'>
+            <div id="grid" style="clear: both"></div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    var containerDataItems=[];
+    function rollback()
+    {
+        window.parent.$('#insertContainerWin').data('kendoWindow').close();
+    }
+
+    kendo.bind($('#page-content'),viewModel);
+    kendo.bind($('#grid-container'),viewModel);
+
+    if(window.parent.parent.viewModel.model.containers==undefined)
+    {
+        kendo.ui.showWarningDialog({
+            title:"提示",
+            message:"请先添加容器！"
+        }).done(function (e) {
+            rollback();
+        })
+    }
+
+
+    for(var i in window.parent.parent.viewModel.model.containers) {
+        var flag=true;
+        for (var j in window.parent.containerSelect) {
+            if (window.parent.parent.viewModel.model.containers[i].id ==window.parent.containerSelect[j].id)
+            {
+                flag=false;
+                break;
+            }
+        }
+        if(flag&& window.parent.parent.viewModel.model.containers[i].id){
+
+            var dataItem={};
+            dataItem.id=window.parent.parent.viewModel.model.containers[i].id;
+            dataItem.meaning=window.parent.parent.viewModel.model.containers[i].meaning;
+            containerDataItems.push(dataItem);
+        }
+    }
+
+    var dataSource = new kendo.data.DataSource({
+                data:containerDataItems,
+                batch: true,
+                schema: {
+                    model: {
+                        id: "id",
+                        fields: {
+                            meaning:{editable:false, validation: { required: true }},
+
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+    var grid=$("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+        selectable : 'multiple, rowbox',
+
+
+        toolbar: [
+            {
+                name: "create",
+                template: '<span  id="createButton"  onclick="insertContainerList()" class="btn btn-primary"><i class="fa fa-plus"></i> 确定</span>'
+            },{
+                template:'<button  id="rollbackButton" onclick="rollback()"  class="btn btn-warning"><i class="fa fa-trash-o" aria-hidden="true"></i> 取消</button>'
+            }
+        ],
+        columns: [
+
+            {
+                field: "meaning",
+                title: '容器名',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width:"150px"
+
+            }
+
+        ],
+        editable: true,
+        dataBound: function() {
+            var view = this.dataSource.view();
+            this.items().each(function(index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+
+    function insertContainerList()
+    {
+        var grid=$('#grid').data('kendoGrid');
+        var data = grid.selectedDataItems();
+
+        window.parent.insertContainerList(data);
+        rollback();
+
+    }
+
+    $('.k-input').attr("disabled",true);
+
+</script>
+</body>
+</html>

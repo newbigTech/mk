@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.CatalogversionMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Catalogversion">
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL"/>
+        <result column="CATALOG" property="catalog" jdbcType="DECIMAL"/>
+        <result column="CATALOGVERSION" property="catalogversion" jdbcType="VARCHAR"/>
+        <result column="CATALOG_NAME" property="catalogName" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME_ZH" property="catalogNameZh" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        cv.CATALOGVERSION_ID, c.CODE, cv.CATALOGVERSION
+    </sql>
+
+    <!-- 关联两张版本目录表查询组合版本目录-->
+    <select id="selectCatalogVersion" resultMap="BaseResultMap">
+        select version.catalogversion_id,
+                catalog.name_zh || '-' || version.catalogversion CATALOG_NAME,catalog.code, version.catalogversion
+        from hmall_mst_catalogs catalog, hmall_mst_catalogversion version
+        where catalog.catalogs_id = version.catalog
+
+    </select>
+
+    <select id="selectMasterStaged" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        HMALL_MST_CATALOGVERSION cv
+        JOIN HMALL_MST_CATALOGS c ON cv .CATALOG = c.CATALOGS_ID
+        WHERE
+        c.CODE = 'master'
+        AND cv .CATALOGVERSION = 'staged'
+    </select>
+
+    <select id="selectCatalogversionId" parameterType="com.hand.hmall.mst.dto.Catalogversion" resultType="java.lang.Long">
+        select c.catalogversion_id from
+        HMALL_MST_CATALOGVERSION c
+        ,hmall_mst_catalogs cl
+        where c.catalog = cl.catalogs_id
+        and cl.code = #{catalogName}
+        and c.catalogversion = #{catalogversion}
+    </select>
+
+    <select id="getOnlineCatalogversionId" parameterType="java.util.Map" resultType="java.lang.Long">
+        SELECT mc.CATALOGVERSION_ID
+        FROM HMALL_MST_CATALOGVERSION mc
+        LEFT JOIN HMALL_MST_CATALOGS mca
+        ON mc.CATALOG = mca.CATALOGS_ID
+        WHERE 1 = 1
+        <if test="catalogversion != null and catalogversion != ''">
+            AND mc.CATALOGVERSION = #{catalogversion}
+        </if>
+        <if test="code != null and code != ''">
+            AND mca.CODE = #{code}
+        </if>
+    </select>
+
+    <!--根据中文目录版本获得CatalogversionId-->
+    <select id="getCatalogversionIdByNameZhAndCatalogversion" parameterType="com.hand.hmall.mst.dto.Catalogversion" resultType="java.lang.Long">
+        select c.catalogversion_id from
+        HMALL_MST_CATALOGVERSION c
+        ,hmall_mst_catalogs cl
+        where c.catalog = cl.catalogs_id
+        and cl.NAME_ZH = #{catalogNameZh}
+        and c.catalogversion = #{catalogversion}
+    </select>
+</mapper>

@@ -1,0 +1,84 @@
+<#--
+        * description: 商品类别新增页面
+        * author:zhangmeng01@markor.com.cn
+        * 2017/6/2
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script type="text/javascript">
+            var BaseUrl = _basePath;
+            //类别保存
+            function saveCategory(){
+                $.ajax({
+                    type: "POST",
+                    url : BaseUrl+"/mst/product/category/saveCategory",
+                    data:$('#myForm').serialize(),
+                    async: false,
+                    error: function(request) {
+                        alert("Connection error");
+                    },
+                    success: function(data) {
+                        if(data == "success"){
+                            kendo.ui.showInfoDialog({
+                                message : "<@spring.message 'hap.tip.success'/>"
+                            })
+                        }else{
+                            kendo.ui.showInfoDialog({
+                                message : "操作失败，类别编码重复!"
+                            })
+                        }
+                        window.parent.$("#saveCategory").data("kendoWindow").close();
+                    }
+                });
+            }
+        </script>
+        <div class="pull-left" id="toolbar-btn" style="width: 100%;margin-right:10px;padding-bottom:10px;margin-top:10px;margin-left:5px">
+            <span onclick="saveCategory()" class="btn btn-success" style="float:left;margin-right:5px;"><i class="fa fa-plus-square"></i><@spring.message "hap.save"/></span>
+        </div>
+        <div id="page-content" style="height: 320px;">
+                <form class="form-horizontal" id="myForm">
+                    <input type="hidden" name="categoryId" id="categoryId">
+                    <div class="panel-body" style="margin-top: 10px;">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.categorycode"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='categoryCode' type="text"  style="width: 100%" name="categoryCode" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.categoryname"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="categoryName" type="text"  style="width: 100%" name="categoryName" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.catalogversion"/></label>
+                                    <div class="col-sm-8">
+                                        <select id="directoryVersionId" name="catalogVersion" class="k-textbox" style="width: 100%">
+                                            <option value="online">美克商城-线上版本</option>
+                                            <option value="stage">美克商城-线下版本</option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left">级别</label>
+                                    <div class="col-sm-8">
+                                        <input id="categoryLevel" type="text" style="width: 100%" name="categoryLevel" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+        </div>

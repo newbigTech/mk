@@ -1,0 +1,41 @@
+.h-panel {
+  background-color: #fff;
+  margin-bottom: 10px;
+  .panel-header {
+    overflow: hidden;
+    line-height: 37px;
+    font-size: @big-font-size;
+    &.line{
+      span {
+        margin-left: 9px;
+      }
+      &:before {
+        display: inline-block;
+        content: "";
+        width: 5px;
+        height: 13px;
+        margin-left: 12px;
+        vertical-align: middle;
+        background-color: #3c3c3c;
+      }
+    }
+    span {
+      margin-left: 26px;
+      font-weight: bold;
+    }
+  }
+}
+.h-row {
+  .h-col {
+    float: left;
+    .h-panel {
+      margin-right: 10px;
+    }
+    &:last-child {
+      float: none;
+      .h-panel {
+        margin-right: 0;
+      }
+    }
+  }
+}

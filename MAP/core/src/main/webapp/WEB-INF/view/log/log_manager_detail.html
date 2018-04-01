@@ -1,0 +1,165 @@
+<#--
+        * description: 日志详情
+        * author:peng.chen03@hand-china.com
+        * 2017年6月15日14:29:20
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <script type="text/javascript">
+            var logId = '${RequestParameters.logId!0}';
+            var viewModel = kendo.observable({
+                model: {}
+            });
+            ;
+            /** 查询日志信息 **/
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/hmall/log/manager/query?logId='+logId,
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    if (data.success) {
+                        var a0 = data.rows[0] || {};
+                        for (var k in a0) {
+                            viewModel.model.set(k, a0[k]);
+                        }
+                    }
+                }
+            });
+
+
+            function deleteData(){
+                var gridData = [];
+                    gridData
+                        .push({
+                            logId: logId,
+                            __status: "destroy",
+                        });
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/log/manager/remove',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify(gridData),
+                    success: function (data) {
+                        if (data.success == true) {
+                            kendo.ui.showConfirmDialog({
+                                title: $l('hap.tip.info'),
+                                message: $l('删除成功！')
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                   window.close();
+                                }
+                            })
+                        }
+                    }
+                });
+            }
+        </script>
+        <body>
+        <div id="page-content">
+            <div id="detail" class="panel">
+                <div class="panel-body" id="lab-body">
+
+                    <div class="row">
+                        <div style='padding-top: 7px; padding-bottom: 7px;'>
+                            <!-- 删除按钮 -->
+                            <span onclick="deleteData()" class="btn btn-danger"
+                                  style="float:left;margin-left: 30px"><@spring.message "hap.delete"/></i>
+							</span>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.programName"/>:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" class="k-textbox"
+                                       id="programName" data-bind="value:model.programName" readonly/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.programDescription"/>:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" class="k-textbox" id="programDescription"
+                                       data-bind="value:model.programDescription" readonly/>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.processStatus"/>:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" class="k-textbox" id="processStatus"
+                                       data-bind="value:model.processStatus" readonly/>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "状态描述:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" class="k-textbox" id="processDescription"
+                                       data-bind="value:model.processDescription" readonly/>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.startTime"/>:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" class="k-textbox" id="startTime"
+                                       data-bind="value:model.startTime" readonly/>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.endTime"/>:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" class="k-textbox" id="endTime"
+                                       data-bind="value:model.endTime" readonly/>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.sourcePlatform"/>:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" class="k-textbox" id="sourcePlatform"
+                                       data-bind="value:model.sourcePlatform" readonly/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.message"/>:</label>
+                            <div class="col-sm-8">
+                                <textarea class="form-control" rows="8" style="width:350px; height:350px;" id="message" data-bind="value: model.message" ></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-4"style="margin-left: 200px;">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "hmall.LogManager.returnMessage"/>:</label>
+                            <div class="col-sm-8">
+                                <textarea class="form-control" rows="8" style="width:350px; height:350px;" id="returnMessage" data-bind="value: model.returnMessage" ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                kendo.bind($("#detail"), viewModel);
+            </script>
+        </body>
+        </html>

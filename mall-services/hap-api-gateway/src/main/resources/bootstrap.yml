@@ -1,0 +1,165 @@
+
+# bootstrap.yml
+spring:
+  application:
+    name: hap-api-gateway
+  profiles:
+    active: native
+server:
+  port: 5555
+  contextPath: ''
+
+zuul:
+  eureka:
+    enabled: false
+  routes:
+    restful:
+      path: /core/api/**
+      url : http://10.5.72.32/core/api
+    soap:
+      path: /core/ws/**
+      url : http://172.16.10.1:8080/core/ws
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:5555}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+    statusPageUrlPath: ${server.contextPath}/info
+    healthCheckUrlPath: ${server.contextPath}/health
+  client:
+#    healthcheck.enabled: true
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+
+unilog:
+  enabled: true
+  logFilePath: /mnt/logs/
+  rabbit:
+    address: 10.5.72.14:5672
+    username: dev
+    password: Mfr18$
+    exchangeName: map-logs
+    queueName: hap.log.inbound
+    virtualHost: /
+    concurrentConsumers: 5
+    maxConcurrentConsumers: 10
+
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 180000
+
+ribbon:
+  ConnectTimeout: 180000
+  ReadTimeout: 180000
+  OKToRetryOnAllOperations: false
+
+
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+  protocol:
+    dubbo:
+      port: 20882
+
+---
+spring:
+  profiles: dev_idc
+server.port: 5555
+
+zuul:
+  routes:
+    restful:
+      path: /core/**
+      url : http://localhost:8080/core
+    restful_alt:
+      path: /api/**
+      url : http://localhost:8080/api
+    soap_alt:
+      path: /ws/**
+      url : http://localhost:8080/ws
+
+unilog:
+  enabled: true
+  rabbit:
+    address: 10.5.72.14:5672
+    username: dev
+    password: Mfr18$
+
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+  protocol:
+    dubbo:
+      port: 20882
+---
+spring:
+  profiles: sit_idc
+server.port: 5555
+
+zuul:
+  routes:
+    restful:
+      path: /core/**
+      url : http://localhost/core
+    restful_alt:
+      path: /api/**
+      url : http://localhost/api
+    soap_alt:
+      path: /ws/**
+      url : http://localhost/ws
+
+unilog:
+  enabled: true
+  rabbit:
+    address: 10.5.72.18:5672
+    username: uat
+    password: Mfr18$
+
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2182
+  protocol:
+    dubbo:
+      port: 20883
+---
+spring:
+  profiles: prod
+server.port: 5555
+
+zuul:
+  routes:
+    restful:
+      path: /core/**
+      url : http://localhost:8080/core
+    restful_alt:
+      path: /api/**
+      url : http://localhost:8080/api
+    soap_alt:
+      path: /ws/**
+      url : http://localhost:8080/ws
+
+unilog:
+  enabled: true
+  rabbit:
+    address: 172.16.10.90:5672
+    username: hap
+    password: HapPwd123
+
+dubbo:
+  registry:
+    address: zookeeper://172.16.10.30:2181
+  protocol:
+    dubbo:
+      port: 20883
+---

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallOmOrderBkMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallOmOrderBk">
+    <id column="ORDER_ID" jdbcType="DECIMAL" property="orderId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="ESC_ORDER_CODE" jdbcType="VARCHAR" property="escOrderCode" />
+    <result column="ORDER_STATUS" jdbcType="VARCHAR" property="orderStatus" />
+    <result column="USER_ID" jdbcType="DECIMAL" property="userId" />
+    <result column="CURRENCY_ID" jdbcType="VARCHAR" property="currencyId" />
+    <result column="WEBSITE_ID" jdbcType="VARCHAR" property="websiteId" />
+    <result column="SALECHANNEL_ID" jdbcType="VARCHAR" property="salechannelId" />
+    <result column="STORE_ID" jdbcType="VARCHAR" property="storeId" />
+    <result column="PAYMENT_AMOUNT" jdbcType="DECIMAL" property="paymentAmount" />
+    <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType" />
+    <result column="DISCOUNT_FEE" jdbcType="DECIMAL" property="discountFee" />
+    <result column="ORDER_CREATIONTIME" jdbcType="TIMESTAMP" property="orderCreationtime" />
+    <result column="BUYER_MEMO" jdbcType="VARCHAR" property="buyerMemo" />
+    <result column="IS_INVOICED" jdbcType="VARCHAR" property="isInvoiced" />
+    <result column="INVOICE_TYPE" jdbcType="VARCHAR" property="invoiceType" />
+    <result column="INVOICE_NAME" jdbcType="VARCHAR" property="invoiceName" />
+    <result column="INVOICE_URL" jdbcType="VARCHAR" property="invoiceUrl" />
+    <result column="POST_FEE" jdbcType="DECIMAL" property="postFee" />
+    <result column="EPOST_FEE" jdbcType="DECIMAL" property="epostFee" />
+    <result column="FIX_FEE" jdbcType="DECIMAL" property="fixFee" />
+    <result column="PRE_POSTFEE" jdbcType="DECIMAL" property="prePostfee" />
+    <result column="PRE_EPOSTFEE" jdbcType="DECIMAL" property="preEpostfee" />
+    <result column="PRE_FIXFEE" jdbcType="DECIMAL" property="preFixfee" />
+    <result column="ORDER_AMOUNT" jdbcType="DECIMAL" property="orderAmount" />
+    <result column="TOTALCON" jdbcType="VARCHAR" property="totalcon" />
+    <result column="RECEIVER_NAME" jdbcType="VARCHAR" property="receiverName" />
+    <result column="RECEIVER_COUNTRY" jdbcType="VARCHAR" property="receiverCountry" />
+    <result column="RECEIVER_STATE" jdbcType="VARCHAR" property="receiverState" />
+    <result column="RECEIVER_CITY" jdbcType="VARCHAR" property="receiverCity" />
+    <result column="RECEIVER_DISTRICT" jdbcType="VARCHAR" property="receiverDistrict" />
+    <result column="RECEIVER_ADDRESS" jdbcType="VARCHAR" property="receiverAddress" />
+    <result column="RECEIVER_ZIP" jdbcType="VARCHAR" property="receiverZip" />
+    <result column="RECEIVER_MOBILE" jdbcType="VARCHAR" property="receiverMobile" />
+    <result column="RECEIVER_PHONE" jdbcType="VARCHAR" property="receiverPhone" />
+    <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime" />
+    <result column="ESTIMATE_CON_TIME" jdbcType="TIMESTAMP" property="estimateConTime" />
+    <result column="PAY_RATE" jdbcType="VARCHAR" property="payRate" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="PAY_STATUS" jdbcType="VARCHAR" property="payStatus" />
+    <result column="SPLIT_ALLOWED" jdbcType="VARCHAR" property="splitAllowed" />
+    <result column="LOCKED" jdbcType="VARCHAR" property="locked" />
+    <result column="COUPON_FEE" jdbcType="DECIMAL" property="couponFee" />
+    <result column="TOTAL_DISCOUNT" jdbcType="DECIMAL" property="totalDiscount" />
+    <result column="CHOSEN_COUPON" jdbcType="VARCHAR" property="chosenCoupon" />
+    <result column="CHOSEN_PROMOTION" jdbcType="VARCHAR" property="chosenPromotion" />
+    <result column="VERSION" jdbcType="DECIMAL" property="version" />
+  </resultMap>
+
+
+
+  <sql id="Base_Column_List">
+    ORDER_ID, CODE, ESC_ORDER_CODE, ORDER_STATUS, USER_ID, CURRENCY_ID, WEBSITE_ID, SALECHANNEL_ID, 
+    STORE_ID, PAYMENT_AMOUNT, SHIPPING_TYPE, DISCOUNT_FEE, ORDER_CREATIONTIME, BUYER_MEMO, 
+    IS_INVOICED, INVOICE_TYPE, INVOICE_NAME, INVOICE_URL, POST_FEE, EPOST_FEE, FIX_FEE, 
+    PRE_POSTFEE, PRE_EPOSTFEE, PRE_FIXFEE, ORDER_AMOUNT, TOTALCON, RECEIVER_NAME, RECEIVER_COUNTRY, 
+    RECEIVER_STATE, RECEIVER_CITY, RECEIVER_DISTRICT, RECEIVER_ADDRESS, RECEIVER_ZIP, 
+    RECEIVER_MOBILE, RECEIVER_PHONE, ESTIMATE_DELIVERY_TIME, ESTIMATE_CON_TIME, PAY_RATE, 
+    SYNCFLAG, PAY_STATUS, SPLIT_ALLOWED,LOCKED, COUPON_FEE, TOTAL_DISCOUNT,
+    CHOSEN_COUPON, CHOSEN_PROMOTION, VERSION
+  </sql>
+
+
+  <select id="selectNextVersion" parameterType="java.lang.String" resultType="java.lang.Long">
+    SELECT NVL(MAX(VERSION), 0) + 1
+      FROM HMALL_OM_ORDER_BK BK
+     WHERE BK.CODE = #{code}
+  </select>
+
+    <select id="selectUserByCode" parameterType="java.lang.String" resultType="java.lang.Long">
+        SELECT UR.USER_ID FROM SYS_USER UR WHERE UR.USER_NAME = #{CODE}
+    </select>
+</mapper>

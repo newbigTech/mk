@@ -1,0 +1,81 @@
+data:
+  salt: hm^2#
+spring:
+  application:
+    name: user
+  profiles:
+    active: native
+   #Oracle配置
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.30.101:1521:mkoracle
+    username: hap_dev
+    password: hap_dev
+  #mybatis配置
+mybatis:
+  type-aliases-package: com.hand.hmall.dto
+  mapper-locations: classpath:mapper/*.xml
+  config-location: classpath:mapper/config/mybatis-configuration.xml
+#配置mapper插件
+mapper:
+  mappers:
+      - tk.mybatis.mapper.common.Mapper
+  not-empty: false
+  before: true
+#  配置分页插件
+pagehelper:
+  reasonable: true
+  support-methods-arguments: true
+  offset-as-page-num: true
+  row-bounds-with-count: true
+  params: count=countSql
+#  dialect: oracle
+  auto-runtime-dialect: true
+  page-size-zero: true
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server.port: 7000
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:3330}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+---
+spring:
+  profiles: sit_idc
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.72.13:1521:TEST
+    username: mk_test
+    password: mk_test
+server.port: 7000
+---
+spring:
+  profiles: prod
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@172.16.10.110:1521:MAPDB
+    username: mapprod
+    password: mapprod
+server.port: 7000
+---
+#第三方短信接口平台的URL
+data:
+  url: http://apis.renxinl.com:8080/smsgate/batchsend.do
+

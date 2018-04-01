@@ -1,0 +1,15 @@
+export const baidu_map_ak = 'OZzHnOFmgv0dG7CZNMVLqYZVbDHqSSFs';
+export const payment_deadline = 24;
+export const date_format = 'YYYY-MM-DD';
+export const date_format2 = 'YYYYMMDDhhmmss';
+export const datetime_format = 'YYYY-MM-DD HH:mm';
+export const time_format = 'HH:mm';
+export const verification_code_retry_interval = 30;
+export const mobilephone_regx = /^1[34578]\d{9}$/;
+export const phone_regx = /^[0-9]{3,4}-[0-9]{7,8}$/;
+export const login_weibo = 'https://api.weibo.com/oauth2/authorize?client_id=1965522211&response_type=code';
+export const login_wechat = 'https://open.weixin.qq.com/connect/qrconnect?appid=wxe24264cfd3a3c0e2&response_type=code&scope=snsapi_login&state=1212';
+export const login_qq = 'https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=101382350&state=1212';
+export const login_taobao = 'https://oauth.taobao.com/authorize?response_type=code&client_id=23568308&state=1212&view=web';
+export const login_alipay = 'https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2016122204502544&scope=auth_user';
+export const contact = '优衣库官方商城';

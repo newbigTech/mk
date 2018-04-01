@@ -1,0 +1,218 @@
+<#--
+    * description: 赠品选择界面
+    * author: qinzhipeng
+    * date 2017/11/22
+    * version: 0.1
+    *
+-->
+<#include "../include/header.html">
+    <script type="text/javascript">
+
+    </script>
+    <body>
+        <div id="page-content">
+            <div style="clear:both">
+                <div id="Grid"></div>
+            </div>
+
+            <span id class="btn btn-primary" style="float:right;margin-right:15px;margin-top: 10px;"
+                  onclick="chooseProducts()">确认</span>
+            <span id class="btn btn-primary" style="float:right;margin-right:15px;margin-top: 10px;"
+                  onclick="getAtpTime()">获取交期</span>
+
+        </div>
+
+
+        <script type="text/javascript">
+            var selected = null;
+            var giftList =window.parent.giftList;
+            function getAtpTime() {
+                selected = $('#Grid').data('kendoGrid').selectedDataItems();
+                if (selected.length) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '${base.contextPath}/hmall/om/order/entry/getAtpTime?receiverCity='+ window.parent.viewModel.model.receiverCity+"&receiverDistrict="+window.parent.viewModel.model.receiverDistrict,
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(selected),
+                        success: function (data) {
+                            if (data.success == true) {
+                                var newOrderEntries = data.rows;
+                                for(var i = 0;i<newOrderEntries.length;i++){
+                                    for(var j = 0;j<giftList.length;j++){
+                                        if(newOrderEntries[i].productCode ==giftList[j].product){
+                                            giftList[j].estimateDeliveryTime = newOrderEntries[i].estimateDeliveryTime;
+                                        }
+                                    }
+                                }
+                                refreshGiftGrid();
+
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    message: data.message
+                                });
+                            }
+                        }
+                    });
+
+                }else {
+                    kendo.ui.showInfoDialog({
+                        message: $l('请选择赠品！')
+                    })
+                }
+
+            }
+            function chooseProducts() {
+                var selections = $("#Grid").data("kendoGrid").selectedDataItems();
+                console.log(selections);
+                if (selections.length) {
+                    for(var i = 0 ;i<selections.length;i++){
+                        if(selections[i].estimateDeliveryTime==null||selections[i].estimateDeliveryTime==""){
+                            kendo.ui.showInfoDialog({
+                                title: $l('hap.tip.info'),
+                                message: '所选赠品交货时间不能为空！'
+                            });
+                            return ;
+                        }
+
+                    }
+                    $.ajax({
+                        type: 'POST',
+                        url: '${base.contextPath}/hmall/om/order/entry/setGiftEntry?orderId='+ window.parent.viewModel.model.orderId,
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(selections),
+                        success: function (data) {
+                            if (data.success == true) {
+                                window.parent.addGifts(data.rows);
+                                window.parent.$("#selectProduct").data("kendoWindow").close();
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    message: data.message
+                                });
+                            }
+                        }
+                    });
+
+                }else{
+                    window.parent.addGifts([]);
+                    window.parent.$("#selectProduct").data("kendoWindow").close();
+
+                }
+
+
+            }
+            //刷新行grid
+            function refreshGiftGrid() {
+                var _dataSource_ = new kendo.data.DataSource({
+                    data: giftList,
+                    schema: {
+                        model: {
+                            fields: {
+                                productCode:{editable:false},
+                                productDesc:{editable:false},
+                                quantity:{editable:false}
+                            }
+                        }
+                    }
+                });
+                _grid_.setDataSource(_dataSource_);
+
+                if(selected==null){
+                    _grid_.select("tr");
+                }else{
+                    if(selected.length){
+                        for(var i = 0;i<selected.length;i++){
+                            var foundRow;
+                            var searchText =selected[i].product;
+                            var rows = _grid_.tbody.find(">tr:not(.k-grouping-row)");
+                            rows.each(function (index, row) {
+                                var allCells = $(row).find('td');
+                                if (allCells.length > 0) {
+                                    var found = false;
+                                    allCells.each(function (index, td) {
+                                        var tdText = $(td).text();
+                                        if ((tdText === searchText)) {
+                                            found = true;
+                                            return false;
+                                        }
+                                    });
+                                    if (found === true) {
+                                        foundRow = row;
+                                        return false;
+                                    }
+                                }
+                            });
+                            _grid_.select(foundRow);
+                        }
+
+
+                    }
+                }
+
+
+            }
+
+
+            var _grid_= $("#Grid").kendoGrid({
+                height:480,
+                resizable: true,
+                scrollable: true,
+                reorderable:true,
+                navigatable: false,
+                columnMenu: true,//可以藏列
+                sortable: true,
+                rownumber: true,
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+
+                    {
+                        field: "product",
+                        title: '商品编码',
+                        width: 120
+                    },
+                    {
+                        field: "productDesc",
+                        title: '商品描述',
+                        width: 220
+                    },
+                    {
+                        field:"basePrice",
+                        title: '单价',
+                        width: 120
+                    },
+                    {
+                        field: "quantity",
+                        title: '数量',
+                        width: 120
+                    },
+                    {
+                        field: "estimateDeliveryTime",
+                        title: '预计交货时间',
+                        width: 120,
+                        format: "{0:yyyy-MM-dd HH:mm:ss}",
+                        editor: function (container, options) {
+                            var oriDate = options.model.estimateDeliveryTime;
+                            $('<input  name="' + options.field + '" />')
+                                .appendTo(container)
+                                .kendoDateTimePicker({
+                                    change: function () {
+
+                                    }
+                                }).data("kendoDateTimePicker");
+                        }
+                    }
+                ],
+                editable: true
+            }).data("kendoGrid");
+            $(function () {
+                refreshGiftGrid();
+            });
+        </script>
+    </body>
+</html>

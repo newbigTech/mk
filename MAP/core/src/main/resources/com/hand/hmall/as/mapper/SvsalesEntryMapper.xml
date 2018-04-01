@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.SvsalesEntryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.SvsalesEntry">
+        <result column="AS_SVSALES_ENTRY_ID" property="asSvsalesEntryId" jdbcType="DECIMAL"/>
+        <result column="SVSALES_ORDER_ID" property="svsalesOrderId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+        <result column="PARENT_LINE" property="parentLine" jdbcType="VARCHAR"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="TOTAL_FEE" property="totalFee" jdbcType="DECIMAL"/>
+        <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="VPRODUCT" property="vproduct" jdbcType="VARCHAR"/>
+        <result column="SUIT_CODE" property="suitCode" jdbcType="VARCHAR"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON1" property="returnReason1" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON2" property="returnReason2" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_NAME" property="productName" jdbcType="VARCHAR"/>
+        <result column="CHARGE_TYPE" property="chargeType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <!--根据服务单id查询退货单对应的所有服务单行-->
+    <select id="querySvsalesEntyiedInfo" parameterType="com.hand.hmall.as.dto.Svsales" resultMap="BaseResultMap">
+        SELECT
+        hase.AS_SVSALES_ENTRY_ID,
+        hase.SVSALES_ORDER_ID,
+        hase.SERVICE_ORDER_ID,
+        hase.LINE_NUMBER,
+        hase.PARENT_LINE,
+        hase.QUANTITY,
+        hase.UNIT,
+        hase.BASE_PRICE,
+        hase.UNIT_FEE,
+        hase.TOTAL_FEE,
+        hase.IS_GIFT,
+        hase.PRODUCT_ID,
+        hase.VPRODUCT,
+        hase.SUIT_CODE,
+        hase.PIN,
+        hase.SHIPPING_TYPE,
+        hase.NOTE,
+        hase.RETURN_REASON1,
+        hase.RETURN_REASON2,
+        hase.CHARGE_TYPE,
+        hmp.CODE AS PRODUCT_CODE,
+        hmp.NAME AS PRODUCT_NAME
+        FROM HMALL_AS_SVSALES_ENTRY hase
+        LEFT JOIN hmall_mst_product hmp
+        ON hase.product_id = hmp.product_id
+        <where>
+            <if test="asSvsalesId != null">
+                hase.SVSALES_ORDER_ID = #{asSvsalesId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSvsalesEntriesById" parameterType="java.util.List" resultMap="BaseResultMap">
+        SELECT
+        hase.AS_SVSALES_ENTRY_ID,
+        hase.SVSALES_ORDER_ID,
+        hase.SERVICE_ORDER_ID,
+        hase.LINE_NUMBER,
+        hase.PARENT_LINE,
+        hase.QUANTITY,
+        hase.UNIT,
+        hase.BASE_PRICE,
+        hase.UNIT_FEE,
+        hase.TOTAL_FEE,
+        hase.IS_GIFT,
+        hase.PRODUCT_ID,
+        hase.VPRODUCT,
+        hase.SUIT_CODE,
+        hase.PIN,
+        hase.SHIPPING_TYPE,
+        hase.NOTE,
+        hase.RETURN_REASON1,
+        hase.RETURN_REASON2,
+        hase.CHARGE_TYPE,
+        hmp.CODE AS PRODUCT_CODE,
+        hmp.NAME AS PRODUCT_NAME
+        FROM HMALL_AS_SVSALES_ENTRY hase
+        LEFT JOIN hmall_mst_product hmp
+        ON hase.product_id = hmp.product_id
+        WHERE hase.AS_SVSALES_ENTRY_ID IN
+        <foreach collection="list" index="index" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+</mapper>

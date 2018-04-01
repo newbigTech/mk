@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsMaterialMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsMaterial">
+        <result column="ID" property="id" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="USER_ID" property="userId" jdbcType="DECIMAL"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="RESPONSIBLE_PARTY" property="responsibleParty" jdbcType="VARCHAR"/>
+        <result column="IS_CHARGE" property="isCharge" jdbcType="VARCHAR"/>
+        <result column="ORDER_REASON" property="orderReason" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="SYNC_RETAIL" property="syncRetail" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE"/>
+        <result column="LOGISTICS_COMPANY" property="logisticsCompany" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="SOLD_PARTY" property="soldParty" jdbcType="VARCHAR"/>
+        <result column="SALES_OFFICE" property="salesOffice" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_DISTRICT" property="receiverDistrict" jdbcType="VARCHAR"/>
+        <result column="SEX" property="sex" jdbcType="VARCHAR"/>
+        <result column="USER_LEVEL" property="userLevel" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="MOBILE_NUMBER" property="mobileNumber" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_CODE" property="serviceOrderCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_CODE" property="orderCode" jdbcType="VARCHAR"/>
+        <result column="AS_REFUND_ID" property="asRefundId" jdbcType="DECIMAL"/>
+        <result column="USER_GROUP" property="userGroup" jdbcType="VARCHAR"/>
+        <result column="CUSTOMERID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="PATCH_REASON" property="patchReason" jdbcType="VARCHAR"/>
+        <result column="POINTOFSERVICE" property="pointofservice" jdbcType="VARCHAR"/>
+        <result column="MATERIAL_ENTRY_NOTE" property="materialEntryNote" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="getMaterialForRetail" parameterType="com.hand.hmall.as.dto.AsMaterial" resultMap="BaseResultMap">
+        SELECT material.ID,
+        material.CODE,
+        material.ORDER_ID,
+        material.SERVICE_ORDER_ID,
+        material.CONSIGNMENT_ID,
+        material.STATUS,
+        material.USER_ID,
+        material.NAME,
+        material.MOBILE,
+        material.ADDRESS,
+        material.RESPONSIBLE_PARTY,
+        material.IS_CHARGE,
+        material.ORDER_REASON,
+        material.CS,
+        material.FINISH_TIME,
+        material.NOTE,
+        material.SYNC_RETAIL,
+        material.CREATION_DATE,
+        material.SAP_CODE,
+        material.APPOINTMENT_DATE,
+        material.LOGISTICS_COMPANY,
+        material.LOGISTICS_NUMBER,
+        web.SOLD_PARTY,
+        web.SALES_OFFICE,
+        od.RECEIVER_DISTRICT,
+        od.ESC_ORDER_CODE,
+        mu.SEX,
+        mu.USER_LEVEL
+        FROM HMALL_AS_MATERIAL material
+        LEFT JOIN HMALL_OM_ORDER od
+        ON material.ORDER_ID =od.ORDER_ID
+        LEFT JOIN HMALL_MST_WEBSITE web
+        ON od.WEBSITE_ID =web.CODE
+        LEFT JOIN hmall_mst_user mu
+        ON od.user_id = mu.user_id
+        <where>
+            <if test="id != null">
+                material.ID = #{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectMaterialList" resultMap="BaseResultMap">
+        SELECT material.ID,
+        material.ORDER_ID,
+        material.CODE,
+        material.CS,
+        material.STATUS,
+        material.CREATION_DATE,
+        material.FINISH_TIME,
+        material.ORDER_REASON,
+        material.IS_CHARGE,
+        material.SAP_CODE,
+        material.ADDRESS,
+        material.RESPONSIBLE_PARTY,
+        material.USER_ID,
+        p.CODE PRODUCT_CODE,
+        materialEntry.UNIT_FEE,
+        materialEntry.QUANTITY,
+        materialEntry.PATCH_REASON,
+        materialEntry.NOTE MATERIAL_ENTRY_NOTE,
+        pointOfService.DISPLAYNAME POINTOFSERVICE,
+        mu.CUSTOMERID,
+        mu.MOBILE_NUMBER,
+        s.CODE SERVICE_ORDER_CODE,
+        o.CODE ORDER_CODE,
+        s.SERVICE_ORDER_ID,
+        o.ESC_ORDER_CODE,
+        ug.NAME USER_GROUP
+        FROM HMALL_AS_MATERIAL material
+        LEFT JOIN HMALL_AS_MATERIAL_ENTRY materialEntry
+        ON material.ID=materialEntry.MATERIAL_ID
+        LEFT JOIN hmall_mst_user mu
+        ON material.user_id = mu.user_id
+        LEFT JOIN HMALL_MST_USER_MAPPING um
+        ON mu.user_id = um.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP ug
+        ON um.USERGROUP_ID = ug.USERGROUP_ID
+        LEFT JOIN HMALL_MST_PRODUCT p
+        ON materialEntry.PRODUCT_ID=p.PRODUCT_ID
+        LEFT JOIN HMALL_OM_ORDER o
+        ON material.ORDER_ID=o.ORDER_ID
+        LEFT JOIN HMALL_AS_SERVICEORDER s
+        ON material.SERVICE_ORDER_ID=s.SERVICE_ORDER_ID
+        LEFT JOIN HMALL_MST_POINTOFSERVICE pointOfService
+        ON materialEntry.POINTOFSERVICE_ID = pointOfService.POINT_OF_SERVICE_ID
+        <where>
+            1=1
+            <if test="code!=null and code !=''">
+                and material.CODE like CONCAT('%',CONCAT(#{code},'%') )
+            </if>
+            <if test="serviceOrderCode!=null and serviceOrderCode !=''">
+                and s.CODE like CONCAT('%',CONCAT(#{serviceOrderCode},'%') )
+            </if>
+            <if test="escOrderCode!=null and escOrderCode !=''">
+                and o.ESC_ORDER_CODE like CONCAT('%',CONCAT(#{escOrderCode},'%') )
+            </if>
+            <if test="customerid!=null and customerid !=''">
+                and mu.CUSTOMERID like CONCAT('%',CONCAT(#{customerid},'%') )
+            </if>
+            <if test="mobile!=null and mobile !=''">
+                and material.MOBILE like CONCAT('%',CONCAT(#{mobile},'%') )
+            </if>
+            <if test="sapCode!=null and sapCode !=''">
+                and material.SAP_CODE like CONCAT('%',CONCAT(#{sapCode},'%') )
+            </if>
+            <if test="isCharge!=null and isCharge !='' and isCharge !='undefined'">
+                and material.IS_CHARGE = #{isCharge}
+            </if>
+            <if test="syncRetail!=null and syncRetail !='' and syncRetail !='undefined'">
+                and material.SYNC_RETAIL = #{syncRetail}
+            </if>
+            <if test="strMaterialStatus != null and strMaterialStatus.length != 0">
+                and(
+                <foreach collection="strMaterialStatus" item="status" index="index" open="" separator="or" close="">
+                    material.STATUS = #{status}
+                </foreach>
+                )
+            </if>
+            <if test="creationDateStart !=null and creationDateStart!=''and creationDateStart!='undefined'">
+                and to_char(material.CREATION_DATE, 'yyyy-mm-dd hh24:mi:ss')&gt;#{creationDateStart}
+            </if>
+            <if test="creationDateEnd !=null and creationDateEnd!=''and creationDateEnd!='undefined'">
+                and to_char(material.CREATION_DATE, 'yyyy-mm-dd hh24:mi:ss')&lt;#{creationDateEnd}
+            </if>
+            <if test="finishTimeStart !=null and finishTimeStart!=''and finishTimeStart!='undefined'">
+                and to_char(material.FINISH_TIME, 'yyyy-mm-dd hh24:mi:ss')&gt;#{finishTimeStart}
+            </if>
+            <if test="finishTimeEnd !=null and finishTimeEnd!=''and finishTimeEnd!='undefined'">
+                and to_char(material.FINISH_TIME, 'yyyy-mm-dd hh24:mi:ss')&lt;#{finishTimeEnd}
+            </if>
+        </where>
+        ORDER BY material.CREATION_DATE DESC
+    </select>
+
+</mapper>

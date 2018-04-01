@@ -1,0 +1,493 @@
+<!--
+        * description: 换货单页面
+        * author:xiaoli.yu
+        * 2017/9/15
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?responsiblePartyData=HMALL_AS_RESPONSIBLE_PARTY" type="text/javascript"></script>
+        <style type="text/css">
+            .full_width {
+                width: 100%;
+            }
+        </style>
+        <script type="text/javascript">
+
+            var selected = window.parent.selected;
+            var orderId = '${RequestParameters.orderId!0}';
+
+            var viewModel = kendo.observable({
+                model: {},
+                closeWin:function(){
+                    window.parent.$("#changeGoodEdit").data("kendoWindow").close();
+                }
+            });
+
+            if(orderId != 0){
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/om/order/queryByOrderId?orderId=' + orderId,
+                    dataType: "json",
+                    async:false,
+                    contentType: "application/json",
+                    success: function (data) {
+                        if(data.success){
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                if(k != 'estimateDeliveryTime' && k != 'customerDemandTime'){
+                                    viewModel.model.set(k, a0[k]);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+        </script>
+<body>
+        <div id="page-content" style="width:800px;">
+                <div class="panel" style="padding: 0px;border:none;box-shadow: none;">
+                    <form class="form-horizontal" id="myForm">
+                        <div class="panel-body" style="margin-top: 5px;border:1px solid #2F617F;">
+                            <h5 style="margin-left: 10px;">换货商品信息</h5>
+                            <div style="clear:both">
+                                <div id="changeGoodGrid"></div>
+                            </div>
+                        </div>
+                        <div class="panel-body" style="margin-top: 5px;border:1px solid #2F617F;">
+                            <h5 style="margin-left: 10px;">收货地址信息</h5>
+                            <div class="row">
+                                <div class="col-sm-4 form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "收货人"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='receiverName' required type="text" style="width: 100%" name="receiverName"
+                                               data-bind="value:model.receiverName" class="k-textbox full_width form-control" >
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "手机号"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='receiverMobile' type="text" style="width: 100%" name="receiverMobile"
+                                               data-bind="value:model.receiverMobile" class="k-textbox full_width form-control">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "电话"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='receiverPhone' type="text" style="width: 100%" name="receiverPhone"
+                                               data-bind="value:model.receiverPhone" class="k-textbox full_width form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4 form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "省"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='receiverState' required type="text" style="width: 100%" name="receiverState"
+                                               data-bind="value:model.receiverState" class="full_width form-control" >
+                                    </div>
+                                    <script type="text/javascript">
+                                            $("#receiverState").kendoDropDownList({
+                                                dataTextField: "regionName",
+                                                dataValueField: "regionCode",
+                                                valuePrimitive: true,
+                                                dataSource: {
+                                                    transport: {
+                                                        read: {
+                                                            url: "${base.contextPath}/fnd/regions/getState?countryCode=CN",
+                                                        },
+                                                    },
+                                                    schema: {
+                                                        data: 'rows',
+                                                    }
+                                                },
+                                                change: function (e) {
+                                                    viewModel.model.set("receiverCity", null);
+                                                    viewModel.model.set("receiverDistrict", null);
+                                                    $("#receiverCity").kendoDropDownList({
+                                                        dataTextField: "regionName",
+                                                        dataValueField: "regionCode",
+                                                        valuePrimitive: true,
+                                                        dataSource: {
+                                                            transport: {
+                                                                read: {
+                                                                    url: "${base.contextPath}/fnd/regions/getCity?stateCode=" + viewModel.model.receiverState,
+                                                                },
+                                                            },
+                                                            schema: {
+                                                                data: 'rows',
+                                                            }
+                                                        },
+                                                        change: function (e) {
+                                                            viewModel.model.set("receiverDistrict", null);
+                                                            $("#receiverDistrict").kendoDropDownList({
+                                                                dataTextField: "regionName",
+                                                                dataValueField: "regionCode",
+                                                                valuePrimitive: true,
+                                                                dataSource: {
+                                                                    transport: {
+                                                                        read: {
+                                                                            url: "${base.contextPath}/fnd/regions/getArea?cityCode=" + viewModel.model.receiverCity,
+                                                                        },
+                                                                    },
+                                                                    schema: {
+                                                                        data: 'rows',
+                                                                    }
+                                                                },
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                    </script>
+                                </div>
+                                <div class="col-sm-4 form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "市"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='receiverCity' required type="text" style="width: 100%" name="receiverCity"
+                                               data-bind="value:model.receiverCity" class="full_width form-control">
+                                    </div>
+                                    <script type="text/javascript">
+                                            $("#receiverCity").kendoDropDownList({
+                                                dataTextField: "regionName",
+                                                dataValueField: "regionCode",
+                                                valuePrimitive: true,
+                                                dataSource: {
+                                                    transport :{
+                                                        read : {
+                                                            url : "${base.contextPath}/fnd/regions/getCity?stateCode="+viewModel.model.receiverState,
+                                                        },
+                                                    },
+                                                    schema:{
+                                                        data  : 'rows',
+                                                    }
+                                                },
+                                                change:function(e){
+                                                    viewModel.model.set("receiverDistrict",null);
+                                                    $("#receiverDistrict").kendoDropDownList({
+                                                        dataTextField: "regionName",
+                                                        dataValueField: "regionCode",
+                                                        valuePrimitive: true,
+                                                        dataSource: {
+                                                            transport :{
+                                                                read : {
+                                                                    url : "${base.contextPath}/fnd/regions/getArea?cityCode="+viewModel.model.receiverCity,
+                                                                },
+                                                            },
+                                                            schema:{
+                                                                data  : 'rows',
+                                                            }
+                                                        },
+                                                    });
+                                                }
+                                            });
+                                    </script>
+                                </div>
+                                <div class="col-sm-4 form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "区"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='receiverDistrict' required type="text" style="width: 100%" name="receiverDistrict"
+                                               data-bind="value:model.receiverDistrict" class="full_width form-control">
+                                    </div>
+                                    <script type="text/javascript">
+                                            $("#receiverDistrict").kendoDropDownList({
+                                                dataTextField: "regionName",
+                                                dataValueField: "regionCode",
+                                                valuePrimitive: true,
+                                                dataSource: {
+                                                    transport :{
+                                                        read : {
+                                                            url : "${base.contextPath}/fnd/regions/getArea?cityCode="+viewModel.model.receiverCity,
+                                                        },
+                                                    },
+                                                    schema:{
+                                                        data  : 'rows',
+                                                    }
+                                                },
+                                            });
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4 form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "邮编"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='receiverZip' type="text" style="width: 100%" name="receiverZip"
+                                               data-bind="value:model.receiverZip" class="k-textbox full_width form-control" >
+                                    </div>
+                                </div>
+                                <div class="col-sm-8 form-group">
+                                    <label class="col-sm-2 control-label" style="text-align:left"><@spring.message "地址"/></label>
+                                    <div class="col-sm-9">
+                                        <input id='receiverAddress' required type="text" style="width: 100%" name="receiverAddress"
+                                               data-bind="value:model.receiverAddress" class="k-textbox full_width form-control">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body" style="margin-top: 5px;border:1px solid #2F617F;">
+                            <div class="row">
+                                <div class="form-group col-sm-6">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "预计交付日期"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='estimateDeliveryTime' type="text" style="width: 100%" name="estimateDeliveryTime"
+                                               data-bind="value:model.estimateDeliveryTime" class="form-control" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group col-sm-6">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "客户需求日期"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='customerDemandTime' type="text" style="width: 100%" name="customerDemandTime"
+                                               data-bind="value:model.customerDemandTime" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-sm-6">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "责任方"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='responsibleParty' required type="text" style="width: 100%" name="responsibleParty"
+                                               data-bind="value:model.responsibleParty" class="form-control">
+                                    </div>
+                                    <script type="text/javascript">
+                                        $("#responsibleParty").kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: responsiblePartyData
+                                        }).data("kendoDropDownList");
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 5px;">
+                            <span id class="btn btn-default" style="float:right;margin-right:5px;" data-bind="click:closeWin">取消</span>
+                            <span id class="btn btn-primary" style="float:right;margin-right:5px;" onclick="selectChoose()">确认</span>
+                            <span id class="btn btn-info" style="float:right;margin-right:5px;" onclick="getAtp()">获取交期</span>
+                        </div>
+                    </form>
+                </div>
+
+        </div>
+</body>
+        <script type="text/javascript">
+            kendo.bind($("#page-content"), viewModel);
+
+            $(function () {
+
+                <!--将rownumber中的#改成序号 -->
+                var rownumList = $('[data-index="0"]');
+                for (var i = 0; i < rownumList.length; i++) {
+                    var rownumText = $(rownumList[i]).html();
+                    if ("#" == rownumText) {
+                        $(rownumList[i]).html("序号");
+                        $(rownumList[i]).eq(0).parent().parent().prev().children().eq(0).css("width", "50px");
+                        $(rownumList[i]).eq(0).parent().parent().parent().parent().parent().next().children("table").children("colgroup").children().eq(0).css("width", "50px");
+                    }
+                }
+
+                dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url:  "${base.contextPath}/hmall/as/serviceorder/entry/selectByOrderEntryIdList",
+                            type: "POST",
+                            dataType: "json",
+                            contentType: "application/json",
+                        },
+                        parameterMap: function (options, type) {
+                            if (type !== "read" && options.models) {
+                                var datas = Hap.prepareSubmitParameter(options, type)
+                                return kendo.stringify(datas);
+                            } else if (type === "read") {
+                                return Hap.prepareQueryParameter(kendo.stringify(selected), options)
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: false,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            id: "serviceOrderEntryId",
+                            fields: {}
+                        }
+                    }
+                });
+
+
+
+                var changeGoodGrid = $("#changeGoodGrid").kendoGrid({
+                    dataSource : dataSource,
+                    height: "200px",
+                    resizable: true,
+                    navigatable: true,
+                    scrollable: true,
+                    rownumber: true,
+                    sortable: true,
+                    columns: [
+                        {
+                            field: "productCode",
+                            title: '<@spring.message "商品编号"/>',
+                            width: 80,
+                            editor: function (container, options) {
+                                container.html(options.model.productCode);
+                                container.removeClass('k-edit-cell');
+                            },
+                        },{
+                            field: "name",
+                            title: '<@spring.message "商品名称"/>',
+                            width: 80,
+                            editor: function (container, options) {
+                                container.html(options.model.name);
+                                container.removeClass('k-edit-cell');
+                            },
+                        },{
+                            field: "quantity",
+                            title: '<@spring.message "换货数量"/>',
+                            width: 80,
+                            editor: function (container, options) {
+                                $('<input required name="' + options.field + '"/>')
+                                    .appendTo(container)
+                                    .kendoNumericTextBox({
+                                        max : options.model.orderEntryQuantity,
+                                        min : 1,
+                                        format: "n0",
+                                        change:function(e){
+                                            options.model.set("quantity",e.sender._value);
+                                        }
+                                    });
+                            }
+                        }
+                    ],
+                    editable: true
+                }).data("kendoGrid");
+
+            });
+
+            $("#page-content").kendoValidator({
+                messages: {
+                    required: "<@spring.message '必输项!'/>"
+                }
+            });
+
+            function selectChoose(){
+
+                var validator = $("#page-content").data("kendoValidator");
+                if(validator.validate()){
+                    if((viewModel.model.receiverPhone == '' && viewModel.model.receiverMobile == '')||(viewModel.model.receiverPhone == null && viewModel.model.receiverMobile == '')
+                        ||(viewModel.model.receiverPhone == '' && viewModel.model.receiverMobile == null) || (viewModel.model.receiverPhone == null && viewModel.model.receiverMobile == null)){
+                        kendo.ui.showInfoDialog({
+                            message: "电话和手机号码不能同时为空!"
+                        });
+                    }else if(viewModel.model.estimateDeliveryTime == null){
+                        kendo.ui.showInfoDialog({
+                            message: "预计交付日期不能为空，请点击获取交期按钮!"
+                        });
+                    }else if(viewModel.model.customerDemandTime == null){
+                        kendo.ui.showInfoDialog({
+                            message: "客户需求日期不能为空!"
+                        });
+                    }else{
+                        var informations = viewModel.model.toJSON();
+                        var gridDatas = dataSource.data();
+                        $.each(gridDatas,function(i,n){
+                            if((n.quantity.toString()).indexOf(".")>0){
+                                kendo.ui.showWarningDialog({
+                                    message: $l('换货数量必须为整数!'),
+                                });
+                                return;
+                            }
+                        });
+                        informations.serviceorderEntryList = gridDatas;
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/as/serviceorder/entry/createChangeGoodOrder',
+                            type: "POST",
+                            dataType: "json",
+                            contentType: "application/json",
+                            data: kendo.stringify([informations]),
+                            success: function (data) {
+                                if (data.success) {
+                                    var resultCode = data.code.split(",");
+                                    kendo.ui.showConfirmDialog({
+                                        title: $l('hap.tip.info'),
+                                        message: '换发单'+resultCode[0]+"和换退单"+resultCode[1]+"创建成功!"
+                                    }).done(function (event) {
+                                        if (event.button == 'OK') {
+                                            window.parent.$("#changeGoodEdit").data("kendoWindow").close();
+                                        }else{
+                                            window.parent.$("#changeGoodEdit").data("kendoWindow").close();
+                                        }
+                                    })
+                                } else {
+                                    kendo.ui.showErrorDialog({
+                                        title: $l('hap.error'),
+                                        message: data.message
+                                    });
+                                }
+                            }
+                        });
+
+                    }
+                }
+            }
+            function getAtp(){
+                var validator = $("#page-content").data("kendoValidator");
+                if(validator.validate()){
+                    if((viewModel.model.receiverPhone == '' && viewModel.model.receiverMobile == '')||(viewModel.model.receiverPhone == null && viewModel.model.receiverMobile == '')
+                        ||(viewModel.model.receiverPhone == '' && viewModel.model.receiverMobile == null) || (viewModel.model.receiverPhone == null && viewModel.model.receiverMobile == null)){
+                        kendo.ui.showInfoDialog({
+                            message: "电话和手机号码不能同时为空!"
+                        });
+                    }else{
+                        var informations = viewModel.model.toJSON();
+                        var gridDatas = dataSource.data();
+                        informations.serviceorderEntryList = gridDatas;
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/as/serviceorder/entry/getAtp',
+                            type: "POST",
+                            dataType: "json",
+                            contentType: "application/json",
+                            data: kendo.stringify([informations]),
+                            success: function (data) {
+                                if (data.success) {
+                                    var dataList = data.rows;
+                                    console.log(dataList);
+                                    if(dataList.length == 0){
+                                        kendo.ui.showErrorDialog({
+                                            title: $l('hap.error'),
+                                            message: "调用ATP交期接口，返回日期长度为空!"
+                                        });
+                                    }else{
+                                        //取最大的日期
+                                        dataList.sort(function(a,b){
+                                            return b-a
+                                        });
+                                        viewModel.model.set("estimateDeliveryTime",dataList[0]);
+                                        viewModel.model.set("customerDemandTime",dataList[0]);
+
+                                        $("#estimateDeliveryTime").kendoDateTimePicker({
+
+                                        });
+
+                                        $("#customerDemandTime").kendoDateTimePicker({
+                                            //format: "yyyy-MM-dd HH:mm:ss",
+                                            min : viewModel.model.estimateDeliveryTime,
+                                        });
+                                    }
+                                } else {
+                                    kendo.ui.showErrorDialog({
+                                        title: $l('hap.error'),
+                                        message: data.message
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+
+        </script>

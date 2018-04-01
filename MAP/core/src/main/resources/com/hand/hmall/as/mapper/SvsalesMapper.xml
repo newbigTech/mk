@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.SvsaleMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.Svsales">
+        <result column="AS_SVSALES_ID" property="asSvsalesId" jdbcType="DECIMAL"/><!-- 服务销售单ID -->
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/><!-- 订单ID -->
+        <result column="CODE" property="code" jdbcType="VARCHAR"/><!-- 服务销售单号 -->
+        <result column="LINK_CODE" property="linkCode" jdbcType="VARCHAR"/><!-- 服务单号 -->
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/><!-- 平台订单号 -->
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/><!-- 状态 -->
+        <result column="PAY_STATUS" property="payStatus" jdbcType="VARCHAR"/><!-- 支付状态 -->
+        <result column="NAME" property="name" jdbcType="VARCHAR"/><!-- 客户名称 -->
+        <result column="USER_GROUP" property="userGroup" jdbcType="VARCHAR"/>
+        <result column="CUSTOMERID" property="customerId" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/><!-- 手机号 -->
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/><!-- 客户地址 -->
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/><!-- 备注 -->
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/><!-- 是否同步Retail -->
+        <result column="TRANS_FEE" property="transFee" jdbcType="DECIMAL"/><!-- 运费 -->
+        <result column="RESTORE_FEE" property="restoreFee" jdbcType="DECIMAL"/><!-- 再存储费 -->
+        <result column="PACKAGE_FEE" property="packageFee" jdbcType="DECIMAL"/><!-- 维修费 -->
+        <result column="SHOULD_PAY" property="shouldPay" jdbcType="DECIMAL"/><!-- 应付金额合计 -->
+        <result column="REAL_PAY" property="realPay" jdbcType="DECIMAL"/><!-- 实付金额合计 -->
+        <result column="CS" property="cs" jdbcType="VARCHAR"/><!-- 受理客服 -->
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/><!-- 完结时间 -->
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/><!-- 创建时间 -->
+        <result column="RESPONSIBLE_PARTY" property="responsibleParty" jdbcType="VARCHAR"/>
+        <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR"/>
+        <result column="CHARGE_TYPE" property="chargeType" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ORDER_CODE" property="serviceOrderCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_CODE" property="orderCode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 根据服务单号查询服务销售单详细信息-->
+    <select id="selectSvsalesById" parameterType="Long" resultMap="BaseResultMap">
+        SELECT
+        svsales.AS_SVSALES_ID,
+        svsales.CODE,
+        svsales.STATUS,
+        svsales.SERVICE_ORDER_ID,
+        has.CODE AS LINK_CODE,
+        hoo.ESC_ORDER_CODE AS ESC_ORDER_CODE,
+        svsales.ORDER_ID,
+        hmu.CUSTOMERID,
+        hmug.NAME AS USER_GROUP,
+        svsales.NOTE,
+        svsales.NAME,
+        svsales.MOBILE,
+        svsales.ADDRESS,
+        svsales.CS,
+        svsales.FINISH_TIME,
+        svsales.SYNCFLAG,
+        svsales.PAY_STATUS,
+        svsales.SHOULD_PAY,
+        svsales.REAL_PAY,
+        svsales.SAP_CODE,
+        svsales.CREATION_DATE
+        FROM HMALL_AS_SVSALES svsales
+        LEFT JOIN HMALL_AS_SERVICEORDER has
+        ON svsales.SERVICE_ORDER_ID = has.SERVICE_ORDER_ID
+        LEFT JOIN HMALL_MST_USER hmu
+        ON hmu.USER_ID = has.USER_ID
+        LEFT JOIN HMALL_MST_USER_MAPPING hmum
+        ON hmum.USER_ID = has.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP hmug
+        ON hmug.USERGROUP_ID = hmum.USERGROUP_ID
+        LEFT JOIN HMALL_OM_ORDER hoo
+        ON hoo.ORDER_ID||'' = svsales.ORDER_ID
+        <where>
+            svsales.AS_SVSALES_ID = #{svsalesId}
+        </where>
+    </select>
+
+    <select id="queryForNewSvsale" parameterType="Long" resultMap="BaseResultMap">
+        SELECT has.CODE AS LINK_CODE,
+        hoo.ESC_ORDER_CODE AS ESC_ORDER_CODE,
+        hoo.ORDER_ID,
+        has.SERVICE_ORDER_ID,
+        hmu.CUSTOMERID,
+        hmug.NAME AS USER_GROUP,
+        has.CS,
+        has.NAME AS NAME,
+        has.ADDRESS AS ADDRESS,
+        has.MOBILE AS MOBILE,
+        'N' AS PAY_STATUS,
+        'NEW' AS STATUS,
+        'N' AS SYNCFLAG,
+        0 AS SHOULD_PAY,
+        0 AS REAL_PAY
+        FROM HMALL_AS_SERVICEORDER has
+        LEFT JOIN HMALL_MST_USER hmu
+        ON hmu.USER_ID = has.USER_ID
+        LEFT JOIN HMALL_MST_USER_MAPPING hmum
+        ON hmum.USER_ID = has.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP hmug
+        ON hmug.USERGROUP_ID = hmum.USERGROUP_ID
+        LEFT JOIN HMALL_OM_ORDER hoo
+        ON hoo.ORDER_ID||'' = has.ORDER_ID
+        WHERE has.SERVICE_ORDER_ID = #{serviceOrderId}
+    </select>
+
+    <select id="queryByCode" resultMap="BaseResultMap" parameterType="com.hand.hmall.as.dto.Svsales">
+        SELECT t.AS_SVSALES_ID
+        FROM HMALL_AS_SVSALES t
+        WHERE t.CODE = #{code}
+    </select>
+
+
+    <update id="updateSyncFlag" parameterType="com.hand.hmall.as.dto.Svsales">
+        UPDATE HMALL_AS_SVSALES haso SET haso.SAP_CODE = #{sapCode}, haso.SYNCFLAG = 'Y' WHERE haso.AS_SVSALES_ID = #{asSvsalesId}
+    </update>
+    <resultMap id="queryForRetailMap" type="com.hand.hmall.as.dto.Svsales">
+        <result column="AS_SVSALES_ID" property="asSvsalesId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/><!-- 手机号 -->
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/><!-- 客户地址 -->
+        <result column="CS" property="cs" jdbcType="VARCHAR"/><!-- 受理客服 -->
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/><!-- 完结时间 -->
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/><!-- 创建时间 -->
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/><!-- 是否同步Retail -->
+        <result column="PAY_STATUS" property="payStatus" jdbcType="VARCHAR"/><!-- 支付状态 -->
+        <result column="SHOULD_PAY" property="shouldPay" jdbcType="DECIMAL"/><!-- 应付金额合计 -->
+        <result column="REAL_PAY" property="realPay" jdbcType="DECIMAL"/><!-- 实付金额合计 -->
+        <result column="RESPONSIBLE_PARTY" property="responsibleParty" jdbcType="VARCHAR"/>
+        <result column="CUSTOMERID" property="customerId" jdbcType="VARCHAR"/>
+        <result column="USER_GROUP" property="userGroup" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/><!-- 平台订单号 -->
+        <result column="LINK_CODE" property="linkCode" jdbcType="VARCHAR"/><!-- 服务单号 -->
+        <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR"/>
+        <result column="SOLD_PARTY" property="soldParty" jdbcType="VARCHAR"/>
+        <result column="SALES_OFFICE" property="salesOffice" jdbcType="VARCHAR"/>
+        <result column="SEX" property="sex" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_DISTRICT" property="receiverDistrict" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE_STRING" property="appointmentDateString" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE_STRING" property="creationDateString" jdbcType="VARCHAR"/>
+        <result column="CREATION_TIME_STRING" property="creationTimeString" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <collection property="svsalesEntries" javaType="java.util.List" ofType="com.hand.hmall.as.dto.SvsalesEntry">
+            <result column="AS_SVSALES_ENTRY_ID" property="asSvsalesEntryId" jdbcType="DECIMAL"/>
+            <result column="SVSALES_ORDER_ID" property="svsalesOrderId" jdbcType="DECIMAL"/>
+            <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+            <result column="PARENT_LINE" property="parentLine" jdbcType="VARCHAR"/>
+            <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+            <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+            <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+            <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+            <result column="TOTAL_FEE" property="totalFee" jdbcType="DECIMAL"/>
+            <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+            <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+            <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+            <result column="VPRODUCT" property="vproduct" jdbcType="VARCHAR"/>
+            <result column="SUIT_CODE" property="suitCode" jdbcType="VARCHAR"/>
+            <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+            <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+            <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+            <result column="RETURN_REASON1" property="returnReason1" jdbcType="VARCHAR"/>
+            <result column="RETURN_REASON2" property="returnReason2" jdbcType="VARCHAR"/>
+            <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+            <result column="PRODUCT_NAME" property="productName" jdbcType="VARCHAR"/>
+            <result column="RETAIL_PRODUCT_CODE" property="retailProductCode" jdbcType="VARCHAR"/>
+
+        </collection>
+
+    </resultMap>
+    <select resultMap="queryForRetailMap" parameterType="Long" id="queryForRetail">
+        SELECT DISTINCT
+        has.AS_SVSALES_ID,
+        has.CODE,
+        has.ORDER_ID,
+        has.SAP_CODE,
+        hmw.SOLD_PARTY AS SOLD_PARTY,
+        hmw.SALES_OFFICE AS SALES_OFFICE,
+        has.NAME,
+         CASE hmu.SEX
+                    WHEN 'F' THEN '0001'
+                    WHEN 'M' THEN '0002'
+                    ELSE '0004'
+         END AS SEX,
+        hoo.RECEIVER_DISTRICT AS RECEIVER_DISTRICT,
+        has.ADDRESS,
+        has.MOBILE,
+        to_char(has.APPOINTMENT_DATE,'yyyy-mm-dd') AS APPOINTMENT_DATE_STRING,
+        has.NOTE,
+        hmu.CUSTOMERID AS CUSTOMER_ID,
+        to_char(has.CREATION_DATE,'yyyy-mm-dd') AS CREATION_DATE_STRING,
+        to_char(has.CREATION_DATE,'hh24:mi:ss') AS CREATION_TIME_STRING,
+        has.RESPONSIBLE_PARTY,
+        has.SYNCFLAG,
+        hoo.ESC_ORDER_CODE,
+        hase1.line_number,
+        hmp.code AS PRODUCT_CODE,
+        hase1.TOTAL_FEE,
+        hase1.QUANTITY,
+        hase1.unit,
+        hase1.note,
+        havm.SAP_CODE AS RETAIL_PRODUCT_CODE
+        FROM HMALL_AS_SVSALES has
+         LEFT JOIN HMALL_OM_ORDER hoo
+        ON hoo.ORDER_ID = has.ORDER_ID
+         LEFT JOIN HMALL_MST_WEBSITE hmw
+        ON hoo.WEBSITE_ID = hmw.CODE
+        LEFT JOIN HMALL_MST_USER hmu
+        ON hoo.USER_ID = hmu.USER_ID
+        LEFT JOIN HMALL_AS_SVSALES_ENTRY hase1
+        ON has.as_svsales_id = hase1.svsales_order_id
+          LEFT JOIN HMALL_MST_PRODUCT hmp
+        ON hmp.product_id = hase1.product_id
+        LEFT JOIN HMALL_AS_VIRTUAL_MAPPING havm
+        ON havm.CHARGE_TYPE = hase1.CHARGE_TYPE
+        WHERE has.AS_SVSALES_ID = #{asSvsalesId}
+    </select>
+    <update id="updatePayStatus" parameterType="com.hand.hmall.as.dto.Svsales">
+        UPDATE HMALL_AS_SVSALES svsale SET svsale.PAY_STATUS = 'Y', svsale.STATUS = 'FINI', svsale.REAL_PAY = #{realPay}, svsale.FINISH_TIME = sysdate  WHERE svsale.AS_SVSALES_ID = #{asSvsalesId}
+    </update>
+
+    <update id="updateStatusToProc" parameterType="com.hand.hmall.as.dto.Svsales">
+        UPDATE HMALL_AS_SVSALES svsale SET svsale.STATUS = 'PROC' WHERE svsale.AS_SVSALES_ID = #{asSvsalesId}
+    </update>
+
+    <update id="updateStatusToCanc" parameterType="com.hand.hmall.as.dto.Svsales">
+        UPDATE HMALL_AS_SVSALES svsale SET svsale.STATUS = 'CANC' WHERE svsale.AS_SVSALES_ID = #{asSvsalesId}
+    </update>
+
+    <select resultMap="BaseResultMap" id="querySvsales">
+        SELECT
+        sv.AS_SVSALES_ID,
+        sv.ORDER_ID,
+        sv.code,
+        sv.MOBILE,
+        sv.CS,
+        svEntry.CHARGE_TYPE,
+        sv.SHOULD_PAY,
+        sv.REAL_PAY,
+        u.CUSTOMERID,
+        sv.SERVICE_ORDER_ID,
+        S.CODE SERVICE_ORDER_CODE,
+        o.CODE ORDER_CODE,
+        sv.PAY_STATUS,
+        sv.SYNCFLAG,
+        sv.CREATION_DATE,
+        sv.FINISH_TIME,
+        svEntry.NOTE SVSALES_ENTRY_NOTE
+        FROM HMALL_AS_SVSALES sv
+        LEFT JOIN HMALL_AS_SVSALES_ENTRY svEntry
+        ON sv.AS_SVSALES_ID=svEntry.SVSALES_ORDER_ID
+        LEFT JOIN HMALL_OM_ORDER o
+        ON sv.ORDER_ID=o.ORDER_ID
+        LEFT JOIN HMALL_MST_USER u
+        ON o.USER_ID=u.USER_ID
+        LEFT JOIN HMALL_AS_SERVICEORDER s
+        ON sv.SERVICE_ORDER_ID=s.SERVICE_ORDER_ID
+        <where>
+            1=1
+            <if test="code!=null and code !=''">
+                and sv.CODE like CONCAT('%',CONCAT(#{code},'%') )
+            </if>
+            <if test="serviceOrderCode!=null and serviceOrderCode !=''">
+                and s.CODE like CONCAT('%',CONCAT(#{serviceOrderCode},'%') )
+            </if>
+            <if test="escOrderCode!=null and escOrderCode !=''">
+                and o.ESC_ORDER_CODE like CONCAT('%',CONCAT(#{escOrderCode},'%') )
+            </if>
+            <if test="sapCode!=null and sapCode !=''">
+                and sv.SAP_CODE like CONCAT('%',CONCAT(#{sapCode},'%') )
+            </if>
+            <if test="customerId!=null and customerId !=''">
+                and u.CUSTOMERID like CONCAT('%',CONCAT(#{customerId},'%') )
+            </if>
+            <if test="mobile!=null and mobile !=''">
+                and sv.MOBILE like CONCAT('%',CONCAT(#{mobile},'%') )
+            </if>
+            <if test="svsaleStatus != null and svsaleStatus.length != 0">
+                and(
+                <foreach collection="svsaleStatus" item="status" index="index" open="" separator="or" close="">
+                    sv.STATUS = #{status}
+                </foreach>
+                )
+            </if>
+            <if test="payStatus!=null and payStatus !='' and payStatus !='undefined'">
+                and sv.PAY_STATUS = #{payStatus}
+            </if>
+            <if test="syncflag!=null and syncflag !='' and syncflag !='undefined'">
+                and sv.SYNCFLAG = #{syncflag}
+            </if>
+        </where>
+        ORDER BY sv.CREATION_DATE DESC
+    </select>
+
+
+</mapper>

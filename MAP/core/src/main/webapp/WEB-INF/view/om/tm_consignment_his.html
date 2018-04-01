@@ -1,0 +1,154 @@
+<#--
+        * description: 天猫订单发货信息导出历史
+        * version: 0.1
+        * author:liuhongxi
+        *
+        -->
+    <#include "../include/header.html">
+
+        <!-- 按钮操作区域 方法初始化 -->
+        <script type="text/javascript">
+
+            var BaseUrl = _basePath;
+            /* 头 */
+            var viewModelHeader = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#headerInfGrid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#headerInfGrid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#headerInfGrid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+        </script>
+        <body>
+        <div id="page-content">
+            <!-- 按钮操作区 -->
+            <!--div class="pull-left" id="type-toolbar-btn" style="padding-bottom:10px;">
+                <span class="btn btn-success k-grid-save-changes" data-bind="click:createFunction"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.new"/></span>
+                <span class="btn btn-success k-grid-save-changes" data-bind="click:saveFunction"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+                <span onclick="downloadExcel()" class="btn btn-success k-grid-save-changes"
+                      style="float:left;margin-right:5px;"><@spring.message "hap.execlexport"/></span>
+                <span onclick="deleteData()" class="btn btn-danger"
+                      style="float:left;"><@spring.message "hap.delete"/></span>
+            </div -->
+            <!-- 按钮操作区动作绑定 -->
+            <script>kendo.bind($('#type-toolbar-btn'), viewModelHeader);</script>
+
+            <!-- 右侧查询操作区 -->
+            <!--div class="pull-right" id="type-query-form" style="padding-bottom:10px;">
+                <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;"
+                       placeholder='test'
+                       data-bind="value:model.name" class="k-textbox">
+                <span class="btn btn-primary" style="float:left;width:70px" data-bind="click:queryResource"
+                      type="submit"><@spring.message "hap.query"/></span>
+                <div style="clear:both"></div>
+            </div>
+            <!-- 右侧查询操作区动作绑定 -->
+            <script>kendo.bind($('#type-query-form'), viewModelHeader);</script>
+            <!-- 表格显示区域 -->
+            <div style="clear:both;padding-bottom: 10px">
+                <div id="headerInfGrid"></div>
+            </div>
+
+        </div>
+        <script type="text/javascript">
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/om/order/selectTmExportData",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModelHeader.model.toJSON(), options)
+                        }
+                    },
+
+                },
+
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "headerId",
+                        fields: {}
+                    }
+                }
+            });
+
+            var headerInfGrid = $("#headerInfGrid").kendoGrid({
+                rownumber: true,
+                dataSource: dataSource,
+                height:'400px',
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                reorderable: true,
+                columnMenu: true,//可以藏列
+                reorderrable: true,//可调整列顺序
+                sortable: true,
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "hisId",
+                        title: '<@spring.message "HmallTmConsignmentHis.hisId"/>',
+                        width: 120,
+                        hidden: true
+                    },
+                    {
+                        field: "exportTime",
+                        title: '导出时间',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        format: "{0: yyyy-MM-dd HH:mm:ss}",
+                        editor: function (container, options) {
+                            container.html(options.model.lookupType);
+                        }
+
+                    },
+                    {
+                        attributes: {style: "text-align:center;padding:0px"},
+                        command: [{
+                            name: 'remove',
+                            template: '<a class="btn btn-primary k-grid-remove">下载</a>',
+                            click: function (e) {
+                                var th = this;
+                                // 取消事件的默认处理
+                                e.preventDefault();
+                                var data = th.dataItem($(e.target).closest("tr"));
+                                var exportTime = data.exportTime;
+                                window.location.href = BaseUrl + "/om/order/exportTmExportData?exportTime="+exportTime;
+
+                            }
+                        }],
+                        width: 70
+                    }
+                ],
+                editable: true,
+
+            }).data('kendoGrid');
+        </script>
+        </body>
+        </html>

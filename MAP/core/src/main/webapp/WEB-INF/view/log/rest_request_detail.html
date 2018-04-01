@@ -1,0 +1,201 @@
+<#--
+        * description: rest详情页面
+        * author:xuxiaoxue
+        * 2017/6/26
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?sys_successFail=SYS.SUCCESS_FAIL" type="text/javascript"></script>
+        <script type="text/javascript">
+            var id = '${RequestParameters._id!0}';
+            var year = '${RequestParameters.year!0}';
+            var month = '${RequestParameters.month!0}';
+
+            var viewModel = kendo.observable({
+                model: {
+                    resultFlagList: sys_successFail,
+                }
+            });
+            $(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/rest/log/findById',
+                    data: JSON.stringify({_id: id, year: year, month: month}),
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                            }
+                            viewModel.model.set("resultFlag", byValueGetShowName(viewModel.model.resultFlagList, viewModel.model.resultFlag));
+                        }
+                    }
+                });
+            });
+        </script>
+        <body>
+
+        <div id="page-content" style="height: 320px;">
+            <form class="form-horizontal" id="myForm">
+                <div class="panel-body" style="margin-top: 10px;">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "请求ID"/></label>
+                                <div class="col-sm-8">
+                                    <input id='_id' type="text" style="width: 90%;background-color:#eee" name="_id"
+                                           data-bind="value:model._id" class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "请求时间"/></label>
+                                <div class="col-sm-8">
+                                    <input id="requestTime" type="text" style="width: 90%;background-color:#eee" name="requestTime"
+                                           data-bind="value:model.requestTime" class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "目标系统"/></label>
+                                <div class="col-sm-8">
+                                    <input id="targetSystem" type="text" style="width: 90%;background-color:#eee" data-bind="value:model.targetSystem" class="k-textbox" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "结果"/></label>
+                                <div class="col-sm-8">
+                                    <input id="resultFlag" type="text" style="width:90%;background-color:#eee" data-bind="value:model.resultFlag" class="k-textbox" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "URL"/></label>
+                                <div class="col-sm-8">
+                                    <input id="requestAddr" type="text" style="width: 90%;background-color:#eee" data-bind="value:model.requestAddr" class="k-textbox" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "Method"/></label>
+                                <div class="col-sm-8">
+                                    <input id="requestMethod" type="text" style="width: 90%;background-color:#eee" data-bind="value:model.requestMethod" class="k-textbox" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "耗时"/></label>
+                                <div class="col-sm-8">
+                                    <input id="during" type="text" style="width: 90%;background-color:#eee" data-bind="value:model.during" class="k-textbox" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "RequestHeaders"/></label>
+                                <div class="col-sm-8">
+                                    <textarea id="requestHeader" type="textarea" style="width: 90%;background-color:#eee" data-bind="value:model.requestHeader" rows="10" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "Parameters"/></label>
+                                <div class="col-sm-8">
+                                    <textarea id="parameters" type="textarea" style="width: 90%;background-color:#eee" data-bind="value:model.parameters" rows="10" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "RequestBody"/></label>
+                                <div class="col-sm-8">
+                                    <textarea id="requestBody" type="textarea" style="width: 90%;background-color:#eee" data-bind="value:model.requestBody" rows="10" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "ResponseHeaders"/></label>
+                                <div class="col-sm-8">
+                                    <textarea id="responseHeaders" type="textarea" style="width: 90%;background-color:#eee" data-bind="value:model.responseHeaders" rows="10" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "ResponseBody"/></label>
+                                <div class="col-sm-8">
+                                    <textarea id="responseBody" type="textarea" style="width: 90%;background-color:#eee" data-bind="value:model.responseBody" rows="10" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "Exception"/></label>
+                                <div class="col-sm-8">
+                                    <textarea id="exceptionDetail" type="textarea" style="width: 90%;background-color:#eee" data-bind="value:model.exceptionDetail" rows="10" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "CallStack"/></label>
+                                <div class="col-sm-8">
+                                    <textarea id="callStack" type="textarea" style="width: 90%;background-color:#eee" data-bind="value:model.callStack" rows="10" readonly></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <script>
+            kendo.bind($('#page-content'), viewModel);
+        </script>
+        <script>
+            //将详情中的结果值变为中文的成功或失败（将value变成要显示的值）
+            function byValueGetShowName(list, value) {
+                for (var st in list) {
+                    if (list[st].value == String(value)) {
+                        return list[st].meaning;
+                    }
+                }
+                return '';
+            }
+        </script>
+        </body>
+        </html>

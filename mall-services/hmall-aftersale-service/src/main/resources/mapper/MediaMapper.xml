@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.hmall.mapper.MediaMapper">
+
+    <resultMap id="MediaMap" type="com.hand.hmall.dto.Media">
+        <result column="MEDIA_ID" property="mediaId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="IMAGE_DESCRIBE" property="imageDescribe" jdbcType="VARCHAR"/>
+        <result column="URL" property="url" jdbcType="VARCHAR"/>
+        <result column="MEDIA_SIZE" property="mediaSize" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATED_BY" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="LAST_UPDATE_LOGIN" property="lastUpdateLogin" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_APPLICATION_ID" property="programApplicationId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_ID" property="programId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_UPDATE_DATE" property="programUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="REQUEST_ID" property="requestId" jdbcType="DECIMAL"/>
+        <result column="ATTRIBUTE_CATEGORY" property="attributeCategory" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL"/>
+        <result column="SORT" property="sort" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="IMAGE_GROUP" property="imageGroup" jdbcType="VARCHAR"/>
+        <result column="PATH" property="path" jdbcType="VARCHAR"/>
+        <result column="IMAGE_LAST_UPDATE" property="imageLastUpdate" jdbcType="TIMESTAMP"/>
+        <result column="UPDATE_FLAG" property="updateFlag" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ID" property="serviceId" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <sql id="target_table_columns">
+
+
+		tgtbl.MEDIA_ID,
+		tgtbl.CODE,
+		tgtbl.NAME,
+		tgtbl.IMAGE_DESCRIBE,
+		tgtbl.URL,
+		tgtbl.MEDIA_SIZE,
+		tgtbl.SYNCFLAG,
+		tgtbl.OBJECT_VERSION_NUMBER,
+		tgtbl.CREATION_DATE,
+		tgtbl.CREATED_BY,
+		tgtbl.LAST_UPDATED_BY,
+		tgtbl.LAST_UPDATE_DATE,
+		tgtbl.LAST_UPDATE_LOGIN,
+		tgtbl.PROGRAM_APPLICATION_ID,
+		tgtbl.PROGRAM_ID,
+		tgtbl.PROGRAM_UPDATE_DATE,
+		tgtbl.REQUEST_ID,
+		tgtbl.ATTRIBUTE_CATEGORY,
+		tgtbl.CATALOGVERSION_ID,
+		tgtbl.SORT,
+		tgtbl.PRODUCT_ID,
+		tgtbl.IMAGE_GROUP,
+		tgtbl.PATH,
+		tgtbl.IMAGE_LAST_UPDATE,
+		tgtbl.UPDATE_FLAG,
+		tgtbl.SERVICE_ID,
+		tgtbl.TYPE
+    </sql>
+
+    <select id="queryAll" resultMap="MediaMap">
+        SELECT
+        <include refid="target_table_columns"/>
+        FROM HMALL_MST_MEDIA
+    </select>
+
+</mapper>

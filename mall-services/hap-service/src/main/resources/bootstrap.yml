@@ -1,0 +1,43 @@
+---
+# bootstrap.yml
+spring:
+  application:
+    name: hap-service
+  profiles:
+    active: native
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server:
+  port: 4442
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+eureka:
+  instance:
+    nonSecurePort: ${server.port:4441}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+---
+spring.profiles: dev_idc
+server.port: 7200
+---
+spring:
+  profiles: sit_idc
+server.port: 7200
+---
+spring:
+  profiles: prod
+server.port: 7200
+---

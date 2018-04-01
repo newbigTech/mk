@@ -1,0 +1,55 @@
+# bootstrap.yml
+
+spring:
+  application:
+    name: hmall-ur-service
+  profiles:
+    active: native
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server.port: 2222
+
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:2222}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+
+---
+spring.profiles: dev_idc
+server.port: 7101
+---
+spring:
+  profiles: sit_idc
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.72.13:1521:TEST
+    username: mk_test
+    password: mk_test
+server.port: 7101
+---
+spring:
+  profiles: prod
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@172.16.10.110:1521:MAPDB
+    username: mapprod
+    password: mapprod
+server.port: 7101
+---

@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: hpay-thirdparty-service
+
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server:
+  port: 8379
+
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+eureka:
+  instance:
+    nonSecurePort: ${server.port:8379}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+rabbit:
+  address: 10.5.72.14:5672
+  username: dev
+  password: Mfr18$
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  logFilePath: /mnt/logs/
+  exchangeName: map-logs
+  queue: thirdparty.api
+  outQueue: mservices.log.outbound
+
+---
+spring:
+  profiles: test
+server:
+  port: 7706
+rabbit:
+  address: 10.5.72.18:5672
+  username: uat
+  password: Mfr18$
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  logFilePath: /mnt/logs/
+---
+spring:
+   profiles: prod
+server:
+   port: 7706
+rabbit:
+  address: 172.16.10.90:5672
+  username: hmall
+  password: SvcsPwd456
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  logFilePath: /mnt/logs/

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.PaymentinfoMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.Paymentinfo">
+        <result column="PAYMENTINFO_ID" property="paymentinfoId" jdbcType="DECIMAL"/>
+        <result column="PAY_MODE" property="payMode" jdbcType="VARCHAR"/>
+        <result column="PAY_AMOUNT" property="payAmount" jdbcType="DECIMAL"/>
+        <result column="PAY_TIME" property="payTime" jdbcType="DATE"/>
+        <result column="NUMBER_CODE" property="numberCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT" property="account" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="SETTLE_TIME" property="settleTime" jdbcType="DATE"/>
+        <result column="REFUND_AMOUNT" property="refundAmount" jdbcType="DECIMAL"/>
+        <result column="OUT_TRADE_NO" property="outTradeNo" jdbcType="DECIMAL"/>
+        <result column="CanRefundAmount" property="canRefundAmount" jdbcType="DECIMAL"/>
+        <result column="ORDER_TYPE" property="orderType" jdbcType="VARCHAR"/>
+        <result column="payTimeStart" property="payTimeStart" jdbcType="VARCHAR"/>
+        <result column="payTimeTo" property="payTimeTo" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getInfoForBalance" resultMap="BaseResultMap" parameterType="com.hand.hmall.om.dto.Paymentinfo">
+        SELECT op.PAYMENTINFO_ID,
+        oo.ESC_ORDER_CODE,
+        oo.CODE,
+        op.PAY_MODE,
+        op.PAY_AMOUNT,
+        op.PAY_TIME,
+        op.NUMBER_CODE,
+        op.OUT_TRADE_NO,
+        op.REFUND_AMOUNT
+        FROM HMALL_OM_PAYMENTINFO op
+        LEFT JOIN HMALL_OM_ORDER oo ON oo.ORDER_ID = op.ORDER_ID
+        WHERE op.PAYMENTINFO_ID NOT IN (
+        SELECT ob.INFO_ID
+        FROM HMALL_OM_BALANCE ob
+        WHERE ob.TYPE = '1'
+        )
+        <if test="payMode != null and payMode != ''">
+            AND op.PAY_MODE = #{payMode}
+        </if>
+        <if test="payAmount != null and payAmount != ''">
+            AND ROUND(op.PAY_AMOUNT, 5) = ROUND(#{payAmount}, 5)
+        </if>
+        <if test="payTimeStart != null and payTimeStart != ''">
+            AND to_char(op.PAY_TIME, 'yyyy-MM-dd HH24:mi:ss') >= #{payTimeStart}
+        </if>
+        <if test="payTimeTo != null and payTimeTo != ''">
+            AND to_char(op.PAY_TIME, 'yyyy-MM-dd HH24:mi:ss') &lt;= #{payTimeTo}
+        </if>
+        <if test="isOrderDetails eq 'Y'.toString()">
+            AND oo.ESC_ORDER_CODE = #{escOrderCode}
+        </if>
+        ORDER BY op.PAY_TIME DESC
+    </select>
+
+    <!-- 获取payMode=UNION settleTime=null的数据 add by zhangyanan 2017-11-15 -->
+    <select id="selectPaymentsByModeWithSettleTimeIsNull" parameterType="com.hand.hmall.om.dto.Paymentinfo" resultMap="BaseResultMap">
+        SELECT HOP.PAYMENTINFO_ID,
+        HOP.PAY_MODE,
+        HOP.NUMBER_CODE,
+        HOP.OUT_TRADE_NO,
+        HOP.SETTLE_TIME,
+        HOP.PAY_TIME
+        FROM  HMALL_OM_PAYMENTINFO HOP
+        WHERE HOP.PAY_MODE=#{payMode}
+        AND HOP.SETTLE_TIME IS NULL
+    </select>
+
+    <select id="getPaymentinfoByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT op.paymentinfo_id,op.pay_mode,op.pay_amount,op.refund_amount,op.name,op.number_code,op.account
+        FROM HMALL_OM_PAYMENTINFO op
+        WHERE 1 = 1
+        AND op.order_id = #{orderId}
+        AND upper(op.order_type) = 'ORDER'
+    </select>
+
+    <insert id="insertSvsalesPaymentInfo" parameterType="com.hand.hmall.om.dto.Paymentinfo">
+        <selectKey keyProperty="paymentinfoId" order="BEFORE" resultType="long">
+            SELECT HMALL_OM_PAYMENTINFO_S.nextval FROM DUAL
+        </selectKey>
+        INSERT INTO HMALL_OM_PAYMENTINFO (PAYMENTINFO_ID,PAY_MODE,PAY_AMOUNT,PAY_TIME,NUMBER_CODE,ORDER_ID,OUT_TRADE_NO,ORDER_TYPE)
+        VALUES (#{paymentinfoId},#{mode},#{totalAmount},#{payTime},#{tradeNo},#{orderId},#{outTradeNo},'SVSALES')
+    </insert>
+
+    <update id="updateRefundAmount" parameterType="com.hand.hmall.om.dto.Paymentinfo">
+        update HMALL_OM_PAYMENTINFO t set t.refund_amount =
+            ( case when refund_amount is not null
+              then t.refund_amount + #{refundAmount} else #{refundAmount} end )
+        where t.paymentinfo_id = #{paymentinfoId}
+    </update>
+
+</mapper>

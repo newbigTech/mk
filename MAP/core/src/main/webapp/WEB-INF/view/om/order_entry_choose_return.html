@@ -1,0 +1,151 @@
+<#--
+        * description: 创建退货单
+        * author:zhangmeng01@markor.com.cn
+        * 2017/8/29
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?serviceOrderSvCategory1=HMALL.SERVICEORDER.SVCATEGORY1" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?serviceOrderSvCategory2_C01=HMALL.SORDER.SVCATEGORY2_C01" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?serviceOrderSvCategory2_C02=HMALL.SORDER.SVCATEGORY2_C02" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?serviceOrderSvCategory2_C03=HMALL.SORDER.SVCATEGORY2_C03" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?serviceOrderSvCategory2_C04=HMALL.SORDER.SVCATEGORY2_C04" type="text/javascript"></script>
+        <script type="text/javascript">
+            //订单编号
+            var code = "${RequestParameters.code!0}";
+        </script>
+        <body>
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary k-grid-add" style="margin-right:5px;margin-top: 10px;margin-bottom: 10px;margin-left: 5px" onclick="addOrderEnrty()">确定</span>
+        </div>
+        <div style="clear:both">
+            <div id="Grid"></div>
+        </div>
+        </body>
+        <script>
+            $(function () {
+            });
+
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: "${base.contextPath}/hmall/as/serviceorder/queryServiceOrderListBySaleCode?orderId=" + code,
+                        type: "POST",
+                        dataType: "json"
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                serverSorting: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "code",
+                        fields: {}
+                    }
+                }
+            });
+
+            var Grid = $("#Grid").kendoGrid({
+                dataSource: dataSource,
+                height: 370,
+                resizable: true,
+                navigatable: true,
+                scrollable: true,
+                selectable: 'multiple',
+                rownumber: true,
+                sortable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "code",
+                        title: '服务单单号',
+                        width: 120
+                    },
+                    {
+                        field: "svCategory1",
+                        title: '服务类别1',
+                        width: 120,
+                        template: function (dataItem) {
+                            var v = dataItem.svCategory1;
+                            if (v == null) {
+                                return '';
+                            }
+                            $.each(serviceOrderSvCategory1, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                } else {
+                                    return '';
+                                }
+                            });
+                            return v;
+                        }
+                    }, {
+                        field: "svCategory2",
+                        title: '服务类别2',
+                        width: 120,
+                        template: function (dataItem) {
+                            var sv1 = dataItem.svCategory1;
+                            var v = dataItem.svCategory2;
+                            if (v == null) {
+                                return '';
+                            }
+                            var svCategory2;
+                            if (sv1 == 'C01') {
+                                svCategory2 = serviceOrderSvCategory2_C01;
+                            } else if (sv1 == 'C02') {
+                                svCategory2 = serviceOrderSvCategory2_C02;
+                            } else if (sv1 == 'C03') {
+                                svCategory2 = serviceOrderSvCategory2_C03;
+                            } else if (sv1 == 'C04') {
+                                svCategory2 = serviceOrderSvCategory2_C04;
+                            }
+                            $.each(svCategory2, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                } else {
+                                    return '';
+                                }
+                            });
+                            return v;
+                        }
+                    }, {
+                        field: "complaint",
+                        title: '投诉内容',
+                        width: 120
+                    }
+                ],
+                editable: false
+            }).data("kendoGrid");
+            Grid.table.on("click", "tr", confirm);
+            //保存选中的订单行
+        /*    function addOrderEnrty() {
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('是否在选择的服务单中新建退货单？')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        var selections = $("#Grid").data("kendoGrid").selectedDataItems();
+                        window.parent.serviceOrderId = selections[0].serviceOrderId;
+                        window.parent.linksCode = selections[0].code;
+                        window.parent.$("#returnOrderDialog").data("kendoWindow").close();
+                    }
+                })
+            }*/
+            function confirm() {
+                var row = $(this).closest("tr");
+                var dataItem = Grid.dataItem(row);
+                parent.confirmPlatform({
+                    gridData:dataItem
+                })
+            }
+
+        </script>

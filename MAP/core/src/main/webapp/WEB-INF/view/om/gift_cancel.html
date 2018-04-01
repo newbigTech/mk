@@ -1,0 +1,148 @@
+<#--
+    * description: 赠品取消界面
+    * author: qinzhipeng
+    * date 2017/11/22
+    * version: 0.1
+    *
+-->
+<#include "../include/header.html">
+    <script type="text/javascript">
+
+    </script>
+    <body>
+        <div id="page-content">
+            <div style="clear:both">
+                <div id="Grid"></div>
+            </div>
+
+            <span id class="btn btn-primary" style="float:right;margin-right:15px;margin-top: 10px;"
+                  onclick="confirm()">确认</span>
+
+
+        </div>
+
+
+        <script type="text/javascript">
+            var selections = null;
+            function confirm() {
+
+                 //selections = $("#Grid").data("kendoGrid").selectedDataItems();
+                /*
+                var pins ="";
+                for(var i = 0;i<selections.length;i++){
+                    if(selections[i].consignmentId !=null && !(selections[i].status == 'ABNORMAL' || selections[i].status == 'WAIT_FOR_DELIVERY')){
+                        pins = selections[i].pin+",";
+                    }
+
+                }
+                if(pins!=""){
+                    pins = pins.substring(0,pins.length-1);
+                    kendo.ui.showInfoDialog({
+                        title: $l('hap.tip.info'),
+                        message: '目前选中赠品行中'+pins+'赠品行不满足取消条件！请客服自动判定需要取消的赠品行'
+                    })
+                    return;
+                }
+                window.parent.cancelOriginalGifts(selections);*/
+                window.parent.$("#cancelProduct").data("kendoWindow").close();
+               // refreshGiftGrid();
+
+            }
+            //刷新行grid
+            function refreshGiftGrid() {
+                var _dataSource_ = new kendo.data.DataSource({
+                    data: window.parent.originalGiftList,
+                    schema: {
+                        model: {
+                            fields: {
+                                productCode:{editable:false},
+                                productDesc:{editable:false},
+                                quantity:{editable:false}
+                            }
+                        }
+                    }
+                });
+                _grid_.setDataSource(_dataSource_);
+                console.log(selections);
+                if(selections==null){
+                    _grid_.select("tr");
+                }else{
+                    if(selections.length){
+                        for(var i = 0;i<selections.length;i++){
+                            var foundRow;
+                            var searchText =selections[i].product;
+                            var rows = _grid_.tbody.find(">tr:not(.k-grouping-row)");
+                            console.log(_grid_.tbody);
+                            console.log(rows);
+                            rows.each(function (index, row) {
+                                var allCells = $(row).find('td');
+                                if (allCells.length > 0) {
+                                    var found = false;
+                                    allCells.each(function (index, td) {
+                                        var tdText = $(td).text();
+                                        if ((tdText === searchText)) {
+                                            found = true;
+                                            return false;
+                                        }
+                                    });
+                                    if (found === true) {
+                                        foundRow = row;
+                                        return false;
+                                    }
+                                }
+                            });
+                            _grid_.select(foundRow);
+                        }
+
+
+                    }
+                }
+            }
+
+
+            var _grid_= $("#Grid").kendoGrid({
+                height:480,
+                resizable: true,
+                scrollable: true,
+                reorderable:true,
+                navigatable: false,
+                columnMenu: true,//可以藏列
+                sortable: true,
+                rownumber: true,
+               // selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+
+                    {
+                        field: "productCode",
+                        title: '商品编码',
+                        width: 120
+                    },
+                    {
+                        field: "name",
+                        title: '商品描述',
+                        width: 220
+                    },
+                    {
+                        field:"basePrice",
+                        title: '单价',
+                        width: 120
+                    },
+                    {
+                        field: "quantity",
+                        title: '数量',
+                        width: 120
+                    }
+                ],
+                editable: false
+            }).data("kendoGrid");
+           $(function () {
+             refreshGiftGrid();
+             });
+        </script>
+    </body>
+</html>

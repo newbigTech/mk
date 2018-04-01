@@ -1,0 +1,561 @@
+<#--
+        * description: Hmall售后管理 服务单列表页面
+        * author:xuxiaoxue
+        * 2017/7/14
+        * version: 0.1
+        -->
+    <#include "/include/header.html">
+
+        <script src="${base.contextPath}/common/code?asStatus=HMALL.AS.STATUS" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svCategory1=HMALL.AS_CATEGORY" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svCategoryC01=HMALL.AS_CATEGORYC01" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svCategoryC02=HMALL.AS_CATEGORYC02" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svCategoryC03=HMALL.AS_CATEGORYC03" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svCategoryC04=HMALL.AS_CATEGORYC04" type="text/javascript"></script>
+        <style type="text/css">
+            #forms .condition_forms {
+                float: left;
+                width: auto;
+                height: 36px;
+                margin-left: 10px;
+                padding-bottom: 10px;
+            }
+
+            #forms .condition_forms label {
+                width: 7em;
+                text-align: right;
+                font-size: auto;
+            }
+
+            #forms .condition_forms input {
+                width: 200px;
+            }
+        </style>
+        <body>
+        <script type="text/javascript">
+            var viewModel = kendo.observable({
+                model: {},
+                resetForm: function (e) {
+                    var formData = viewModel.model.toJSON();
+                    for (var k in formData) {
+                        viewModel.model.set(k, null);
+                    }
+                }
+            });
+        </script>
+
+        <script type="text/javascript">
+            function doSubmit() {
+                if ($('#grid').data('kendoGrid').dataSource.options.data != null) {
+                    $('#grid').data('kendoGrid').setDataSource(dataSource);
+                } else {
+                    $('#grid').data('kendoGrid').dataSource.page(1);
+                }
+                return true;
+            }
+
+            /**
+             * 设置服务单归属
+             */
+            function setServiceOrderHandler() {
+                var serviceOrders = grid__.selectedDataItems();
+                console.log("分配以下服务单归属");
+                console.log(serviceOrders);
+                if (serviceOrders.length < 1) {
+                    kendo.ui.showInfoDialog({
+                        message: '请至少选择一个服务单'
+                    });
+                } else {
+                    var soIDs = '';
+                    for (var i in serviceOrders) {
+                        soIDs += serviceOrders[i].serviceOrderId + ',';
+                    }
+                    soIDs.substr(0, soIDs.length);
+                    var soAssigningWindow = $("#soAssigningWindow_").kendoWindow({
+                        title: '服务单归属确认信息',
+                        content: "${base.contextPath}/as/service_order_assigning_panel.html?soIDs=" + soIDs,
+                        actions: [
+                            /*"Pin",*/
+                            "Close"
+                        ],
+                        modal: true,
+                        visible: false,
+                        width: 600,
+                        height: 350,
+                        iframe: true,
+                        close: function () {
+                        }
+                    }).data("kendoWindow");
+                    soAssigningWindow.center().open();
+                }
+            }
+
+        </script>
+
+        <!-- 服务单归属设置页面 -->
+        <div id="soAssigningWindow_"></div>
+
+        <!-- 导入导出的execl Window -->
+        <div id="compensateExcelWindow"></div>
+        <div id="svsalesExcelWindow"></div>
+        <!-- 查询条件 -->
+        <div id="page-content">
+            <#if accessService.access("HIDESERVICEORDER")>
+                <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="exportData()">导出</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="importCompensate()">销售赔付单导入</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="importSvsales()">线下服务销售单导入</span>
+                    <span id="serviceOrderHandle_"
+                          data-bind="invisible: isInvisible"
+                          class="btn btn-primary" style="float:left;margin-right:5px;"
+                          onclick="setServiceOrderHandler()">归属分配</span>
+                </div>
+            </#if>
+            <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+                <div id="forms" style="padding-bottom: 20px">
+                    <div class="row">
+                        <div class="condition_forms">
+                            <label> 服务单号:</label>
+                            <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" data-bind="value:model.code" class="k-textbox">
+                        </div>
+                        <div class="condition_forms">
+                            <label> 平台订单号:</label>
+                            <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" data-bind="value:model.escOrderCode" class="k-textbox">
+                        </div>
+                        <div class="condition_forms">
+                            <label> 用户账户:</label>
+                            <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" data-bind="value:model.userId" class="k-textbox">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="condition_forms">
+                            <label> 用户手机号:</label>
+                            <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" data-bind="value:model.mobile" class="k-textbox">
+                        </div>
+                        <div class="condition_forms">
+                            <label> 服务单归属:</label>
+                            <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" data-bind="value:model.cs" class="k-textbox">
+                        </div>
+                        <div class="condition_forms">
+                            <label> 单据状态:</label>
+                            <input type="text" id="status" style="width: 200px" ; name='<@spring.message "hmall.user_status"/>'
+                                   data-bind="value:model.status">
+                            <script type="text/javascript">
+                                //将下拉框中的内容克隆一行将key和value都设为空字符串，用于查询所有使用
+                                function clone(obj) {
+                                    function Fn() {
+                                    }
+
+                                    Fn.prototype = obj;
+                                    var o = new Fn();
+                                    for (var a in o) {
+                                        if (typeof o[a] == "object") {
+                                            o[a] = clone(o[a]);
+                                        }
+                                    }
+                                    return o;
+                                }
+                                console.log(asStatus);
+                                var newAsStatusArr = new Array();
+                                var newAsStatus = clone(asStatus[0]);
+                                newAsStatus.value = "";
+                                newAsStatus.meaning = "";
+                                newAsStatusArr[0] = newAsStatus;
+                                for (var i = 0; i < asStatus.length; i++) {
+                                    console.log(asStatus[i]);
+                                    newAsStatusArr[i + 1] = asStatus[i];
+                                }
+                                console.log(newAsStatusArr);
+                                $("#status").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: newAsStatusArr
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+
+                    </div>
+                    <div class="row">
+                        <div class="condition_forms">
+                            <label> 创建日期从:</label>
+                            <input id="creationStartTime" class="rangeChild" data-bind="value:model.creationStartTime" style="width:200px"/>
+                        </div>
+                        <div class="condition_forms">
+                            <label> 至:</label>
+                            <input id="creationEndTime" class="rangeChild" data-bind="value:model.creationEndTime" style="width:200px"/>
+                        </div>
+                        <div class="condition_forms">
+                            <label> 完结日期从:</label>
+                            <input id="finishStartTime" class="rangeChild" data-bind="value:model.finishStartTime" style="width:200px"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="condition_forms">
+                            <label> 至:</label>
+                            <input id="finishEndTime" class="rangeChild" data-bind="value:model.finishEndTime" style="width:200px"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="clear:both;margin-top: -20px;height:50px;">
+                <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" onclick="doSubmit();" type="submit"><@spring.message "hap.query"/></span>
+                <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" data-bind="click:resetForm" type="reset"><@spring.message "hap.reset"/></span>
+            </div>
+
+            <div>
+                <div id="grid"></div>
+            </div>
+            <!--用于导出的form-->
+            <form id="form_ExportExcle" action="${base.contextPath}/hmall/as/serviceorder/exportData" method="GET">
+                <input type="hidden" name="code" data-bind="value:model.code">
+                <input type="hidden" name="salesCode" data-bind="value:model.salesCode">
+                <input type="hidden" name="userId" data-bind="value:model.userId">
+                <input type="hidden" name="mobile" data-bind="value:model.mobile">
+                <input type="hidden" name="cs" data-bind="value:model.cs">
+                <input type="hidden" name="status" data-bind="value:model.status">
+                <input type="hidden" name="creationStartTime" data-bind="value:model.creationStartTime">
+                <input type="hidden" name="creationEndTime" data-bind="value:model.creationEndTime">
+                <input type="hidden" name="finishStartTime" data-bind="value:model.finishStartTime">
+                <input type="hidden" name="finishEndTime" data-bind="value:model.finishEndTime">
+            </form>
+        </div>
+        <script type="text/javascript">
+            kendo.bind($('#page-content'), viewModel);
+
+            //导出商品列表excel
+            function exportData() {
+                $("#form_ExportExcle").submit();
+            }
+
+            //导入销售赔付excel
+            function importCompensate() {
+                var compensateExcelWindow = $("#compensateExcelWindow").kendoWindow({
+                    title: '销售赔付单导入',
+                    content: "${base.contextPath}/as/as_compensate_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                    }
+                }).data("kendoWindow");
+                compensateExcelWindow.center().open();
+            }
+
+            //导入服务销售单excel
+            function importSvsales() {
+                var svsalesExcelWindow = $("#svsalesExcelWindow").kendoWindow({
+                    title: '线下服务销售单导入',
+                    content: "${base.contextPath}/as/as_svsales_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                    }
+                }).data("kendoWindow");
+                svsalesExcelWindow.center().open();
+            }
+
+
+            $('#query-form input').keydown(function (e) {
+                if (e.keyCode == 13) {
+                    e.target.blur();
+                    viewModel.queryFunction(e);
+                }
+            });
+
+            //初始化起始时间从
+            initDateTimePicker("creationStartTime", function () {
+                var creationStartTime = $("#creationStartTime").val();
+                var creationEndTime = $("#creationEndTime").data("kendoDateTimePicker");
+                creationEndTime.min(creationStartTime || new Date(1800, 0, 1));
+            });
+
+            //初始化起始时间至
+            initDateTimePicker("creationEndTime", function () {
+                var creationEndTime = $("#creationEndTime").val();
+                var creationStartTime = $("#creationStartTime").data("kendoDateTimePicker");
+                creationStartTime.max(creationEndTime || new Date(2099, 11, 31));
+            });
+
+            //初始化完结日期从
+            initDateTimePicker("finishStartTime", function () {
+                var finishStartTime = $("#finishStartTime").val();
+                var finishEndTime = $("#finishEndTime").data("kendoDateTimePicker");
+                finishEndTime.min(finishStartTime || new Date(1800, 0, 1));
+            });
+
+            //初始化完结日期至
+            initDateTimePicker("finishEndTime", function () {
+                var finishEndTime = $("#finishEndTime").val();
+                var finishStartTime = $("#finishStartTime").data("kendoDateTimePicker");
+                finishStartTime.max(finishEndTime || new Date(2099, 11, 31));
+            });
+
+
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl + "/hmall/as/serviceorder/queryServiceOrderList",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                serverSorting: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "orderId",
+                        fields: {}
+                    }
+                }
+            });
+
+            var grid = $("#grid");
+
+            var grid__ = $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: "400px",
+                autoBind: false,
+                pageable: true,
+                resizable: true,
+                editable: false,
+                navigatable: true,
+                scrollable: true,
+                selectable: 'multiple, rowbox',
+                sortable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 10
+                },
+                columns: [{
+                    field: "serviceOrderId",
+                    title: '序号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 50,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: "<span class='row-number'></span>"
+                }, {
+                    field: "code",
+                    title: '服务单编号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    template: function (dataItem) {
+                        if (dataItem.code != null && dataItem.code != '') {
+                            return '<a style="margin-right:10px;" href="javascript:void(0);" onclick="entryFunction(\'' + dataItem.code + '\',\'' + dataItem.orderId + '\',\'' + dataItem.orderCode + '\',\'' + dataItem.serviceOrderId + '\',\'' + dataItem.escOrderCode + '\',\'' + dataItem.websiteId + '\')">' + dataItem.code + '</a>'
+                        }
+                    },
+                    width: 130,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "status",
+                    title: '服务单状态',
+                    attributes: {style: "text-align:center"},
+                    width: 130,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: function (dataItem) {
+                        var v = dataItem.status;
+                        if (v == null) {
+                            return '';
+                        }
+                        $.each(asStatus, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            } else {
+                                return '';
+                            }
+                        });
+                        return v;
+                    }
+                }, {
+                    field: "userId",
+                    title: '用户账户',
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "mobile",
+                    title: '用户手机号',
+                    attributes: {style: "text-align:center"},
+                    width: 110,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "cs",
+                    title: '服务单归属',
+                    attributes: {style: "text-align:center"},
+                    width: 70,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "svCategory1",
+                    title: '服务类别1',
+                    attributes: {style: "text-align:center"},
+                    width: 110,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: function (dataItem) {
+                        var v = dataItem.svCategory1;
+                        if (v == null) {
+                            return '';
+                        }
+                        return changeToSysCode(svCategory1, v);
+                    }
+                }, {
+                    field: "svCategory2",
+                    title: '服务类别2',
+                    attributes: {style: "text-align:center"},
+                    width: 120,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: function (dataItem) {
+                        var svCategory1 = dataItem.svCategory1;
+                        var v = dataItem.svCategory2;
+                        if (v == null) {
+                            return '';
+                        }
+                        if (svCategory1 == 'C01') {
+                            return changeToSysCode(svCategoryC01, v);
+                        } else if (svCategory1 == 'C02') {
+                            return changeToSysCode(svCategoryC02, v);
+                        } else if (svCategory1 == 'C03') {
+                            return changeToSysCode(svCategoryC03, v);
+                        } else if (svCategory1 == 'C04') {
+                            return changeToSysCode(svCategoryC04, v);
+                        }
+                    }
+                }, {
+                    field: "creationDate",
+                    title: '创建时间',
+                    attributes: {style: "text-align:center"},
+                    width: 70,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "finishTime",
+                    title: '完结时间',
+                    attributes: {style: "text-align:center"},
+                    width: 80,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }],
+                dataBound: function () {
+                    var rows = this.items();
+                    var page = this.pager.page() - 1;
+                    var pagesize = this.pager.pageSize();
+                    $(rows).each(
+                            function () {
+                                var index = $(this).index() + 1 + page * pagesize;
+                                var rowLabel = $(this).find(".row-number");
+                                $(rowLabel).html(index);
+                            });
+                }
+            }).data("kendoGrid");
+
+
+            //单击服务单编码,跳转到详情界面
+            function entryFunction(code, orderId, orderCode, serviceOrderId, escOrderCode, websiteId) {
+                window.top.openTab(code, "服务单详情", "${base.contextPath}/as/as_service_order_detail.html?code=" + code + "&orderId=" + orderId + "&orderCode=" + orderCode + "&serviceOrderId=" + serviceOrderId + "&escOrderCode=" + escOrderCode + "&websiteId=" + websiteId)
+            }
+
+            /**
+             * 初始化时间选择控件
+             * @param elementId -被初始化的控件ID
+             * @param onChange - value值变化时的时间处理函数
+             */
+            function initDateTimePicker(elementId, onChange) {
+                $("#" + elementId).kendoDateTimePicker({
+                    animation: {
+                        close: {
+                            effects: "fadeOut zoom:out",
+                            duration: 300
+                        },
+                        open: {
+                            effects: "fadeIn zoom:in",
+                            duration: 300
+                        }
+                    },
+                    format: "yyyy-MM-dd HH:mm:ss",
+                    change: onChange
+                });
+            }
+
+            /**
+             * 将表格中某些字段的值从块码表中的值转换为含义
+             * @param data
+             * @param v
+             */
+            function changeToSysCode(data, v) {
+                $.each(data, function (i, n) {
+                    if (n.value == v) {
+                        v = n.meaning;
+                        return v;
+                    } else {
+                        return '';
+                    }
+                });
+                return v;
+            }
+
+            //自动根据当前屏幕大小调整表格
+            //            Hap.autoResizeGrid("#grid");
+        </script>
+        <div id="dialogEdit" style="display:none;"></div>
+        </body>
+        </html>

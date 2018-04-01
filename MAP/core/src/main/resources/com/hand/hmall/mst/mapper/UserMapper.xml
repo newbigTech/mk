@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.MstUserMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.MstUser">
+        <result column="USER_ID" property="userId" jdbcType="DECIMAL"/>
+        <result column="CUSTOMERID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="SEX" property="sex" jdbcType="VARCHAR"/>
+        <result column="MOBILE_NUMBER" property="mobileNumber" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="IS_BLACK_LIST" property="isBlackList" jdbcType="VARCHAR"/>
+        <result column="LABEL" property="label" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="EMAIL" property="email" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="COUNTRY" property="country" jdbcType="VARCHAR"/>
+        <result column="REGION" property="region" jdbcType="VARCHAR"/>
+        <result column="CITY" property="city" jdbcType="VARCHAR"/>
+        <result column="DISTRICT" property="district" jdbcType="VARCHAR"/>
+        <result column="birthday" property="birthday" jdbcType="TIMESTAMP"/>
+        <result column="user_level" property="userLevel" jdbcType="VARCHAR"/>
+        <result column="creation_date" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="groupName" property="groupName" jdbcType="VARCHAR"/>
+        <result column="TM_NICKNAME" property="tmNickname" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="user_list">
+     SELECT mu.user_id,
+       mu.customerid,
+       mu.sex,
+       mu.mobile_number,
+       mu.name,
+       mu.is_black_list,
+       mu.label,
+       mu.remark,
+       mu.email,
+       mu.syncflag,
+       mu.country,
+       mu.region,
+       mu.city,
+       mu.district,
+       mu.creation_date,
+       mu.birthday,
+       mu.user_level,
+       mu.TM_NICKNAME
+    </sql>
+
+    <!-- 查询用户表的LOV -->
+    <select id="selectUserLov" parameterType="com.hand.hmall.mst.dto.MstUser" resultMap="BaseResultMap">
+        select USER_ID,NAME,customerid
+        from hmall_mst_user
+        where 1=1
+        <if test="userId !=null and userId !=''">
+            and USER_ID=#{userId}
+        </if>
+        <if test="name !=null and name!=''and name!='undefined'">
+            and NAME LIKE '%'||#{name}||'%'
+        </if>
+    </select>
+
+    <select id="queryInfo" parameterType="com.hand.hmall.mst.dto.MstUser" resultMap="BaseResultMap">
+        <include refid="user_list"></include>
+        , mug.name groupName
+        FROM hmall_mst_user mu
+        LEFT JOIN hmall_mst_user_mapping mum
+        ON mu.user_id = mum.user_id
+        LEFT JOIN hmall_mst_usergroup mug
+        ON mum.usergroup_id = mug.usergroup_id
+        where 1=1
+        <if test="userId !=  null and userId !=''">
+            and mu.user_id LIKE '%'||#{userId}||'%'
+        </if>
+        <if test="customerid !=  null and customerid !=''">
+            and mu.customerid LIKE '%'||#{customerid}||'%'
+        </if>
+        <if test="mobileNumber !=  null and mobileNumber !=''">
+            and mu.mobile_number LIKE '%'||#{mobileNumber}||'%'
+        </if>
+        <if test="name !=  null and name !=''">
+            and mu.name LIKE '%'||#{name}||'%'
+        </if>
+        <if test="isBlackList !=  null and isBlackList !=''">
+            and mu.is_black_list =#{isBlackList}
+        </if>
+        <if test="email !=  null and email !=''">
+            and mu.email LIKE '%'||#{email}||'%'
+        </if>
+        <if test="groupName !=  null and groupName !=''">
+            and mg.groupName LIKE '%'||#{groupName}||'%'
+        </if>
+        <if test="userLevel !=  null and userLevel !=''">
+            and mu.user_level LIKE '%'||#{userLevel}||'%'
+        </if>
+        <if test="startTime !=null and startTime!=''and startTime!='undefined'">
+            and mu.creation_date>to_date(#{startTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime !=null and endTime!=''and endTime!='undefined'">
+            and mu.creation_date &lt;to_date(#{endTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+    </select>
+
+    <!-- List<MstUser> queryUserByTMNickName(String tmNickName); -->
+    <select id="queryUserByTMNickName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        <include refid="user_list"></include>
+        FROM hmall_mst_user mu
+        WHERE mu.TM_NICKNAME = #{tmNickName}
+    </select>
+
+    <!--根据customerid字段查询userID-->
+    <select id="selectByCustomerId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        <include refid="user_list"></include>
+        FROM hmall_mst_user mu
+        WHERE mu.CUSTOMERID = #{customerid}
+    </select>
+
+    <!--根据coustomerid字段查询USER表中的USER_ID,NAME;USERGROUP表中的NAME-->
+    <select id="selectMsgByCustomerId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT u.USER_ID,u.CUSTOMERID MOBILE_NUMBER,u.Name,g.NAME groupName FROM HMALL_MST_USER u
+        LEFT JOIN HMALL_MST_USER_MAPPING mapping
+        on u.USER_ID=mapping.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP g
+        on mapping.USERGROUP_ID = g.USERGROUP_ID
+        WHERE u.CUSTOMERID = #{customerid}
+    </select>
+</mapper>

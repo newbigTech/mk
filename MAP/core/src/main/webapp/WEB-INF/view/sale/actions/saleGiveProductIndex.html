@@ -1,0 +1,436 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        notIn:[],
+        notInCount:[]
+
+    });
+
+
+    var id='${RequestParameters.id}';
+    var value=[];
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    viewModel.set("disabled",disabled);
+
+    for(var i in window.parent.viewModel.model.actions)
+    {
+        if(window.parent.viewModel.model.actions[i].id==id)
+        {
+            definitionId=window.parent.viewModel.model.actions[i].definitionId;
+
+            if(window.parent.viewModel.model.actions[i].parameters!=undefined) {
+                if(window.parent.viewModel.model.actions[i].parameters.value!=undefined) {
+                    value=window.parent.viewModel.model.actions[i].parameters.value.value;
+                }
+            }
+            break;
+        }
+    }
+
+    if(value!=null&&value!=undefined&&value!="")
+    {
+        viewModel.notInCount =value;
+        for(var i in value)
+        {
+            viewModel.notIn.push(value[i].id);
+        }
+    }
+
+
+
+
+
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div id='grid-container'>
+            <div id="grid" style="clear: both"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="addCoupon"></div>
+<script type="text/javascript">
+
+
+    kendo.bind($('#page-content'),viewModel);
+    kendo.bind($('#grid-container'),viewModel);
+
+    var countEditor = function (container, options) {
+        $('<input name="countEditor" data-bind="value:' + options.field + '"/>')
+                .appendTo(container)
+                .kendoNumericTextBox({
+                    format: "n0",
+                    min: 0
+
+                });
+    };
+
+    var totalEditor = function (container, options) {
+            $('<input name="totalEditor" data-bind="value:' + options.field + '"/>')
+                    .appendTo(container)
+                    .kendoNumericTextBox({
+                        format: "n0",
+                        min: 0
+
+                    });
+        };
+
+
+    var BaseUrl = "${base.contextPath}/sale/range/product/",
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"queryByNotInAndCount",
+                        type : "POST",
+                        contentType: "application/json"
+
+                    },
+                    update:  {
+                        url: BaseUrl+"checkedProductCount",
+                        type : "POST",
+                        contentType: "application/json"
+
+                    },
+
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            if(type =='create' || type =='update'){
+                                var map = viewModel.model.toJSON();
+                                datas = options.models.map(function(data){
+                                    data['__status'] = (type =='create' ? 'add' : 'update');
+                                    return data;
+
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+                            var map={};
+                            map.notIn =viewModel.notInCount;
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+                            for (var k in map) {
+                                if (map[k] === '' || map[k] === null || map[k] === undefined)
+                                    delete map[k]
+                            }
+                            return kendo.stringify(map);
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    var response = e.response;
+                    var type = e.type;
+                    if(type=='update')
+                    {
+                        if(response.success) {
+                            var notInData=response.resp;
+                            if (notInData != undefined && notInData != null) {
+                                for (var i in notInData) {
+                                    for (var j in viewModel.notInCount) {
+                                        if (viewModel.notInCount[j].productCode == notInData[i].productCode) {
+                                            viewModel.notInCount[j].countNumber = notInData[i].countNumber;
+                                            viewModel.notInCount[j].totalNumber = notInData[i].totalNumber;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }else {
+                            $('#grid').data('kendoGrid').dataSource.read();
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging : true,
+                pageSize: 10,
+                schema: {
+                    data:'resp',
+                    total:'total',
+                    model: {
+                        id: "productCode",
+                        fields: {
+//                            productId:{editable:false, validation: { required: true }},
+                            productCode: {editable:false, validation: { required: true } },
+                            name: {editable:false, validation: { required: true } },
+                            countNumber:{editable:true, validation: { required: true },defaultValue:1},
+                            totalNumber:{editable:true, validation: { required: true },defaultValue:1},
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+
+    var grid=$("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+        selectable : 'multiple, rowbox',
+        pageable: {
+            pageSizes: ['All', 5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                template: '<span  id="addButton" disabled="true"   class="btn btn-primary"><i class="fa fa-plus"></i> 添加</span>'
+            },{
+                template:'<button  id="deleteButton"  disabled="true"   class="btn btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> <@spring.message "hap.delete"/></button>'
+            },{
+                template:'<button  id="addCouponDataAction"  disabled="true"    class="btn btn-success"><i class="glyphicon glyphicon-ok" aria-hidden="true"></i> 确定</button>'
+            }
+        ],
+        columns: [
+//            {
+//                field: "productId",
+//                title: 'SKU',
+//                headerAttributes: {
+//                    "class": "table-header-cell",
+//                    style  : "text-align: center"
+//                },
+//
+//            },
+            {
+                field: "productCode",
+                title: '产品编码',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+            {
+                field: "name",
+                title: '产品名称',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+            {
+                field: "countNumber",
+                title: '数量',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                editor:countEditor,
+                template:function (dataItem) {
+                    if(dataItem.countNumber)
+                    {
+                        return dataItem.countNumber
+                    }else {
+                        return 0;
+                    }
+                }
+            },{
+                field: "totalNumber",
+                title: '总数',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                editor:totalEditor,
+                template:function (dataItem) {
+                    if(dataItem.totalNumber)
+                    {
+                        return dataItem.totalNumber
+                    }else {
+                        return 0;
+                    }
+                }
+            },
+            {
+                command: [
+                    {
+                        name: "edit"
+                    }
+                ],
+                title: "操作",
+                headerAttributes: {
+                    style: "text-align:center"
+                },
+                attributes: {
+                    style: "text-align:center"
+                }
+            }
+
+        ],
+        editable:{
+            mode:"inline"
+        }
+
+    }).data("kendoGrid");
+
+
+
+    function deleteCheckedData(){
+        var grid = $("#grid").data("kendoGrid");
+        if (!grid.selectedDataItems().length) {
+            kendo.ui.showInfoDialog({
+                title: '提示信息',
+                message: '你未选中任何要删除的项!'
+            });
+            return ;
+        }
+        kendo.ui.showConfirmDialog({
+            title:'<@spring.message "hmall.delete_info"/>',
+            message: '<@spring.message "hmall.deside_delete_info"/>'
+        }).done(function(event){
+
+            if(event.button == 'OK'){
+
+                var data = grid.selectedDataItems();
+                for(var i=0;i<data.length;i++)
+                {
+                    grid.dataSource.remove(data[i]);
+                    viewModel.notIn.remove(data[i].productCode);
+
+                    for(var j in viewModel.notInCount)
+                    {
+                        if(viewModel.notInCount[j].productCode==data[i].productCode)
+                        {
+                            viewModel.notInCount.splice(j,1);
+                            break;
+                        }
+                    }
+
+                }
+            }
+        })
+
+    }
+
+
+
+
+    function addCoupon() {
+
+
+        var onClose = function () {
+            $("#addCoupon").empty();
+        };
+
+        $("#addCoupon").kendoWindow({
+            actions: ["Close"],
+            title: '模板编辑',
+            draggable: true,
+            height: "95%",
+            width: "100%",
+            close: onClose,
+            content: "${base.contextPath}/sale/actions/saleGiveProductAdd.html",
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#addCoupon").data("kendoWindow");
+        win.center().open();
+
+
+    }
+
+    function addCouponData(data)
+    {
+        var grid=$('#grid').data('kendoGrid');
+
+        console.log(data);
+        for(var i in data)
+        {
+            var notIn={};
+            notIn.productCode=data[i].productCode;
+            notIn.countNumber=data[i].countNumber;
+            notIn.totalNumber=data[i].totalNumber;
+            notIn.name=data[i].name;
+
+            viewModel.notIn.push(notIn.productCode);
+            viewModel.notInCount.push(notIn);
+            grid.dataSource._data.push(data[i]);
+            grid.refresh();
+
+        }
+    }
+
+    function addCouponDataAction()
+    {
+        var checkedData=$('#grid').data('kendoGrid').selectedDataItems();
+        if(checkedData!=undefined&&checkedData!=null)
+        {
+            var dataItems=[];
+            for(var i in checkedData) {
+
+                if(checkedData[i].countNumber == null || checkedData[i].countNumber == undefined || checkedData[i].countNumber < 0){
+                    kendo.ui.showWarningDialog({
+                        message: '<@spring.message "hmall.count.not.empty"/>'
+                    })
+                    return;
+                }
+                if(checkedData[i].totalNumber == null || checkedData[i].totalNumber == undefined || checkedData[i].totalNumber < 0){
+                    kendo.ui.showWarningDialog({
+                        message: '<@spring.message "hmall.totalcount.not.empty"/>'
+                    })
+                    return;
+                }
+                if(checkedData[i].countNumber > checkedData[i].totalNumber){
+                    kendo.ui.showWarningDialog({
+                        message: '<@spring.message "hmall.count.check"/>'
+                    })
+                    return;
+                }
+
+                var dataItem = {};
+                dataItem.productCode = checkedData[i].productCode;
+                dataItem.name = checkedData[i].name;
+                dataItem.countNumber= checkedData[i].countNumber;
+                dataItem.totalNumber= checkedData[i].totalNumber;
+                dataItems.push(dataItem);
+            }
+            viewModel.notInCount=[];
+            viewModel.notIn=[];
+            addCouponData(dataItems);
+        }
+        console.log(viewModel.notInCount);
+        var map={};
+        map.value=viewModel.notInCount;
+        console.log(map.value);
+        window.parent.saveNumberAction(map,id);
+        window.parent.$("#addTempActionDataWin").data("kendoWindow").close();
+    }
+
+    if(disabled!='true'){
+        $('#addButton').removeAttr("disabled");
+        $('#addButton').attr("onclick","addCoupon()");
+        $('#deleteButton').removeAttr("disabled");
+        $('#deleteButton').attr("onclick","deleteCheckedData()");
+        $('#addCouponDataAction').removeAttr("disabled");
+        $('#addCouponDataAction').attr("onclick","addCouponDataAction()");
+    }
+
+    $('.k-input').attr("disabled",true);
+
+</script>
+</body>
+</html>

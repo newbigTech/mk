@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.PinAlterMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.model.PinAlterMapping">
+        <result column="ALTER_MAPPING_ID" property="alterMappingId" jdbcType="DECIMAL" />
+        <result column="CUSTOMER_SUPPORT_TYPE" property="customerSupportType" jdbcType="VARCHAR" />
+        <result column="EVENT_CODE" property="eventCode" jdbcType="VARCHAR" />
+        <result column="NEXT_EVENT_CODE" property="nextEventCode" jdbcType="VARCHAR" />
+        <result column="LEVEL1_TIME" property="level1Time" jdbcType="DECIMAL"/>
+        <result column="LEVEL2_TIME" property="level2Time" jdbcType="DECIMAL"/>
+        <result column="LEVEL3_TIME" property="level3Time" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="selectByPin" resultMap="BaseResultMap" parameterType="com.hand.hmall.model.HmallPinInfo">
+        SELECT
+            pam.ALTER_MAPPING_ID,
+            pam.CUSTOMER_SUPPORT_TYPE,
+            pam.EVENT_CODE,
+            pam.NEXT_EVENT_CODE,
+            pam.LEVEL1_TIME,
+            pam.LEVEL2_TIME,
+            pam.LEVEL3_TIME
+        FROM HMALL_PIN_ALTER_MAPPING pam
+        LEFT JOIN HMALL_MST_PRODUCT mp ON mp.CUSTOM_SUPPORT_TYPE = pam.CUSTOMER_SUPPORT_TYPE
+        LEFT JOIN HMALL_OM_ORDER_ENTRY ooe ON ooe.PRODUCT_ID = mp.PRODUCT_ID
+        WHERE EVENT_CODE = #{eventCode} AND ooe.PIN = #{code}
+    </select>
+</mapper>

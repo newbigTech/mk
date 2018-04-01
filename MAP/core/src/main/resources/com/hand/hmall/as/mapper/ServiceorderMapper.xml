@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.ServiceorderMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.Serviceorder">
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="ORDER_TYPE" property="orderType" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SV_CATEGORY1" property="svCategory1" jdbcType="VARCHAR"/>
+        <result column="SV_CATEGORY2" property="svCategory2" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="COMPLAINT" property="complaint" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="USER_ID" property="userId" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="EMPLOYEE_NAME" property="employeeName" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE"/>
+        <result column="EXECUTION_DATE" property="executionDate" jdbcType="DATE"/>
+        <result column="TECHNICIAN_NAME" property="technicianName" jdbcType="VARCHAR"/>
+        <result column="IS_CHARGE" property="isCharge" jdbcType="VARCHAR"/>
+        <result column="USER_GROUP" property="userGroup" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CUSTOMERID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="VARCHAR"/>
+        <result column="ORDER_CODE" property="orderCode" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="IMAGE_DESCRIBE" property="imageDescribe" jdbcType="VARCHAR"/>
+        <result column="URL" property="url" jdbcType="VARCHAR"/>
+        <result column="WEBSITE_ID" property="websiteId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <!-- 根据查询条件查出符合条件的服务单列表 -->
+    <select id="queryServiceOrderList" parameterType="com.hand.hmall.as.dto.Serviceorder"
+            resultMap="BaseResultMap">
+        SELECT
+        serviceorder.SERVICE_ORDER_ID,
+        serviceorder.CODE,
+        serviceorder.STATUS,
+        serviceorder.USER_ID,
+        serviceorder.MOBILE,
+        serviceorder.CS,
+        he.NAME EMPLOYEE_NAME,
+        serviceorder.SV_CATEGORY1,
+        serviceorder.SV_CATEGORY2,
+        serviceorder.CREATION_DATE,
+        serviceorder.FINISH_TIME,
+        o.ORDER_ID,
+        o.CODE as ORDER_CODE,
+        o.ESC_ORDER_CODE,
+        o.WEBSITE_ID
+        FROM HMALL_AS_SERVICEORDER serviceorder
+        LEFT JOIN HMALL_OM_ORDER o
+        on serviceorder.ORDER_ID = to_char(o.ORDER_ID)
+        join hr_employee he on he.employee_code = serviceorder.CS
+        <where>
+            <if test="escOrderCode != null and escOrderCode!=''">
+                upper(o.ESC_ORDER_CODE) LIKE upper(CONCAT(CONCAT('%',#{escOrderCode}),'%'))
+            </if>
+            <if test="code != null and code!=''">
+                AND upper(serviceorder.CODE) LIKE upper(CONCAT(CONCAT('%',#{code}),'%'))
+            </if>
+            <if test="userId != null and userId!=''">
+                AND upper(serviceorder.USER_ID) LIKE upper(CONCAT(CONCAT('%',#{userId}),'%'))
+            </if>
+            <if test="mobile != null and mobile!=''">
+                AND serviceorder.MOBILE = #{mobile}
+            </if>
+            <if test="cs != null and cs!=''">
+                AND upper(serviceorder.CS) LIKE upper(CONCAT(CONCAT('%',#{cs}),'%'))
+            </if>
+            <if test="status != null and status!=''">
+                AND upper(serviceorder.STATUS) = upper(#{status})
+            </if>
+            <if test="creationStartTime !=null and creationStartTime!=''">
+                AND serviceorder.CREATION_DATE>to_date(#{creationStartTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="creationEndTime !=null and creationEndTime!=''">
+                AND serviceorder.CREATION_DATE &lt;to_date(#{creationEndTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="finishStartTime !=null and finishStartTime!=''">
+                AND serviceorder.FINISH_TIME>to_date(#{finishStartTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="finishEndTime !=null and finishEndTime!=''">
+                AND serviceorder.FINISH_TIME &lt;to_date(#{finishEndTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+        </where>
+    </select>
+
+    <!-- 订单详情页面退款按钮弹窗中调用该方法 -->
+    <!--根据订单ID查询服务单list-->
+    <select id="queryServiceOrderListBySaleCode" parameterType="com.hand.hmall.as.dto.Serviceorder"
+            resultMap="BaseResultMap">
+        SELECT
+        serviceorder.SERVICE_ORDER_ID,
+        serviceorder.CODE,
+        serviceorder.ORDER_TYPE,
+        serviceorder.CS,
+        serviceorder.CREATION_DATE,
+        serviceorder.FINISH_TIME,
+        serviceorder.SV_CATEGORY1,
+        serviceorder.SV_CATEGORY2,
+        serviceorder.COMPLAINT,
+        serviceorder.STATUS,
+        serviceorder.ORDER_ID
+        FROM HMALL_AS_SERVICEORDER serviceorder
+        <where>
+            <if test="orderId != null">
+                serviceorder.ORDER_ID = #{orderId}
+            </if>
+        </where>
+        order by CREATION_DATE DESC
+    </select>
+
+    <!--查询服务单详细信息-->
+    <select id="selectServiceOrderByCode" parameterType="com.hand.hmall.as.dto.Serviceorder"
+            resultMap="BaseResultMap">
+        SELECT
+        serviceOrder.SERVICE_ORDER_ID,
+        serviceOrder.CODE,
+        serviceOrder.STATUS,
+        serviceOrder.ORDER_TYPE,
+        serviceOrder.SV_CATEGORY1,
+        serviceOrder.SV_CATEGORY2,
+        serviceOrder.ORDER_ID,
+        serviceOrder.COMPLAINT,
+        serviceOrder.NOTE,
+        serviceOrder.SYNCFLAG,
+        serviceOrder.USER_ID,
+        u.CUSTOMERID,
+        serviceOrder.NAME,
+        serviceOrder.MOBILE,
+        serviceOrder.ADDRESS,
+        serviceOrder.CS,
+        serviceOrder.FINISH_TIME,
+        serviceOrder.CREATION_DATE,
+        serviceOrder.APPOINTMENT_DATE,
+        ug.NAME USER_GROUP
+        FROM HMALL_AS_SERVICEORDER serviceOrder
+        LEFT JOIN HMALL_MST_USER u on to_char(u.USER_ID) = serviceOrder.USER_ID
+        LEFT JOIN HMALL_MST_USER_MAPPING um ON serviceOrder.USER_ID = to_char(um.USER_ID)
+        LEFT JOIN HMALL_MST_USERGROUP ug ON um.USERGROUP_ID = ug.USERGROUP_ID
+        <where>
+            <if test="code != null">
+                serviceOrder.CODE = #{code}
+            </if>
+        </where>
+    </select>
+
+    <!--根据订单ID查询用户信息-->
+    <select id="selectUserInfoByOrderId" parameterType="com.hand.hmall.as.dto.Serviceorder"
+            resultMap="BaseResultMap">
+        SELECT
+        omOrder.USER_ID,
+        omOrder.RECEIVER_NAME NAME,
+        omOrder.RECEIVER_MOBILE MOBILE,
+        omOrder.RECEIVER_ADDRESS ADDRESS,
+        ug.NAME USER_GROUP,
+        u.CUSTOMERID CUSTOMERID
+        FROM HMALL_OM_ORDER omOrder
+        LEFT JOIN HMALL_MST_USER u on to_char(u.USER_ID) = omOrder.USER_ID
+        LEFT JOIN HMALL_MST_USER_MAPPING um ON omOrder.USER_ID = um.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP ug ON um.USERGROUP_ID = ug.USERGROUP_ID
+        <where>
+            <if test="orderId != null">
+                omOrder.ORDER_ID = #{orderId}
+            </if>
+        </where>
+    </select>
+
+    <!--根据服务单ID查询多媒体中的图片信息-->
+    <select id="queryMediaByServiceOrderId" parameterType="com.hand.hmall.as.dto.Serviceorder"
+            resultMap="BaseResultMap">
+        SELECT
+        m.URL,
+        m.IMAGE_DESCRIBE,
+        s.SERVICE_ORDER_ID
+        FROM HMALL_AS_SERVICEORDER s
+        LEFT JOIN HMALL_MST_MEDIA m ON s.SERVICE_ORDER_ID = m.SERVICE_ORDER_ID
+        <where>
+            <if test="serviceOrderId != null">
+                s.SERVICE_ORDER_ID = #{serviceOrderId}
+            </if>
+        </where>
+    </select>
+
+    <!--
+        设置服务单归属信息
+        @param soIds_ - 服务单ID列表
+        @param employeeId - 雇员ID
+        void setAssiging(@Param("soIds_") List<Long> soIds_, @Param("employeeId") Long employeeId);
+    -->
+    <update id="setAssiging">
+        UPDATE hmall_as_serviceorder so set so.CS =
+        (select employee_code from hr_employee where employee_id = #{employeeId})
+        WHERE so.service_order_id in
+        <foreach collection="soIds_" item="soId" index="index" open="(" close=")" separator=",">
+            #{soId}
+        </foreach>
+    </update>
+</mapper>

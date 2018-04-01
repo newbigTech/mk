@@ -1,0 +1,175 @@
+.orderPayment {
+
+  #pay-out {
+    padding-top: 170px;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left:0;
+    background-color: rgba(209, 209, 209, 0.4);
+    z-index: 1000;
+    display: none;
+    .pay-out-position {
+      position: absolute;
+      width: 390px;
+      margin: auto;
+      background-color: #fff;
+      right: 0;
+      left: 0;
+      border:4px solid rgba(187,187,187,0.7);
+      border-radius: 4px;
+      .pay-out-title-one {
+        padding: 10px;
+        width: 382px;
+        height: 35px;
+        background-color: #E9E9E9;
+        span{
+          font-size: 14px;
+          &:last-child::before{
+            content: "\2716";
+            float:right;
+            cursor:pointer;
+            font-size: 18px;
+            line-height: 20px;
+          }
+        }
+      }
+      .pay-out-main {
+        padding-top: 10px;
+        padding-bottom: 50px;
+        padding-left: 20px;
+        h1 {
+          font-size: 10px;
+          font-weight: bold;
+        }
+        button {
+          margin-top: 20px;
+          font-weight: bold;
+          border: 1px solid #000;
+          font-size: 12px;
+          &:last-child {
+            margin-left: 20px;
+            border: 1px solid #ff0000;
+          }
+        }
+        img {
+          display: block;
+          width: 100px;
+          border: 1px solid #dadada;
+        }
+      }
+    }
+  }
+
+
+  .pay {
+    margin-top: 10px;
+    padding-bottom: 10px;
+    .pay-body {
+      padding-top: 20px;
+      padding-bottom: 20px;
+      background-color: #fff;
+      >ul {
+        font-size: 12px;
+        padding-bottom: 20px;
+        >li {
+          height: 25px;
+          line-height: 25px;
+          &:first-child {
+            font-size: 15px;
+          }
+          &:last-child {
+            span {
+              &:nth-child(2){
+                color: #ff0000;
+                font-size: 16px;
+                font-weight: bold;
+              }
+              &:nth-child(3){
+                margin-left: 5px;
+                color: #ff0000;
+              }
+            }
+          }
+        }
+        border-bottom: 1px solid #dadada;
+      }
+      .thirtyPay {
+        padding-left: 30px;
+        padding-right: 30px;
+        padding-top: 40px;
+        padding-bottom: 40px;
+        >span {
+          display: block;
+          font-size: 14px;
+          font-weight: bold;
+        }
+        >ul {
+          margin-top: 20px;
+          display: table;
+          >li {
+            float: left;
+            height: 80px;
+            line-height: 80px;
+            margin-right: 48px;
+            position: relative;
+            &:nth-child(5){
+              margin-right: auto;
+            }
+            >span {
+              position: absolute;
+              width: 40px;
+              z-index: 999;
+              left: 25px;
+              top: -15px;
+            }
+          }
+        }
+      }
+      button {
+        margin-top: 40px;
+        &:first-child {
+          margin-left: 700px;
+          margin-right: 20px;
+        }
+      }
+    }
+  }
+
+
+  .pay-out-one {
+    margin-top: 10px;
+    position: absolute;
+    height: 655px;
+    width: 1250px;
+    background-color: #C9C8CD;
+    z-index: 1;
+    opacity: 0.8;
+    visibility: hidden;
+  }
+
+  .pay-out-two {
+    padding-top: 50px;
+    padding-bottom: 30px;
+    position: absolute;
+    margin: 115px 425px;
+    width: 400px;
+    background-color: #FFFFFF;
+    z-index: 999;
+    visibility: hidden;
+    color: #333;
+    span {
+      margin-left: 42px;
+      font-size: 15px;
+    }
+    button {
+      margin-top: 55px;
+    }
+    img {
+      margin-left: 120px;
+      margin-top: 20px;
+      width: 160px;
+    }
+  }
+}

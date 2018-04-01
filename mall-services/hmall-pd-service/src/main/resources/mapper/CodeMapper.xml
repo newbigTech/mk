@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.CodeMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.Code">
+    <id column="CODE_ID" jdbcType="DECIMAL" property="codeId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="ENABLED_FLAG" jdbcType="VARCHAR" property="enabledFlag" />
+    <result column="PARENT_CODE_ID" jdbcType="DECIMAL" property="parentCodeId" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    scb.CODE_ID, scb.CODE, scb.DESCRIPTION, scb.ENABLED_FLAG, scb.PARENT_CODE_ID
+  </sql>
+
+  <select id="selectUniqueByCodeId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List" />
+    from SYS_CODE_B scb
+    where scb.CODE_ID = #{codeId,jdbcType=DECIMAL}
+  </select>
+
+  <select id="selectUniqueByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List" />
+    from SYS_CODE_B scb
+    where scb.CODE = #{code,jdbcType=VARCHAR}
+  </select>
+
+</mapper>

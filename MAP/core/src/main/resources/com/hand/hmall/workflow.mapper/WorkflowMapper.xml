@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.activites.mapper.WorkflowMapper">
+
+  <!--
+    Map queryAsRefundInfo(Long asRefundOrderId);
+  -->
+  <select id="queryAsRefundInfo" parameterType="java.lang.Long" resultType="java.util.Map">
+    select rf.as_refund_id RF_ID, rf.code RF_CODE, oo.code ORDER_CODE,
+    (select v.meaning from sys_code_b c join sys_code_value_b v on c.code_id = v.code_id where c.code = 'HMALL.AS.REFUND_SCENARIO' and v.value = rf.refund_scenario) refund_scenario,
+    (select v.meaning from sys_code_b c join sys_code_value_b v on c.code_id = v.code_id where c.code = 'HMALL_AS_REFUND_REASON' and v.value = rf.return_reason) return_reason,
+    rf.note, rf.refound_sum from hmall_om_order oo join hmall_as_refund rf on rf.order_id = oo.order_id
+    where rf.as_refund_id = #{asRefundOrderId}
+  </select>
+
+  <!--
+    Map queryAsRefundInfoByProcinstId(@Param("procinstId") Long procinstId);
+  -->
+  <select id="queryAsRefundInfoByProcinstId" parameterType="java.lang.Long" resultType="java.util.Map">
+    select rf.as_refund_id RF_ID, rf.code RF_CODE, oo.code ORDER_CODE,
+    (select v.meaning from sys_code_b c join sys_code_value_b v on c.code_id = v.code_id where c.code = 'HMALL.AS.REFUND_SCENARIO' and v.value = rf.refund_scenario) refund_scenario,
+    (select v.meaning from sys_code_b c join sys_code_value_b v on c.code_id = v.code_id where c.code = 'HMALL_AS_REFUND_REASON' and v.value = rf.return_reason) return_reason,
+    rf.note, rf.refound_sum from hmall_om_order oo join hmall_as_refund rf on rf.order_id = oo.order_id
+    join ACT_RU_VARIABLE arv on arv.long_ = rf.as_refund_id and arv.name_ = 'asRefundOrderId'
+    where arv.proc_inst_id_ = #{procinstId}
+  </select>
+
+  <!--
+    Map queryAsRefundInfoByProcinstId(@Param("procinstId") Long procinstId);
+  -->
+  <select id="queryAsRefundInfoByProcinstId_hi" parameterType="java.lang.Long" resultType="java.util.Map">
+    select rf.as_refund_id RF_ID, rf.code RF_CODE, oo.code ORDER_CODE,
+    (select v.meaning from sys_code_b c join sys_code_value_b v on c.code_id = v.code_id where c.code = 'HMALL.AS.REFUND_SCENARIO' and v.value = rf.refund_scenario) refund_scenario,
+    (select v.meaning from sys_code_b c join sys_code_value_b v on c.code_id = v.code_id where c.code = 'HMALL_AS_REFUND_REASON' and v.value = rf.return_reason) return_reason,
+    rf.note, rf.refound_sum from hmall_om_order oo join hmall_as_refund rf on rf.order_id = oo.order_id
+    join ACT_HI_VARINST ahv on ahv.long_ = rf.as_refund_id and ahv.name_ = 'asRefundOrderId'
+    where ahv.proc_inst_id_ = #{procinstId}
+  </select>
+
+  <!--
+  /**
+     * 查询流程实例的属性值
+     * @param procInsId - 流程实例ID
+     * @param attrName - 属性名称
+     * @return
+     */
+    String queryProcInsAttribute(Long procInsId, String attrName);
+  -->
+  <select id="queryProcInsAttribute" resultType="java.lang.String">
+    select arv.text_ from ACT_RU_VARIABLE arv where arv.proc_inst_id_ = #{procInsId} and arv.name_ = #{attrName}
+  </select>
+
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.OdtypeMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.Odtype">
+    <id column="ODTYPE_ID" jdbcType="DECIMAL" property="odtypeId" />
+    <result column="PRODUCT_ID" jdbcType="DECIMAL" property="productId" />
+    <result column="CUST_CHAN_SRC" jdbcType="VARCHAR" property="custChanSrc" />
+    <result column="APPROVAL_STATUS" jdbcType="VARCHAR" property="approvalStatus" />
+    <result column="IS_USED" jdbcType="VARCHAR" property="isUsed" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    ODTYPE_ID, PRODUCT_ID, CUST_CHAN_SRC, APPROVAL_STATUS, IS_USED
+  </sql>
+</mapper>

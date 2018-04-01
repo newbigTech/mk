@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.om.mapper.ConsignmentBkMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.ConsignmentBk" extends="com.hand.hap.mapper.StdMapper.STD">
+    <id column="CONSIGNMENT_ID" jdbcType="DECIMAL" property="consignmentId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="SAP_CODE" jdbcType="VARCHAR" property="sapCode" />
+    <result column="STATUS" jdbcType="VARCHAR" property="status" />
+    <result column="BRAND" jdbcType="VARCHAR" property="brand" />
+    <result column="ORDER_ID" jdbcType="DECIMAL" property="orderId" />
+    <result column="LOGISTICS_COMPANIES" jdbcType="DECIMAL" property="logisticsCompanies" />
+    <result column="LOGISTICS_NUMBER" jdbcType="VARCHAR" property="logisticsNumber" />
+    <result column="POINT_OF_SERVICE_ID" jdbcType="DECIMAL" property="pointOfServiceId" />
+    <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType" />
+    <result column="SHIPPING_DATE" jdbcType="TIMESTAMP" property="shippingDate" />
+    <result column="RECEIVER_NAME" jdbcType="VARCHAR" property="receiverName" />
+    <result column="RECEIVER_COUNTRY" jdbcType="VARCHAR" property="receiverCountry" />
+    <result column="RECEIVER_STATE" jdbcType="DECIMAL" property="receiverState" />
+    <result column="RECEIVER_CITY" jdbcType="DECIMAL" property="receiverCity" />
+    <result column="RECEIVER_DISTRICT" jdbcType="DECIMAL" property="receiverDistrict" />
+    <result column="RECEIVER_TOWN" jdbcType="VARCHAR" property="receiverTown" />
+    <result column="RECEIVER_ADDRESS" jdbcType="VARCHAR" property="receiverAddress" />
+    <result column="RECEIVER_ZIP" jdbcType="VARCHAR" property="receiverZip" />
+    <result column="RECEIVER_MOBILE" jdbcType="VARCHAR" property="receiverMobile" />
+    <result column="RECEIVER_PHONE" jdbcType="VARCHAR" property="receiverPhone" />
+    <result column="NOTE" jdbcType="VARCHAR" property="note" />
+    <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime" />
+    <result column="SPLIT_ALLOWED" jdbcType="VARCHAR" property="splitAllowed" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="APPROVED_BY" jdbcType="DECIMAL" property="approvedBy" />
+    <result column="APPROVED_DATE" jdbcType="TIMESTAMP" property="approvedDate" />
+    <result column="APPROVED_TIMES" jdbcType="DECIMAL" property="approvedTimes" />
+    <result column="SPLIT_REASON" jdbcType="VARCHAR" property="splitReason" />
+    <result column="ABNORMAL_REASON" jdbcType="VARCHAR" property="abnormalReason" />
+    <result column="CS_APPROVED" jdbcType="VARCHAR" property="csApproved" />
+    <result column="consignmentStatus" property="consignmentStatus" jdbcType="VARCHAR"/>
+    <result column="order_creationtime" property="orderCreationtime" jdbcType="TIMESTAMP"/>
+    <result column="order_type" property="orderType" jdbcType="VARCHAR"/>
+    <result column="shippingName" property="shippingName" jdbcType="VARCHAR"/>
+    <result column="pointCode" property="pointCode" jdbcType="VARCHAR"/>
+    <result column="CS_APPROVED" property="csApproved" jdbcType="VARCHAR"/>
+    <result column="pause" property="pause" jdbcType="VARCHAR"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    CONSIGNMENT_ID, CODE, SAP_CODE, STATUS, BRAND, ORDER_ID, LOGISTICS_COMPANIES, LOGISTICS_NUMBER,
+    POINT_OF_SERVICE_ID, SHIPPING_TYPE, SHIPPING_DATE, RECEIVER_NAME, RECEIVER_COUNTRY,
+    RECEIVER_STATE, RECEIVER_CITY, RECEIVER_DISTRICT, RECEIVER_TOWN, RECEIVER_ADDRESS,
+    RECEIVER_ZIP, RECEIVER_MOBILE, RECEIVER_PHONE, NOTE, ESTIMATE_DELIVERY_TIME, SPLIT_ALLOWED,
+    SYNCFLAG, APPROVED_BY, APPROVED_DATE, APPROVED_TIMES, SPLIT_REASON,
+    ABNORMAL_REASON, CS_APPROVED
+  </sql>
+
+  <!-- 发货单详情查询 -->
+  <select id="queryInfo" parameterType="com.hand.hmall.om.dto.ConsignmentBk" resultMap="BaseResultMap">
+    SELECT oc.consignment_id,
+    oc.order_id,
+    oc.brand,
+    odu.customerid,
+    odu.name,
+    oc.receiver_name,
+    odu.user_level,
+    odu.sex,
+    oc.receiver_country,
+    oc.receiver_state,
+    oc.receiver_city,
+    oc.receiver_district,
+    oc.receiver_district region_code,
+    oc.receiver_address,
+    oc.receiver_zip,
+    oc.receiver_mobile,
+    oc.receiver_phone,
+    oc.note,
+    oc.estimate_delivery_time,
+    oc.shipping_date,
+    oc.shipping_type,
+    po.code                   pointcode,
+    oc.split_allowed,
+    oc.logistics_companies,
+    mls.name                  corporatename,
+    oc.logistics_number,
+    odu.order_creationtime,
+    odu.code                  ordernumber, --订单号
+    oc.code, --发货单号
+    oc.status,
+    oc.sap_code,
+    oc.cs_approved,
+    cod.meaning               consignmentStatus, --订单状态
+    tp.meaning                shippingName, --发运方式
+    oc.abnormal_reason
+    FROM hmall_om_consignment_bk oc
+    LEFT JOIN (SELECT od.order_id,
+    mu.customerid,
+    mu.name,
+    mu.user_level,
+    mu.sex,
+    od.pay_status,
+    od.order_creationtime,
+    od.code,
+    mu.groupname
+    FROM hmall_om_order_bk od
+    LEFT JOIN (SELECT mu.user_id,
+    mu.customerid,
+    mu.user_level,
+    mu.sex,
+    mu.name,
+    mug.name groupName
+    FROM hmall_mst_user         mu,
+    hmall_mst_usergroup    mug,
+    hmall_mst_user_mapping mup
+    WHERE mu.user_id = mup.user_id
+    AND mup.usergroup_id = mug.usergroup_id) mu
+    ON od.user_id = mu.user_id) odu
+    ON oc.order_id = odu.order_id
+    LEFT JOIN hmall_mst_pointofservice po
+    ON oc.point_of_service_id = po.point_of_service_id
+    LEFT JOIN hmall_mst_logisticsco mls
+    ON oc.logistics_companies = mls.logisticsco_id
+    left join (select va.value, va.meaning
+    from sys_code_value_b va
+    where va.code_id =
+    (select b.code_id
+    from sys_code_b b
+    where b.code = 'HMALL.CONSIGNMENT.STATUS')) cod
+    on oc.status = cod.value
+    left JOIN (select va.value, va.meaning
+    from sys_code_value_b va
+    where va.code_id =
+    (select b.code_id
+    from sys_code_b b
+    where b.code = 'HMALL.SHIPPING_TYPE')) tp
+    on tp.value = oc.shipping_type
+    WHERE 1 = 1
+    and oc.status != 'NEW_CREATE'
+    <if test="orderId !=null and orderId !=''">
+      and  oc.order_id = #{orderId}
+    </if>
+  </select>
+
+
+
+  <!--
+    通过ID查询发货单快照信息
+    @param consignmentId - 发货单ID
+    ConsignmentBk queryById(@Param("consignmentId") Long consignmentId);
+  -->
+  <select id="queryById" parameterType="com.hand.hmall.om.dto.ConsignmentBk" resultMap="BaseResultMap">
+    SELECT
+          oc.consignment_id,
+          oc.order_id,
+          oc.brand,
+          odu.customerid,
+          odu.name,
+          oc.receiver_name,
+          odu.user_level,
+          odu.sex,
+          oc.receiver_country,
+          oc.receiver_state,
+          oc.receiver_city,
+          oc.receiver_district,
+          oc.receiver_district region_code,
+          oc.receiver_address,
+          oc.receiver_zip,
+          oc.receiver_mobile,
+          oc.receiver_phone,
+          oc.note,
+          oc.estimate_delivery_time,
+          oc.shipping_date,
+          odu.pay_status,
+          oc.shipping_type,
+          po.code                   pointcode,
+          oc.split_allowed,
+          oc.logistics_companies,
+          mls.name                  corporatename,
+          oc.logistics_number,
+          odu.order_creationtime,
+          odu.code                  ordernumber, --订单号
+          oc.code, --发货单号
+          oc.status,
+          oc.sap_code,
+          oc.cs_approved,
+          odu.groupName,
+          cod.meaning               consignmentStatus, --订单状态
+          tp.meaning                shippingName, --发运方式
+          oc.abnormal_reason
+        FROM hmall_om_consignment_bk oc
+        LEFT JOIN (SELECT od.order_id,
+        mu.customerid,
+        mu.name,
+        mu.user_level,
+        mu.sex,
+        od.pay_status,
+        od.order_creationtime,
+        od.code,
+        mu.groupname
+        FROM hmall_om_order_bk od
+        LEFT JOIN (SELECT mu.user_id,
+        mu.customerid,
+        mu.user_level,
+        mu.sex,
+        mu.name,
+        mug.name groupName
+        FROM hmall_mst_user         mu,
+        hmall_mst_usergroup    mug,
+        hmall_mst_user_mapping mup
+        WHERE mu.user_id = mup.user_id
+        AND mup.usergroup_id = mug.usergroup_id) mu
+        ON od.user_id = mu.user_id) odu
+        ON oc.order_id = odu.order_id
+        LEFT JOIN hmall_mst_pointofservice po
+        ON oc.point_of_service_id = po.point_of_service_id
+        LEFT JOIN hmall_mst_logisticsco mls
+        ON oc.logistics_companies = mls.logisticsco_id
+        left join (select va.value, va.meaning
+        from sys_code_value_b va
+        where va.code_id =
+        (select b.code_id
+        from sys_code_b b
+        where b.code = 'HMALL.CONSIGNMENT.STATUS')) cod
+        on oc.status = cod.value
+        left JOIN (select va.value, va.meaning
+        from sys_code_value_b va
+        where va.code_id =
+        (select b.code_id
+        from sys_code_b b
+        where b.code = 'HMALL.SHIPPING_TYPE')) tp
+        on tp.value = oc.shipping_type
+        WHERE 1 = 1
+        and oc.status != 'NEW_CREATE'
+          and oc.consignment_id = #{consignmentId}
+
+  </select>
+</mapper>

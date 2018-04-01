@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallMstProductMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.dto.HmallMstProduct">
+        <id column="PRODUCT_ID" jdbcType="DECIMAL" property="productId"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="CATALOGVERSION_ID" jdbcType="DECIMAL" property="catalogversionId"/>
+        <result column="APPROVAL_STATUS" jdbcType="VARCHAR" property="approvalStatus"/>
+        <result column="UNIT" jdbcType="VARCHAR" property="unit"/>
+        <result column="IMAGE_URL_ID" jdbcType="DECIMAL" property="imageUrlId"/>
+        <result column="THUMBNIL_URL_ID" jdbcType="DECIMAL" property="thumbnilUrlId"/>
+        <result column="BASE_PRODUCT_ID" jdbcType="DECIMAL" property="baseProductId"/>
+        <result column="VARIANT_PRODUCT_ID" jdbcType="DECIMAL" property="variantProductId"/>
+        <result column="PRODUCT_TYPE" jdbcType="VARCHAR" property="productType"/>
+        <result column="CUSTOM_TYPE" jdbcType="VARCHAR" property="customType"/>
+        <result column="IS_SUIT" jdbcType="VARCHAR" property="isSuit"/>
+        <result column="IS_SIN_SALE" jdbcType="VARCHAR" property="isSinSale"/>
+        <result column="BRAND_ID" jdbcType="DECIMAL" property="brandId"/>
+        <result column="SALE_STATUS" jdbcType="VARCHAR" property="saleStatus"/>
+        <result column="PRODUCT_STATUS" jdbcType="VARCHAR" property="productStatus"/>
+        <result column="LISTING_TIME" jdbcType="TIMESTAMP" property="listingTime"/>
+        <result column="DELISTING_TIME" jdbcType="TIMESTAMP" property="delistingTime"/>
+        <result column="IS_SPE_SALE" jdbcType="VARCHAR" property="isSpeSale"/>
+        <result column="ORIGIN_COUNTRY" jdbcType="VARCHAR" property="originCountry"/>
+        <result column="SOURCE_PLACE" jdbcType="VARCHAR" property="sourcePlace"/>
+        <result column="MINI_ORDER_QUANTITY" jdbcType="DECIMAL" property="miniOrderQuantity"/>
+        <result column="RATE" jdbcType="DECIMAL" property="rate"/>
+        <result column="STYPE" jdbcType="VARCHAR" property="stype"/>
+        <result column="DESIGN_TYPE" jdbcType="VARCHAR" property="designType"/>
+        <result column="P_LONG" jdbcType="DECIMAL" property="pLong"/>
+        <result column="P_WIDE" jdbcType="DECIMAL" property="pWide"/>
+        <result column="P_HIGH" jdbcType="DECIMAL" property="pHigh"/>
+        <result column="SIZE_SPECIFICATION" jdbcType="VARCHAR" property="sizeSpecification"/>
+        <result column="SIZE_UNIT" jdbcType="VARCHAR" property="sizeUnit"/>
+        <result column="PACKING_LONG" jdbcType="DECIMAL" property="packingLong"/>
+        <result column="PACKING_WIDE" jdbcType="DECIMAL" property="packingWide"/>
+        <result column="PACKING_HIGH" jdbcType="DECIMAL" property="packingHigh"/>
+        <result column="PACKING_UNIT" jdbcType="VARCHAR" property="packingUnit"/>
+        <result column="PACKING_VOLUME" jdbcType="DECIMAL" property="packingVolume"/>
+        <result column="PACKING_VOL_UNIT" jdbcType="VARCHAR" property="packingVolUnit"/>
+        <result column="GROSS_WEIGHT" jdbcType="DECIMAL" property="grossWeight"/>
+        <result column="NET_WEIGHT" jdbcType="DECIMAL" property="netWeight"/>
+        <result column="WEIGHT_UNIT" jdbcType="VARCHAR" property="weightUnit"/>
+        <result column="SHAPE" jdbcType="VARCHAR" property="shape"/>
+        <result column="TEXTURE" jdbcType="VARCHAR" property="texture"/>
+        <result column="TEXTURE_SPECIFICATION" jdbcType="VARCHAR" property="textureSpecification"/>
+        <result column="MAINTAIN_SPECIFICATION" jdbcType="VARCHAR" property="maintainSpecification"/>
+        <result column="IS_RESIN" jdbcType="VARCHAR" property="isResin"/>
+        <result column="NET_CAPACITY" jdbcType="DECIMAL" property="netCapacity"/>
+        <result column="NET_CAPACITY_UNIT" jdbcType="VARCHAR" property="netCapacityUnit"/>
+        <result column="QGP" jdbcType="VARCHAR" property="qgp"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber"/>
+        <result column="DEFAULT_DELIVERY" jdbcType="VARCHAR" property="defaultDelivery"/>
+        <result column="V_PRODUCT_CODE" jdbcType="VARCHAR" property="vProductCode" javaType="java.lang.String"/>
+        <result column="WAREHOUSE" jdbcType="VARCHAR" property="warehouse" javaType="java.lang.String"/>
+        <result column="CUSTOM_SUPPORT_TYPE" jdbcType="VARCHAR" property="customSupportType" javaType="java.lang.String"/>
+
+    </resultMap>
+    <sql id="Base_Column_List">
+    PRODUCT_ID, CODE,NAME , CATALOGVERSION_ID, APPROVAL_STATUS, UNIT, IMAGE_URL_ID, THUMBNIL_URL_ID,
+    BASE_PRODUCT_ID, VARIANT_PRODUCT_ID, PRODUCT_TYPE, CUSTOM_TYPE, IS_SUIT, IS_SIN_SALE,
+    BRAND_ID, SALE_STATUS, PRODUCT_STATUS, LISTING_TIME, DELISTING_TIME, IS_SPE_SALE,
+    ORIGIN_COUNTRY, SOURCE_PLACE, MINI_ORDER_QUANTITY, RATE, STYPE, DESIGN_TYPE, P_LONG,
+    P_WIDE, P_HIGH, SIZE_SPECIFICATION, SIZE_UNIT, PACKING_LONG, PACKING_WIDE, PACKING_HIGH,
+    PACKING_UNIT, PACKING_VOLUME, PACKING_VOL_UNIT, GROSS_WEIGHT, NET_WEIGHT, WEIGHT_UNIT,
+    SHAPE, TEXTURE, TEXTURE_SPECIFICATION, MAINTAIN_SPECIFICATION, IS_RESIN, NET_CAPACITY,
+        NET_CAPACITY_UNIT, QGP, SYNCFLAG, OBJECT_VERSION_NUMBER,DEFAULT_DELIVERY,V_PRODUCT_CODE,WAREHOUSE,CUSTOM_SUPPORT_TYPE
+  </sql>
+    <select id="selectByProductCode" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from HMALL_MST_PRODUCT
+        <where>
+            <if test="#{0}!=null">CODE = #{0,jdbcType=VARCHAR}</if>
+            <if test="#{1}!=null">AND CATALOGVERSION_ID=#{1}</if>
+        </where>
+    </select>
+
+
+    <select id="matchByProductCodeAndName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from HMALL_MST_PRODUCT
+        <where>
+            <if test="catalogVersionId !=null">CATALOGVERSION_ID=#{catalogVersionId}</if>
+            <if test="productCode !=null ">AND CODE like '%'||#{productCode}||'%'</if>
+            <if test="name !=null">AND NAME like '%'||#{name}||'%'</if>
+        </where>
+    </select>
+
+    <select id="selectByCatalog" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_MST_PRODUCT
+        <where>
+            <if test="#{0} !=null">
+                CATALOGVERSION_ID=#{0}
+            </if>
+        </where>
+    </select>
+
+</mapper>

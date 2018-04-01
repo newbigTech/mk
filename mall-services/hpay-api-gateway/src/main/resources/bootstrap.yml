@@ -1,0 +1,108 @@
+
+# bootstrap.yml
+spring:
+  application:
+    name: hpay-api-gateway
+  profiles:
+    active: native
+server:
+  port: 5556
+  contextPath: ''
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:8080}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+    statusPageUrlPath: ${server.contextPath}/info
+    healthCheckUrlPath: ${server.contextPath}/health
+  client:
+#    healthcheck.enabled: true
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+  protocol:
+    dubbo:
+      port: 20882
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 180000
+
+ribbon:
+  ConnectTimeout: 10000
+  ReadTimeout: 180000
+  OKToRetryOnAllOperations: false
+
+unilog:
+  enabled: true
+  logFilePath: /mnt/logs/
+  rabbit:
+    address: 10.5.72.14:5672
+    username: dev
+    password: Mfr18$
+    exchangeName: map-logs
+    queueName: mservices.log.inbound
+    virtualHost: /
+    concurrentConsumers: 5
+    maxConcurrentConsumers: 10
+
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+---
+spring:
+  profiles: dev_idc
+server.port: 5556
+unilog:
+  enabled: true
+  rabbit:
+    address: 10.5.72.14:5672
+    username: dev
+    password: Mfr18$
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+  protocol:
+    dubbo:
+      port: 20882
+---
+spring:
+  profiles: sit_idc
+server.port: 5556
+unilog:
+  enabled: true
+  rabbit:
+    address: 10.5.72.18:5672
+    username: uat
+    password: Mfr18$
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2182
+  protocol:
+    dubbo:
+      port: 20883
+---
+spring:
+  profiles: prod
+server.port: 5556
+unilog:
+  enabled: true
+  rabbit:
+    address: 172.16.10.90:5672
+    username: hmall
+    password: SvcsPwd456
+dubbo:
+  registry:
+    address: zookeeper://172.16.10.30:2181
+  protocol:
+    dubbo:
+      port: 20883
+---

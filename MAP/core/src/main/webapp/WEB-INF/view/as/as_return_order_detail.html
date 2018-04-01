@@ -1,0 +1,1147 @@
+<#--
+        * description: Hmall退货单详情页面
+        * author:xuxiaoxue
+        * 2017/7/14
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?serviceOrderStatus=HMALL.AS.RETURN.STATUS" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?responsibleParty=HMALL_AS_RESPONSIBLE_PARTY" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?returnType=HMALL_AS_RETURN_TYPE" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?returnReason1=HMALL.AS_RETURN_REASON1" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svproReasonGKF=HMALL.AS_RETURN_REASON_GKF" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svproReasonGKY=HMALL.AS_RETURN_REASON_GKY" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svproReasonJQY=HMALL.AS_RETURN_REASON_JQY" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svproReasonPZY=HMALL.AS_RETURN_REASON_PZY" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svproReasonSHY=HMALL.AS_RETURN_REASON_SHY" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svproReasonXSF=HMALL.AS_RETURN_REASON_XSF" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?svproReasonZCY=HMALL.AS_RETURN_REASON_ZCY" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?returnEntryStatus=HMALL_AS.RETURNENTRY.STATUS" type="text/javascript"></script>
+        <style type="text/css">
+            #forms .form-group label {
+                text-align: right;
+                font-size: auto;
+                margin-top: 8px;
+            }
+
+            #forms .row {
+                margin-top: 10px;
+            }
+
+            span.k-widget.k-tooltip-validation {
+                display: inline-block;
+                width: 160px;
+                text-align: left;
+                border: 0;
+                padding: 0;
+                margin: 0;
+                background: none;
+                box-shadow: none;
+                color: red;
+            }
+
+            .k-tooltip-validation .k-warning {
+                display: none;
+            }
+
+            span.k-widget.k-tooltip-validation {
+                display: none !important;
+            }
+        </style>
+        <script type="text/javascript">
+            var BaseUrl = _basePath;
+            //服务单code
+            var linksCode = "${RequestParameters.linksCode!0}";
+            //服务单id
+            var serviceOrderId = "${RequestParameters.serviceOrderId!0}";
+            //退货单id
+            var receiptOrderId = "${RequestParameters.receiptOrderId!0}";
+            //订单id
+            var orderId = "${RequestParameters.orderId!0}";
+            //订单code
+            var orderCode = "${RequestParameters.orderCode!0}";
+            //平台订单订单code
+            var escOrderCode = "${RequestParameters.escOrderCode!0}";
+            //页面加载时的初始状态
+            var initStatus;
+            //订单类型
+            var websiteId = "${RequestParameters.websiteId!0}";
+            var swapOrderId;
+            var viewModel = kendo.observable({
+                model: {
+                    syncflag: 'N',
+                    linksCode: null,
+                    orderCode: null,
+                    escOrderCode: escOrderCode,
+                    receiptType: "SR01"
+                }
+            });
+
+        </script>
+
+
+        <body>
+        <div id="page-content">
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                <span onclick="saveReturnOrder()" class="btn btn-primary" style="margin-left:10px;margin-right:5px; margin-top: 10px;"><@spring.message "hap.save"/></span>
+                <span onclick="syncRetail()" class="btn btn-primary" style="margin-right:5px; margin-top: 10px;"><@spring.message "同步至retail"/></span>
+                <span id="refundButton" onclick="refundOrder()" class="btn btn-primary" style="margin-right:5px; margin-top: 10px;"><@spring.message "退款"/></span>
+                <span id="cancelReturnGoodsButton" onclick="cancelReturnGoods()" class="btn btn-primary" style="margin-right:5px; margin-top: 10px;"><@spring.message "取消换货单"/></span>
+                <span id="changeToReturnButton" onclick="changeToReturn()" class="btn btn-primary" style="margin-right:5px; margin-top: 10px;"><@spring.message "换转退"/></span>
+                <span onclick="selectSale()" id="selectSale" class="btn btn-primary" style="margin-right:5px;margin-top: 10px;">促销和优惠选择</span>
+            </div>
+            <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+                <form id="forms" style="padding-bottom: 20px">
+
+                    <div class="panel-body" style="margin-top: 10px;border:1px solid #2F617F;">
+                        <div>
+                            <label>基本信息</label>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "退货单单号"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='code' type="text" style="width: 100%" name="code"
+                                               data-bind="value:model.code" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "状态"/></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" style="width: 100%;" id="status" name="status"
+                                               data-bind="value:model.status" required>
+                                        <script type="text/javascript">
+                                            $("#status").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                dataSource: serviceOrderStatus
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "退货类型"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="returnType" type="text" style="width: 100%" data-bind="value:model.returnType" required>
+                                        <script type="text/javascript">
+                                            $("#returnType").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                dataSource: returnType
+                                            }).data("kendoDropDownList");
+
+                                            //再次编辑时类型不可修改
+                                            if (receiptOrderId != 0) {
+                                                $("#returnType").data("kendoDropDownList").enable(false);
+                                            }
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "退货接受地点"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="receivePosition" type="text" style="width: 100%" data-bind="value:model.receivePosition,text:model.receivePositionText" required>
+                                    </div>
+                                    <script>
+                                        $("#receivePosition").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "HMALL_AS_RECEIVE_POSITION")}, {}))
+                                    </script>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "责任方"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild" id="responsible_party" style="width: 100%" type="text"
+                                               data-bind="value:model.responsibleParty" required>
+                                        <script type="text/javascript">
+                                            $("#responsible_party").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                dataSource: responsibleParty
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div class="col-sm-4">
+                                 <div class="form-group">
+                                     <label class="col-sm-4 control-label" style="text-align:left">物流公司</label>
+                                     <div class="col-sm-8">
+                                         <input id="logistics" type="text" style="width: 100%" data-bind="value:model.logistics" class="k-textbox">
+                                     </div>
+                                 </div>
+                             </div>-->
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "物流单号"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="logisticsNumber" type="text" style="width: 100%" data-bind="value:model.logisticsNumber" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "客服预约执行日期"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="appointment_date" data-role="datetimepicker" style="width: 100%" data-bind="value:model.appointmentDate" required>
+                                        <script>
+                                            $("#appointment_date").kendoDateTimePicker({
+                                                animation: {
+                                                    close: {
+                                                        effects: "fadeOut zoom:out",
+                                                        duration: 300
+                                                    },
+                                                    open: {
+                                                        effects: "fadeIn zoom:in",
+                                                        duration: 300
+                                                    }
+                                                },
+                                                format: "yyyy-MM-dd HH:mm:ss"
+                                            });
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">建议退款金额</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" style="width: 100%" data-bind="value:model.referenceFee" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "实际返回顾客金额"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="retrunFee" type="number" class="form-control" style="width: 100%" data-bind="value:model.returnFee" required>
+                                    </div>
+                                    <script>$("#retrunFee").kendoNumericTextBox({0: 2});</script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">用户ID</label>
+                                    <div class="col-sm-8">
+                                        <input id="userId" type="hidden" data-bind="value:model.userId">
+                                        <input id="customerid" type="text" style="width: 100%" data-bind="value:model.customerid" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "hmall.serviceorder.usergroup"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="userGroup" type="text" style="width: 100%" data-bind="value:model.userGroup" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "用户姓名"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="name" type="text" style="width: 100%" data-bind="value:model.name" class="k-textbox" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "手机号码"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="mobile" type="text" style="width: 100%" data-bind="value:model.mobile" class="k-textbox" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "客户地址"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="address" type="text" style="width: 100%" data-bind="value:model.address" class="k-textbox" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "hmall.serviceorder.note"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="note" type="text" style="width: 100%" data-bind="value:model.note" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">服务单单号</label>
+                                    <div class="col-sm-8">
+                                        <input id="serviceOrderCode" type="text" style="width: 100%" data-bind="value:model.linksCode" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">平台订单号</label>
+                                    <div class="col-sm-8">
+                                        <input id="escOrderCode" type="text" style="width: 100%" data-bind="value:model.escOrderCode" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">关联换发单号</label>
+                                    <div class="col-sm-8">
+                                        <input id="swapOrderCode" type="text" style="width: 100%" data-bind="value:model.swapOrderCode" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "hmall.serviceorder.issycretail"/></label>
+                                    <div class="col-sm-8">
+                                        <div id="syncflag" class="full_width" style="margin-top: 8px;" data-bind="value:model.syncflag"></div>
+                                        <script type="text/javascript">
+
+                                            $("#syncflag").kendoRadio({
+                                                layout: '',//vertical
+                                                readonly: false,
+                                                disabled: true,
+                                                items: [{
+                                                    label: "是",
+                                                    value: "Y"
+                                                }, {
+                                                    label: "否",
+                                                    value: "N"
+                                                }]
+                                            }).data("kendoRadio");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">SAP系统单号</label>
+                                    <div class="col-sm-8">
+                                        <input id="sapCode" type="text" style="width: 100%" data-bind="value:model.sapCode" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="panel-body" style="margin-top: 10px;border:1px solid #2F617F;">
+                        <h5 style="margin-left: 10px;">其他信息</h5>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "受理客服"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="cs" type="text" style="width: 100%" data-bind="value:model.cs" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "创建时间"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="creationDate" class="form-control" type="text" style="width: 100%;" data-bind="value:model.creationDate" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "完结时间"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="finishTime" class="form-control" type="text" style="width: 100%" data-bind="value:model.finishTime" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div style="margin-top:10px;">
+                    <!--订单行-->
+                    <div class="panel-default" style="border-radius:0;border:1px solid #ccc;border-bottom:1px solid rgba(0, 0, 0, 0.17);margin-bottom:0px; height: 430px;">
+                        <div class="panel-heading">
+                            <span class="panel-title" style="float:left;margin-left:10px;margin-right:5px;padding: 0px;"> 退货单行</span>
+                        </div>
+                        <div>
+                            <div id="orderEntry-page-content">
+                                <!-- <div class="pull-left" id="orderEntry-toolbar-btn" style="padding-bottom:10px;padding-top:10px;">
+                                     <span class="btn btn-primary" style="float:left;" onclick="serviceorderEntry()"><@spring.message "hap.new"/></span>
+                                     <span class="btn btn-success" style="float:left;margin-left:15px;" onclick="deleteData()"><@spring.message "hap.delete"/></span>
+                                 </div>-->
+                                <div style="clear:both">
+                                    <div id="orderEntryGrid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span class="userName" style="display: none">${Session.userName}</span>
+            <div id="editWin"></div>
+        </div>
+
+        <script>
+            var selectReturnEntries = [];//选择的行表
+            kendo.bind($('#page-content'), viewModel);
+            $('#selectSale').hide();
+
+            //同步到retail
+            function syncRetail() {
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('是否同步退货单到retail？')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        $.ajax({
+                            type: 'POST',
+                            url: '${base.contextPath}/hmall/as/return/syncRetail?asReturnId=' + receiptOrderId,
+                            dataType: "json",
+                            success: function (data) {
+                                if (data.success == true) {
+                                    viewModel.model.set("syncflag", "Y");
+                                    viewModel.model.set("sapCode", data.msgCode);
+                                    kendo.ui.showInfoDialog({
+                                        message: data.msg
+                                    });
+                                } else {
+                                    kendo.ui.showInfoDialog({
+                                        message: data.msg
+                                    });
+                                }
+                            }
+                        });
+                    }
+                })
+            }
+
+            function cancelReturnGoods() {
+                kendo.ui.showConfirmDialog({
+                    title: '提示信息',
+                    message: '确定要取消换货单?'
+                }).done(function (event) {
+                    if (event.button == "OK") {
+
+                        if (viewModel.model.status != "NEW" && viewModel.model.status != "PROC") {
+                            kendo.ui.showInfoDialog({
+                                message: "退货状态不满足条件！"
+                            });
+                            return;
+                        }
+                        if (viewModel.model.returnType != "R01" && viewModel.model.returnType != "R03") {
+                            kendo.ui.showInfoDialog({
+                                message: "退货类型不满足条件！"
+                            });
+                            return;
+                        }
+
+                        var information = viewModel.model.toJSON();
+                        information.asReturnEntryList = _grid_.dataSource._data;
+                        $.ajax({
+                            type: 'POST',
+                            url: '${base.contextPath}/hmall/as/return/cancelReturnGood',
+                            dataType: "json",
+                            contentType: "application/json",
+                            data: kendo.stringify(information),
+                            success: function (data) {
+                                if (data.success == true) {
+                                    kendo.ui.showInfoDialog({
+                                        message: "取消换货单成功!"
+                                    });
+                                } else {
+                                    kendo.ui.showInfoDialog({
+                                        message: data.msg
+                                    });
+                                }
+                            }
+                        });
+
+                    }
+                });
+            }
+
+            var _grid_ = $("#orderEntryGrid").kendoGrid({
+                height: 330,
+                resizable: true,
+                navigatable: true,
+                scrollable: true,
+                editable: true,
+                sortable: true,
+                rownumber: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "lineNumber",
+                        title: '<@spring.message "原订单行号"/>',
+                        width: 120
+                    },
+                    {
+                        field: "code",
+                        title: '<@spring.message "产品编号"/>',
+                        width: 120
+                    }, {
+                        field: "name",
+                        title: '<@spring.message "产品描述"/>',
+                        width: 120
+                    }, {
+                        field: "basePrice",
+                        title: '<@spring.message "销售价格"/>',
+                        width: 120
+                    }, {
+                        field: "quantity",
+                        title: '<@spring.message "数量"/>',
+                        width: 120
+                    }, {
+                        field: "unit",
+                        title: '<@spring.message "单位"/>',
+                        width: 120
+                    }, {
+                        field: "returnFee",
+                        title: '<@spring.message "退款金额"/>',
+                        width: 120
+                    }, {
+                        field: "vproductCode",
+                        title: '<@spring.message "关联订单行"/>',
+                        width: 120
+                    }, {
+                        field: "returnentryStatus",
+                        title: '<@spring.message "状态"/>',
+                        width: 150,
+                        template: function (dataItem) {
+                            var v = dataItem.returnentryStatus;
+                            if (v == null) {
+                                v = "";
+                            }
+                            $.each(returnEntryStatus, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                }
+                            });
+                            return v;
+                        },
+                        editor: function (container, options) {
+                            $('<input name="returnentryStatus"  style="background-color: #fbeed5"/>')
+                                    .appendTo(container)
+                                    .kendoDropDownList({
+                                        dataTextField: "meaning",
+                                        dataValueField: "value",
+                                        valuePrimitive: true,
+                                        dataSource: returnEntryStatus
+                                    }).data("kendoDropDownList");
+                        }
+                    }, {
+                        field: "returnReason1",
+                        title: '<@spring.message "退换货原因代码-1级"/>',
+                        width: 150,
+                        template: function (dataItem) {
+                            var v = dataItem.returnReason1;
+                            if (v == null) {
+                                v = "";
+                            }
+                            $.each(returnReason1, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                }
+                            });
+                            return v;
+                        },
+                        editor: function (container, options) {
+                            $('<input name="returnReason1"  style="background-color: #fbeed5"/>')
+                                    .appendTo(container)
+                                    .kendoDropDownList({
+                                        dataTextField: "meaning",
+                                        dataValueField: "value",
+                                        valuePrimitive: true,
+                                        dataSource: returnReason1,
+                                        change: function (e) {
+                                            options.model.returnReason2 = "";
+                                            $("#orderEntryGrid").data("kendoGrid").refresh();
+                                        }
+                                    }).data("kendoDropDownList");
+                        }
+                    }, {
+                        field: "returnReason2",
+                        title: '<@spring.message "退换货原因代码-2级"/>',
+                        width: 150,
+                        template: function (dataItem) {
+                            var svproReason1 = dataItem.returnReason1;
+                            var v = dataItem.returnReason2;
+                            if (v == null) {
+                                v = "";
+                            }
+                            if (svproReason1 == 'GKF') {
+                                $.each(svproReasonGKF, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                });
+                            } else if (svproReason1 == 'GKY') {
+                                $.each(svproReasonGKY, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                });
+                            } else if (svproReason1 == 'JQY') {
+                                $.each(svproReasonJQY, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                });
+                            } else if (svproReason1 == 'PZY') {
+                                $.each(svproReasonPZY, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                });
+                            } else if (svproReason1 == 'SHY') {
+                                $.each(svproReasonSHY, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                });
+                            } else if (svproReason1 == 'XSF') {
+                                $.each(svproReasonXSF, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                });
+                            } else if (svproReason1 == 'ZCY') {
+                                $.each(svproReasonZCY, function (i, n) {
+                                    if (n.value == v) {
+                                        v = n.meaning;
+                                        return v;
+                                    }
+                                });
+                            }
+                            return v;
+                        },
+                        editor: function (container, options) {
+                            var svproReason1 = options.model.returnReason1;
+                            if (svproReason1 == 'GKF') {
+                                $('<input name="returnReason2" style="background-color: #fbeed5"/>')
+                                        .appendTo(container)
+                                        .kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: svproReasonGKF
+                                        }).data("kendoDropDownList");
+                            } else if (svproReason1 == 'GKY') {
+                                $('<input name="returnReason2" style="background-color: #fbeed5"/>')
+                                        .appendTo(container)
+                                        .kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: svproReasonGKY
+                                        }).data("kendoDropDownList");
+                            } else if (svproReason1 == 'JQY') {
+                                $('<input name="returnReason2" style="background-color: #fbeed5"/>')
+                                        .appendTo(container)
+                                        .kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: svproReasonJQY
+                                        }).data("kendoDropDownList");
+                            } else if (svproReason1 == 'PZY') {
+                                $('<input name="returnReason2" style="background-color: #fbeed5"/>')
+                                        .appendTo(container)
+                                        .kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: svproReasonPZY
+                                        }).data("kendoDropDownList");
+                            } else if (svproReason1 == 'SHY') {
+                                $('<input name="returnReason2" style="background-color: #fbeed5"/>')
+                                        .appendTo(container)
+                                        .kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: svproReasonSHY
+                                        }).data("kendoDropDownList");
+                            } else if (svproReason1 == 'XSF') {
+                                $('<input name="returnReason2" style="background-color: #fbeed5"/>')
+                                        .appendTo(container)
+                                        .kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: svproReasonXSF
+                                        }).data("kendoDropDownList");
+                            } else if (svproReason1 == 'ZCY') {
+                                $('<input name="returnReason2" style="background-color: #fbeed5"/>')
+                                        .appendTo(container)
+                                        .kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: svproReasonZCY
+                                        }).data("kendoDropDownList");
+                            }
+                        }
+                    }, {
+                        field: "note",
+                        title: '<@spring.message "备注"/>',
+                        width: 120
+                    }
+                ],
+                editable: true
+
+            }).data("kendoGrid");
+
+            //刷新行grid
+            function refreshReturnEntryGrid() {
+                var _dataSource_ = new kendo.data.DataSource({
+                    data: selectReturnEntries,
+                    schema: {
+                        model: {
+                            id: "asReturnEntryId",
+                            fields: {
+                                consignmentId: {editable: false},
+                                lineNumber: {editable: false},
+                                productId: {editable: false},
+                                name: {editable: false},
+                                basePrice: {editable: false},
+                                quantity: {editable: false},
+                                unitFee: {editable: false},
+                                returnFee: {editable: false},
+                                vproductCode: {editable: false},
+                                code: {editable: false},
+                                unit: {editable: false}
+                            }
+                        }
+                    }
+                });
+                _grid_.setDataSource(_dataSource_);
+            }
+            //根据receiptOrderId判断是新建还是编辑
+            if (receiptOrderId != 0) {
+                //获取退货单信息
+                initReturnOrder();
+            } else {
+                //获取用户信息
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/return/selectUserInfoByOrderId?orderId=' + orderId + '&websiteId=' + websiteId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.resp[0] || {};
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                            }
+                            viewModel.model.set("linksCode", linksCode);
+                            viewModel.model.set("orderCode", orderCode);
+                            viewModel.model.set("cs", $(".userName").text());
+                            viewModel.model.set("status", "NEW");
+                            var d = new Date();
+                            var vYear = d.getFullYear();
+                            var vMon = d.getMonth() + 1;
+                            var vDay = d.getDate();
+                            var h = d.getHours();
+                            var m = d.getMinutes();
+                            var se = d.getSeconds();
+                            var time = vYear + "-" + (vMon < 10 ? "0" + vMon : vMon) + "-" + (vDay < 10 ? "0" + vDay : vDay) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (se < 10 ? "0" + se : se);
+                            viewModel.model.set("creationDate", time);
+                            viewModel.model.set("syncflag", "N");
+                        }
+                    }
+                });
+                $("#refundButton").hide();
+                getOrderEntryList();
+            }
+
+            function initReturnOrder() {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/return/selectReturnById?asReturnId=' + receiptOrderId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.resp[0] || {};
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                                if (k == "status") {
+                                    initStatus = viewModel.model.get(k);
+                                }
+                                if (k == 'receivePositionText') {
+                                    a0[k] = '';
+                                }
+                                viewModel.model.set("linksCode", linksCode);
+                                viewModel.model.set("orderCode", orderCode);
+                                var status = viewModel.model.status;
+                                var returnType = viewModel.model.returnType;
+                                swapOrderId = viewModel.model.swapOrderId;
+                                if (status == "FINI" && websiteId == '1' && (returnType == 'R01' || returnType == 'R02')) {
+                                    $("#refundButton").show();
+                                } else {
+                                    $("#refundButton").hide();
+                                }
+                            }
+                        }
+                    }
+                });
+                getReturnOrderEntryList(receiptOrderId);
+            }
+            //保存
+            function saveReturnOrder() {
+                var data = {};
+                viewModel.model.set("orderId", orderId);
+                data = viewModel.model.toJSON();
+                data.serviceOrderId = serviceOrderId;
+                data.asReturnEntryList = _grid_.dataSource._data;
+                /* var syncflag = viewModel.model.syncflag;
+                 if (syncflag == 'Y') {
+                 for (var i = 0; i < data.asReturnEntryList.length; i++) {
+                 if (data.asReturnEntryList[i].returnentryStatus == 'CANCEL') {
+                 kendo.ui.showInfoDialog({
+                 message: '已同步retail不能取消退货'
+                 });
+                 return;
+                 }
+                 }
+                 }*/
+                var validator = $("#forms").kendoValidator().data("kendoValidator");
+                if (validator.validate()) {
+                    $.ajax({
+                        url: "${base.contextPath}/hmall/as/return/saveReturn",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify([data]),
+                        error: function (request) {
+                            alert("Connection error");
+                        },
+                        success: function (data) {
+                            if (data.success) {
+                                var a0 = data.resp[0];
+                                for (var k in a0) {
+                                    viewModel.model.set(k, a0[k]);
+                                }
+                                kendo.ui.showInfoDialog({
+                                    message: "<@spring.message 'hap.tip.success'/>",
+                                });
+                                receiptOrderId = viewModel.model.get("asReturnId");
+                                getReturnOrderEntryList(receiptOrderId);
+                                //保存后判断状态，如果不是已完成，则退款按钮不支持点击
+                                var status = viewModel.model.status;
+                                var returnType = viewModel.model.returnType;
+                                if (status == "FINI" && websiteId == '1' && (returnType == 'R01' || returnType == 'R02')) {
+                                    $("#refundButton").show();
+                                } else {
+                                    $("#refundButton").hide();
+                                }
+                                initStatus = status;
+                            } else {
+                                kendo.ui.showInfoDialog({
+                                    message: data.msg
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+
+            //编辑时获取退货单行列表
+            function getReturnOrderEntryList(receiptOrderId) {
+                if (receiptOrderId == 0) {
+                    receiptOrderId = viewModel.model.get("asReturnId");
+                }
+                selectReturnEntries = [];
+                $.ajax({
+                    type: 'GET',
+                    url: "${base.contextPath}/hmall/as/return/entry/queryReturnEntryById?asReturnId=" + receiptOrderId,
+                    dataType: 'JSON',
+                    success: function (result) {
+                        for (var i in result.rows) {
+                            selectReturnEntries.push(result.rows[i]);
+                        }
+                        refreshReturnEntryGrid();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+            //新建时获取订单行可退货列表
+            function getOrderEntryList() {
+                $.ajax({
+                    type: 'GET',
+                    url: "${base.contextPath}/hmall/as/return/entry/queryOrderEntrynotReturnQuantity?asReturnId=" + orderId,
+                    dataType: 'JSON',
+                    success: function (result) {
+                        for (var i in result.rows) {
+                            selectReturnEntries.push(result.rows[i]);
+                        }
+                        refreshReturnEntryGrid();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+            /**
+             * 跳转到新建退款单页面
+             * 传递参数：服务单code，订单id，订单编号，服务单id，实际返回顾客金额，退货单id
+             */
+            function refundOrder() {
+                //如果单据状态为已完成，跳转
+                if (initStatus == "FINI") {
+                    url = BaseUrl + "/as/as_refund_order.html?linksCode=" + linksCode + "&orderId=" + orderId + "&orderCode=" + orderCode + "&serviceOrderId=" + serviceOrderId + "&referenceSum=" + viewModel.model.get("referenceFee") + "&returnFee=" + viewModel.model.get("returnFee") + "&asReturnId=" + viewModel.model.get("asReturnId") + "&from=asReturnOrderDetail";
+                    window.top.openTab("", "退款单", url);
+                }
+            }
+            //促销执行结果
+            var promotionResult = null;
+            //促销和优惠券信息
+            var activities = null;
+            var couponList = null;
+            var promotionResultInfo = null;
+            var orderAmount;
+            var returnGridData = [];
+            //换转退
+            function changeToReturn() {
+                kendo.ui.showConfirmDialog({
+                    title: '提示信息',
+                    message: '确定要换转退?'
+                }).done(function (event) {
+                    if (event.button == "OK") {
+                        returnGridData.push({
+                            orderId: orderId,
+                            asReturnId: receiptOrderId,
+                            swapOrderId: swapOrderId,
+                            changeToReturn: 'Y'
+                        });
+                        if (viewModel.model.returnType != 'R03') {
+                            kendo.ui.showInfoDialog({
+                                message: "操作单据不为换退类型！"
+                            });
+                            return;
+                        }
+                        if (viewModel.model.swapOrderId == null) {
+                            kendo.ui.showInfoDialog({
+                                message: "未找到关联换发订单！"
+                            });
+                            return;
+                        }
+                        if (viewModel.model.orderId != null) {
+                            var flag = true;
+                            $.ajax({
+                                type: 'POST',
+                                url: '${base.contextPath}/hmall/om/consignment/queryByCondition?orderId=' + viewModel.model.swapOrderId,
+                                dataType: "json",
+                                async: false,
+                                success: function (data) {
+                                    if (data.success == true) {
+                                        var conData = data.rows;
+                                        if (conData.length == 0) {
+                                            kendo.ui.showInfoDialog({
+                                                message: "未找到关联换发的发货单！"
+                                            });
+                                            flag = false;
+                                            return;
+                                        } else {
+                                            $.each(conData, function (i, n) {
+                                                if (!(n.status != "WAIT_BUYER_CONFIRM" && n.status != "TRADE_BUYER_SIGNED")) {
+                                                    kendo.ui.showInfoDialog({
+                                                        message: "换发已发货，不能进行换转退！"
+                                                    });
+                                                    flag = false;
+                                                    return;
+                                                }
+                                            });
+                                        }
+                                    } else {
+                                        kendo.ui.showInfoDialog({
+                                            message: data.message
+                                        });
+                                    }
+                                }
+                            });
+                            if (flag == true) {
+                                selectSale();
+                            }
+                        } else {
+                            kendo.ui.showInfoDialog({
+                                message: "未找到关联换发的订单！"
+                            });
+                            return;
+                        }
+                    }
+                });
+            }
+
+            function selectSale() {
+                //查询可选择的促销以及优惠券
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/return/querySaleActivityOptions?flag=N',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify(returnGridData),
+                    success: function (data) {
+                        if (data.success == true) {
+                            if (data.resp != null) {
+                                activities = data.resp[0].activities;
+                                couponList = data.resp[0].couponList;
+                            }
+                            $('#selectSale').show();
+                            selectSaleReturn();
+                        } else {
+                            kendo.ui.showErrorDialog({
+                                message: data.msg
+                            });
+                        }
+                    }
+                });
+            }
+
+            //退货促销和优惠券选择
+            function selectSaleReturn() {
+                var promotionWim = $("#editWin").kendoWindow({
+                    width: 600,
+                    height: 300,
+                    iframe: true,
+                    visible: false,
+                    modal: true,
+                    title: '<@spring.message "促销和优惠券选择"/>',
+                    content: "return_promotion_sale_choose.html",
+                    close: function () {
+                    }
+                }).data("kendoWindow");
+                promotionWim.center().open();
+            }
+
+            function selectSaleReturnClose() {
+                if (promotionResult != null && promotionResult.success == true) {
+                    if (promotionResult.resp == null) {
+                        promotionResultInfo = null;
+                        orderAmount = 0;
+                    } else {
+                        promotionResultInfo = promotionResult.resp[0];
+                        //当前应付金额
+                        orderAmount = promotionResult.resp[0].orderAmount;
+                    }
+                    returnGridData[0].activities = activities;
+                    returnGridData[0].couponList = couponList;
+                    var order = {};
+                    order["customerid"] = viewModel.model.customerid;
+                    //更新成功后，调用优惠券微服务占用和释放接口，对订单原优惠券释放，订单新使用优惠券进行占用
+                    //若订单的原优惠券不为空，则先释放
+                    if (viewModel.model.chosenCoupon != null) {
+                        order["chosenCoupon"] = viewModel.model.chosenCoupon;
+                        //释放优惠券
+                        $.ajax({
+                            type: 'POST',
+                            url: '${base.contextPath}/hmall/om/order/releaseAndOccupationCoupon?operation=' + 2,
+                            dataType: "json",
+                            async: true,
+                            contentType: "application/json",
+                            data: kendo.stringify(order),
+                            success: function (json) {
+                                if (json.success == false) {
+                                    kendo.ui.showErrorDialog({
+                                        message: json.msg
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    if (returnGridData[0].chosenCoupon != null) {
+                        order["chosenCoupon"] = returnGridData[0].chosenCoupon;
+                        //占用优惠券
+                        $.ajax({
+                            type: 'POST',
+                            url: '${base.contextPath}/hmall/om/order/releaseAndOccupationCoupon?operation=' + 1,
+                            dataType: "json",
+                            async: false,
+                            contentType: "application/json",
+                            data: kendo.stringify(order),
+                            success: function (json) {
+                                if (json.success == false) {
+                                    kendo.ui.showErrorDialog({
+                                        message: json.msg
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    var chosenCoupon = returnGridData[0].chosenCoupon;
+                    if (chosenCoupon == '' || chosenCoupon == 'undefined' || chosenCoupon == null) {
+                        chosenCoupon = "";
+                    }
+                    var chosenPromotion = returnGridData[0].chosenPromotion;
+                    if (chosenPromotion == '' || chosenPromotion == 'undefined' || chosenPromotion == null) {
+                        chosenPromotion = "";
+                    }
+                    returnGridData[0].activities = activities;
+                    returnGridData[0].couponList = couponList;
+                    returnGridData[0].promotionResult = promotionResultInfo;
+                    $.ajax({
+                        type: 'POST',
+                        url: '${base.contextPath}/hmall/as/return/changeToReturnDetail?currentAmount=' + orderAmount + "&chosenCoupon=" + chosenCoupon + "&chosenPromotion=" + chosenPromotion,
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(returnGridData),
+                        success: function (data) {
+                            if (data.success == true) {
+                                kendo.ui.showInfoDialog({
+                                    message: "换转退成功"
+                                });
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    message: data.msg
+                                });
+                            }
+                            $('#selectSale').hide();
+                            initReturnOrder();
+                        }
+                    });
+                } else if (promotionResult != null && promotionResult.success == false) {
+                    kendo.ui.showErrorDialog({
+                        message: promotionResult.msg
+                    });
+                }
+                $("#editWin").data("kendoWindow").close();
+            }
+            //自动根据当前屏幕大小调整表格
+            Hap.autoResizeGrid("#grid");
+        </script>
+        </body>

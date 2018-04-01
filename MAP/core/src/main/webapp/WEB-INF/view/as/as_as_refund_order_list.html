@@ -1,0 +1,630 @@
+<!--
+        * description: 退款单列表页面
+        * author:xuxiaoxue
+        * 2017/11/15
+        * version: 0.1
+-->
+<#include "/include/header.html">
+    <script src="${base.contextPath}/common/code?as_refund_status=HMALL.AS.REFUND.STATUS" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?as_refund_scenario=HMALL.AS.REFUND_SCENARIO" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?as_refund_reason=HMALL_AS_REFUND_REASON" type="text/javascript"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.js"></script>
+    <style type="text/css">
+        #forms .condition_forms {
+            float: left;
+            width: auto;
+            height: 36px;
+            margin-left: 10px;
+            padding-bottom: 10px;
+        }
+
+        #forms .condition_forms label {
+            width: 7em;
+            text-align: right;
+            font-size: auto;
+        }
+
+        #forms .condition_forms input {
+            width: 200px;
+        }
+    </style>
+    <body>
+    <script type="text/javascript">
+        var BaseUrl = _basePath;
+        var refundStatus = [];
+        var refundScenar = [];
+        var refundReason = [];
+
+        var map = {refundStatus: refundStatus, refundScenar: refundScenar, refundReason: refundReason};
+
+        var viewModel = kendo.observable({
+            model: {},
+            resourceTypeData: [as_refund_status, as_refund_scenario, as_refund_reason],
+            resetForm: function (e) {
+                var formData = viewModel.model.toJSON();
+                for (var k in formData) {
+                    viewModel.model.set(k, null);
+                }
+                ;
+                //清空按钮
+                $("#all_empty").attr("class", "btn btn-primary");
+                $(".aChild").attr("class", "btn btn-default btn-xs aChild");
+                map = {refundStatus: refundStatus, refundScenar: refundScenar, refundReason: refundReason};
+            }
+        });
+    </script>
+
+    <script type="text/javascript">
+        function isClicked2(z) {
+            console.log("class", $(z).attr("class"));
+            if ($(z).attr("class") == "btn btn-primary") {  //如果当前是清空状态，执行全选操作
+                $(z).attr("class", "btn btn-primary active");
+                $(".aChild").attr("class", "btn btn-default btn-xs aChild active");
+                var aChild = $(".aChild");
+                console.log("aChild", aChild);
+                for (var ii = 0; ii < aChild.length; ii++) {
+                    var subName = aChild.eq(ii).attr("id").substring(0, 12);
+                    map[subName].push(aChild.eq(ii).attr("id").substring(13));
+                }
+            } else {       //如果当前是全选状态，执行清空操作
+                $(z).attr("class", "btn btn-primary");
+                $(".aChild").attr("class", "btn btn-default btn-xs aChild");
+                map = {refundStatus: refundStatus, refundScenar: refundScenar, refundReason: refundReason};
+            }
+        }
+
+        function selects(z) {
+            if ($(z).attr("class") == "btn btn-default btn-xs aChild") {
+                $(z).attr("class", "btn btn-default btn-xs aChild active");
+
+                var subValue = $(z).attr("id").substring(12);
+
+                var subName = $(z).attr("id").substring(0, 12);
+                map[subName].push(subValue);
+            } else {
+                $(z).attr("class", "btn btn-default btn-xs aChild").blur();
+                var subName = $(z).attr("id").substring(0, 12);
+                var val_ = $(z).attr("id").substring(12);
+
+                $.each(map[subName], function (index, item) {
+                    // index是索引值（即下标）   item是每次遍历得到的值；
+                    if (item == val_) {
+                        map[subName].splice(index, 1);
+                        return;
+                    }
+                });
+
+            }
+        }
+
+        function doSubmit() {
+            if ($('#grid').data('kendoGrid').dataSource.options.data != null) {
+                $('#grid').data('kendoGrid').setDataSource(dataSource);
+            } else {
+                $('#grid').data('kendoGrid').dataSource.page(1);
+            }
+            return true;
+        }
+    </script>
+
+    <!-- 加载该页面中的按钮条件 -->
+    <script type="text/javascript">
+        $(function () {
+            //创建退款单状态的按钮
+            var list_state = viewModel.resourceTypeData[0];
+            for (var st in list_state) {
+                $("#refundStatus_td").append("<button id='refundStatus" + list_state[st].value + "' type='button' class='btn btn-default btn-xs aChild' style='float:left;margin-left: 5px;' onclick= 'selects(this);'>" + list_state[st].meaning + "</button>");
+            }
+            //创建退款场景的按钮
+            var list_scenario = viewModel.resourceTypeData[1];
+            for (var st in list_scenario) {
+                $("#refundScenario_td").append("<button id='refundScenar" + list_scenario[st].value + "' type='button' class='btn btn-default btn-xs aChild' style='float:left;margin-left: 5px;' onclick= 'selects(this);'>" + list_scenario[st].meaning + "</button>");
+            }
+            //创建退款原因的按钮
+            var list_refundReason = viewModel.resourceTypeData[2];
+            for (var st in list_refundReason) {
+                $("#refundReason_td").append("<button id='refundReason" + list_refundReason[st].value + "' type='button' class='btn btn-default btn-xs aChild' style='float:left;margin-left: 5px;' onclick= 'selects(this);'>" + list_refundReason[st].meaning + "</button>");
+            }
+        });
+    </script>
+    <div id="page-content">
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span id="export" class="btn btn-primary" style="float:left;margin-right:5px;" onclick="exportData()">退款单导出</span>
+        </div>
+
+        <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+            <div id="forms" style="padding-bottom: 20px">
+                <div class="row" style="margin-bottom: 10px">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;">退款单单号:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%;" data-bind="value:model.code" class="k-textbox">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;">服务单单号:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%;" data-bind="value:model.serviceCode"
+                                       class="k-textbox">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;">原销售订单号:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%" data-bind="value:model.orderCode" class="k-textbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 10px">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;">用户账户:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%;"
+                                       data-bind="value:model.customerId" class="k-textbox">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;">收货人手机号:</label>
+                            <div class="col-sm-8">
+                                <input type="text" style="width: 100%;" data-bind="value:model.mobile"
+                                       class="k-textbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row" style="margin-bottom: 10px">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;"> 创建日期从:</label>
+                            <div class="col-sm-8">
+                                <input id="creationDateStart" data-bind="value:model.creationDateStart" style="width: 100%;"/>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;">至:</label>
+                            <div class="col-sm-8">
+                                <input id="creationDateEnd" data-bind="value:model.creationDateEnd" style="width: 100%;"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 10px">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;"> 完结时间从:</label>
+                            <div class="col-sm-8">
+                                <input id="finishTimeStart" data-bind="value:model.finishTimeStart" style="width: 100%;"/>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label" style="margin-top:5px;">至:</label>
+                            <div class="col-sm-8">
+                                <input id="finishTimeEnd" data-bind="value:model.finishTimeEnd" style="width: 100%;"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+            <div id="selects">
+                <table class="table">
+                    <tr>
+                        <td style="width:120px;"><label style="margin-left:20px"> 退款单状态:</label></td>
+                        <td colspan="3" id="refundStatus_td">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:120px;"><label style="margin-left:20px">退款场景:</label></td>
+                        <td id="refundScenario_td" colspan="3">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:120px;"><label style="margin-left:20px">退款原因:</label></td>
+                        <td id="refundReason_td" colspan="3">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div style="clear:both;margin-top: -20px;height:50px;">
+            <span class="btn btn-primary" style="float:left;width:70px;" onclick="doSubmit();" type="submit"><@spring.message "hap.query"/></span>
+            <span class="btn btn-primary" style="float:left;width:70px" data-bind="click:resetForm" type="reset"><@spring.message "hap.reset"/></span>
+            <span id="all_empty" class="btn btn-primary" style="float:left;width:90px;" onclick="isClicked2(this);" style="float:right;margin-right: 5px;">全选/清空</span>
+        </div>
+
+        <div style="height: 300px;">
+            <div id="grid"></div>
+        </div>
+        <!--<div id="container"></div>-->
+    </div>
+    <form id="form_ExportExcle" action="${base.contextPath}/hmall/as/refund/exportData" method="GET">
+        <input type="hidden" id="code" name="code" value="">
+        <input type="hidden" id="serviceCode" name="serviceCode" value="">
+        <input type="hidden" id="orderCode" name="orderCode" value="">
+        <input type="hidden" id="customerid" name="customerid" value="">
+        <input type="hidden" id="mobile" name="mobile" value="">
+        <input type="hidden" id="sCreationDateStart" name="sCreationDateStart" value="">
+        <input type="hidden" id="sCreationDateEnd" name="sCreationDateEnd" value="">
+        <input type="hidden" id="sFinishTimeStart" name="sFinishTimeStart" value="">
+        <input type="hidden" id="sFinishTimeEnd" name="sFinishTimeEnd" value="">
+        <input type="hidden" id="refundStatus" name="refundStatus" value="">
+        <input type="hidden" id="refundScenar" name="refundScenar" value="">
+        <input type="hidden" id="refundReason" name="refundReason" value="">
+
+    </form>
+    <!-- 导入导出的execl Window -->
+    <div id="excelWindow"></div>
+    <script type="text/javascript">
+        kendo.bind($('#page-content'), viewModel);
+        //导出列表excel
+        function exportData() {
+            console.log("======================");
+            console.log(viewModel.model);
+            debugger;
+            //退款单单号
+            var code = viewModel.model.toJSON().code;
+            if (code == undefined) {
+                code = "";
+            }
+            $('#code').val(code);
+            //服务单单号
+            var serviceCode = viewModel.model.toJSON().serviceCode;
+            if (serviceCode == undefined) {
+                serviceCode = "";
+            }
+            $('#serviceCode').val(serviceCode);
+            //原销售订单号
+            var orderCode = viewModel.model.toJSON().orderCode;
+            if (orderCode == undefined) {
+                orderCode = "";
+            }
+            $('#orderCode').val(orderCode);
+            //用户账户
+            var customerid = viewModel.model.toJSON().customerid;
+            if (customerid == undefined) {
+                customerid = "";
+            }
+            $('#customerid').val(customerid);
+
+            //收货人手机号
+            var mobile = viewModel.model.toJSON().mobile;
+            if (mobile == undefined) {
+                mobile = "";
+            }
+            $('#mobile').val(mobile);
+            var sCreationDateStart = viewModel.model.toJSON().creationDateStart;
+            if (sCreationDateStart == undefined) {
+                sCreationDateStart = "";
+            }
+            $('#sCreationDateStart').val(sCreationDateStart);
+            //创建日期至
+            var sCreationDateEnd = viewModel.model.toJSON().creationDateEnd;
+
+            if (sCreationDateEnd == undefined) {
+                sCreationDateEnd = "";
+            }
+            $('#sCreationDateEnd').val(sCreationDateEnd);
+            //完结时间从
+            var sFinishTimeStart = viewModel.model.toJSON().finishTimeStart;
+            if (sFinishTimeStart == undefined) {
+                sFinishTimeStart = "";
+            }
+            $('#sFinishTimeStart').val(sFinishTimeStart);
+            //完结时间至
+            var sFinishTimeEnd = viewModel.model.toJSON().finishTimeEnd;
+            if (sFinishTimeEnd == undefined) {
+                sFinishTimeEnd = "";
+            }
+            $('#sFinishTimeEnd').val(sFinishTimeEnd);
+            //退款单状态
+            $('#strOrderStatus').val(refundStatus);
+            //退款场景
+            $('#refundScenar').val(refundScenar);
+            //退款原因
+            $('#refundReason').val(refundReason);
+            $("#form_ExportExcle").submit();
+        }
+
+
+        $('#query-form input').keydown(function (e) {
+            if (e.keyCode == 13) {
+                e.target.blur();
+                viewModel.queryFunction(e);
+            }
+        });
+
+        $("#creationDateStart").kendoDateTimePicker({
+            animation: {
+                close: {
+                    effects: "fadeOut zoom:out",
+                    duration: 300
+                },
+                open: {
+                    effects: "fadeIn zoom:in",
+                    duration: 300
+                }
+            },
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+                var startTime = $("#startTime").val();
+                var endFinal = $("#endTime").data("kendoDateTimePicker");
+                endFinal.min(startTime || new Date(1800, 0, 1));
+            }
+        });
+
+        $("#creationDateEnd").kendoDateTimePicker({
+            animation: {
+                close: {
+                    effects: "fadeOut zoom:out",
+                    duration: 300
+                },
+                open: {
+                    effects: "fadeIn zoom:in",
+                    duration: 300
+                }
+            },
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+                var endTime = $("#endTime").val();
+                var startFinal = $("#startTime").data("kendoDateTimePicker");
+                startFinal.max(endTime || new Date(2099, 11, 31));
+            }
+        });
+
+        $("#finishTimeStart").kendoDateTimePicker({
+            animation: {
+                close: {
+                    effects: "fadeOut zoom:out",
+                    duration: 300
+                },
+                open: {
+                    effects: "fadeIn zoom:in",
+                    duration: 300
+                }
+            },
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+                var endTime = $("#endTime").val();
+                var startFinal = $("#startTime").data("kendoDateTimePicker");
+                startFinal.max(endTime || new Date(2099, 11, 31));
+            }
+        });
+
+        $("#finishTimeEnd").kendoDateTimePicker({
+            animation: {
+                close: {
+                    effects: "fadeOut zoom:out",
+                    duration: 300
+                },
+                open: {
+                    effects: "fadeIn zoom:in",
+                    duration: 300
+                }
+            },
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+                var endTime = $("#endTime").val();
+                var startFinal = $("#startTime").data("kendoDateTimePicker");
+                startFinal.max(endTime || new Date(2099, 11, 31));
+            }
+        });
+
+        var crudServiceBaseUrl = '${base.contextPath}';
+        var dataSource;
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: crudServiceBaseUrl + "/hmall/as/refund/query",
+                    type: "POST",
+                    dataType: "json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type)
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        console.log("--------------------------");
+                        console.log(viewModel.model);
+                        console.log('>>>>>>>>>>>>>>>> code = ' + viewModel.get('code'));
+                        console.log('toJSON = ' + viewModel.model.toJSON());
+                        console.log(viewModel.model.toJSON());
+                        var pages = Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                        maps = {status: map, pages: pages};
+                        var post = {data: JSON.stringify(maps)};
+                        return post;
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            serverSorting: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "orderId",
+                    fields: {}
+                }
+            }
+        })
+        var grid = $("#grid");
+        var grid__ = $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: "400px",
+            pageable: true,
+            resizable: true,
+            editable: false,
+            navigatable: true,
+            scrollable: true,
+            selectable: 'multiple,rowbox', // selectable: true,
+            sortable: true,
+            pageable: {
+                pageSizes: [5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 10
+            },
+            columns: [{
+                field: "rowNum",
+                title: '序号',
+                attributes: {
+                    style: "text-align:center"
+                },
+                width: 50,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                template: "<span class='row-number'></span>"
+            }, {
+                field: "code",
+                title: '退款单单号',
+                attributes: {style: "text-align:center"},
+                width: 150,
+                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                template: function (dataItem) {
+                    if (dataItem.code != null && dataItem.code != '') {
+                        return '<a style="margin-right:10px;" href="javascript:void(0);" onclick="entryFunction(\'' + dataItem.asRefundId + '\',\'' + dataItem.orderId + '\',\'' + dataItem.serviceCode + '\',\'' + dataItem.serviceOrderId + '\',\'' + dataItem.referenceSum + '\')">' + dataItem.code + '</a>'
+                    }
+                }
+            }, {
+                field: "status",
+                title: '退款单状态',
+                attributes: {
+                    style: "text-align:center"
+                },
+                width: 130,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            }, {
+                field: "cs",
+                title: '跟单客服',
+                attributes: {style: "text-align:center"},
+                width: 130,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            }, {
+                field: "creationDate",
+                title: '创建时间',
+                attributes: {style: "text-align:center"},
+                width: 130,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            }, {
+                field: "finishTime",
+                title: '完结时间',
+                attributes: {style: "text-align:center"},
+                width: 80,
+                dataTextField: "meaning",
+                dataValueField: "value",
+
+            }, {
+                field: "refoundSum",
+                title: '退款总金额',
+                attributes: {style: "text-align:center"},
+                width: 90,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            }, {
+                field: "refundScenario",
+                title: '退款场景',
+                attributes: {style: "text-align:center"},
+                width: 90,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            }, {
+                field: "returnReason",
+                title: '退款原因',
+                attributes: {style: "text-align:center"},
+                width: 110,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            }, {
+                field: "payMode",
+                title: '退款方式',
+                attributes: {style: "text-align:center"},
+                width: 70,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            }],
+            dataBound: function () {
+                var rows = this.items();
+                var page = this.pager.page() - 1;
+                var pagesize = this.pager.pageSize();
+                $(rows).each(
+                        function () {
+                            var index = $(this).index() + 1 + page * pagesize;
+                            var rowLabel = $(this).find(".row-number");
+                            $(rowLabel).html(index);
+                        });
+            }
+        }).data("kendoGrid");
+
+        grid.on('dblclick', '.k-grid-content tr', function (event) {
+            var data = $('#grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+            var asRefundId = data.asRefundId;
+            var orderId = data.orderId;
+            var serviceCode = serviceCode;
+            var serviceOrderId = data.serviceOrderId;
+            var referenceSum = data.referenceSum;
+            entryFunction(asRefundId, orderId, serviceCode, serviceOrderId, referenceSum);
+        });
+
+        //跳到详情界面
+        function entryFunction(asRefundId, orderId, serviceCode, serviceOrderId, referenceSum) {
+            window.top.openTab(asRefundId, "退款单详情", "${base.contextPath}/as/as_refund_order.html?serviceOrderId=" + serviceOrderId + "&orderId=" + orderId + "&referenceSum=" + referenceSum + "&asReturnId=" + asRefundId + "&linksCode=" + serviceCode + "&receiptOrderId="
+                    + asRefundId);
+        }
+
+        //自动根据当前屏幕大小调整表格
+        Hap.autoResizeGrid("#grid");
+    </script>
+
+    </body>
+    </html>

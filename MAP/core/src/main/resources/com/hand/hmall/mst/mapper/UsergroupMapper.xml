@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.UsergroupMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Usergroup">
+        <result column="USERGROUP_ID" property="usergroupId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+    </resultMap>
+	
+	<!-- 查询用户组信息LOV -->
+	<select id="selectUserGroupLov" parameterType="com.hand.hmall.mst.dto.Usergroup" resultMap="BaseResultMap">
+		select usergroup.USERGROUP_ID,
+			   usergroup.CODE,
+			   usergroup.name
+		from hmall_mst_usergroup usergroup,
+			 hmall_mst_user_mapping mapping
+		where usergroup.USERGROUP_ID = mapping.USERGROUP_ID
+		<if test="userId !=null and userId !=''">
+                and mapping.USER_ID=#{userId}
+        </if>
+        <if test="usergroupId !=null and usergroupId !=''">
+                and usergroup.USERGROUP_ID=#{usergroupId}
+        </if>
+        <if test="code !=null and code !=''">
+                and usergroup.CODE=#{code}
+        </if>
+        <if test="name !=null and name !=''">
+                and usergroup.NAME=#{name}
+        </if>
+	
+	</select>
+
+</mapper>

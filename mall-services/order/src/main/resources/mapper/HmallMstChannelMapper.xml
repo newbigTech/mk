@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallMstChannelMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallMstChannel">
+    <id column="CHANNEL_ID" jdbcType="DECIMAL" property="channelId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="DISPLAY_NAME" jdbcType="VARCHAR" property="displayName" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    CHANNEL_ID, CODE, DISPLAY_NAME, SYNCFLAG, OBJECT_VERSION_NUMBER, CREATION_DATE, CREATED_BY, 
+    LAST_UPDATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, PROGRAM_ID, 
+    PROGRAM_UPDATE_DATE, REQUEST_ID, ATTRIBUTE_CATEGORY
+  </sql>
+
+  <select id="selectChannelByChannelCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT CODE FROM HMALL_MST_CHANNEL WHERE CODE = #{channelCode}
+  </select>
+</mapper>

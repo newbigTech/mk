@@ -1,0 +1,345 @@
+<#include "../include/header.html">
+<link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.base.css" type="text/css"/>
+<link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.bootstrap.css" type="text/css"/>
+<#--<script type="text/javascript" src="${base.contextPath}/resources/jquery-1.11.1.min.js"></script>-->
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcore.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdata.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxbuttons.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxscrollbar.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdatatable.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxtreegrid.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcheckbox.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxlistbox.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdropdownlist.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/demos.js"></script>
+<!--进度条-->
+<link rel="stylesheet" href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.css">
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.js"></script>
+</head>
+<body>
+
+<script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script src="${base.contextPath}/common/code?husmObtainMode=HUSM_OBTAIN_MODE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?projectUom=HUSM_PZ_UOM" type="text/javascript"></script>
+
+<script src="${base.contextPath}/common/code?husmAttrTypeData=HUSM_ATTR_TYPE_DATA" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmAttrEnabledFlag=HUSM_ATTR_ENABLED_FLAG"
+        type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmAttrEditableFlag=HUSM_ATTR_EDITABLE_FLAG"
+        type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmRequriedFlag=HUSM_REQUIRED_FLAG" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmDefaultValueType=HUSM_DEFAULT_VALUE_TYPE"
+        type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmControlTpye=HUSM_CONTROL_TYPE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmControlWidth=HUSM_CONTROL_WIDTH" type="text/javascript"></script>
+
+<script type="text/javascript">
+    //设置第一个form vieModel
+    /*    var treeModel = kendo.observable({
+            firstLoad: true, //预留标志位，判断页面是否是第一次加载
+            isNew: null, //用于判断form表单数据时候被编辑过的标志位
+            uid: null, //存储当前被编辑的dataItem uid
+            model: {}
+        });*/
+
+
+    var seqModel = kendo.observable({
+        model: {},
+        saveFunction: function () {
+            $('#seqGrid').data('kendoGrid').saveChanges();
+        }
+    });
+
+    //获取分屏需要的全屏参数
+    function divFullScreen() {
+        var width = $(window).width();//计算屏幕的宽度
+        var height = $(window).height();
+        $('#main').width(width - 20);//设置div的宽度等于屏幕的宽度
+        $('#main').height(height - 20);//设置div的宽度等于屏幕的宽度
+    }
+
+</script>
+
+<div class="container" style="width: auto; margin: 10px 0px 0px 0px; height: 1000">
+    <div id="main" style="padding: 0px">
+
+        <div id="left" style="padding: 0px">
+            <div class="panel-body" style="height: 99.8%; padding: 0px;">
+                <div class="row">
+                    <div id="treeGrid" style="height: 750px"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="right">
+            <div id="mask"
+                 style="opacity: 0.3; filter: alpha(opacity = 30); background-color: #e0e0e0; z-index: 100; right: 0px; left: 0px; top: 0px; bottom: 0px; position: absolute;">
+            </div>
+            <div class="row" id="page-item-all"
+                 style="position: relative; margin: 0px; min-height: 300px">
+                <!--选配关系维护增删按钮-->
+                <div id="page-content">
+                    <div class="pull-left" id="save" style="padding-bottom:10px;">
+                        <span class="btn btn-success k-grid-save-changes" data-bind="click:saveFunction" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+                    </div>
+                    <!-- 绑定操作行  -->
+                    <script> kendo.bind($('#save'), seqModel);</script>
+                    <div style="clear:both">
+                        <div id="seqGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#treeGrid").on('rowSelect', function (event) {
+        // event arguments
+        var args = event.args;
+        // row data
+        var rowData = args.row;
+        // row key
+        var itemId = rowData.itemId;
+        var itemCode = rowData.itemCode;
+        var bomId = rowData.bomId;
+        /*这里改为查询*/
+        getFormConfData(itemCode);
+    });
+
+
+    var dataJson;
+    var dataAdapter;
+    function loadTree() {
+        $(document).ready(function () {
+            NProgress.start();
+            var map = {};
+            $.ajax({
+                url: "${base.contextPath}/hap/mdm/bom/queryPlatform",
+                contentType: "application/json",
+                async: false,
+                type: "POST",
+                data: JSON.stringify(map),
+                success: function (data) {
+                    dataJson = data.rows;
+                }
+            });
+            // create Tree Grid
+            var source =
+                    {
+                        dataType: "json",
+                        dataFields: [
+                            {name: 'bomId', type: 'number'},
+                            {name: 'itemId', type: 'number'},
+                            {name: 'itemCode', type: 'string'},
+                            {name: 'itemName', type: 'string'},
+                            {name: 'parentItemId', type: 'number'},
+                            {name: 'infaceId', type: 'number'},
+                            {name: 'matnr', type: 'string'},
+                            {name: 'werks', type: 'string'},
+                            {name: 'stlal', type: 'string'},
+                            {name: 'bmeng', type: 'string'},
+                            {name: 'postp', type: 'string'},
+                            {name: 'posnr', type: 'string'},
+                            {name: 'idnrk', type: 'string'},
+                            {name: 'menge', type: 'string'},
+                            {name: 'meins', type: 'string'},
+                            {name: 'hierarchy', type: 'number'},
+                            {name: 'deleteFlag', type: 'string'},
+                            {name: 'item'}
+
+                        ],
+                        hierarchy: {
+                            keyDataField: {name: 'itemId'},
+                            parentDataField: {name: 'parentItemId'}
+                        },
+                        id: 'itemId',
+                        localData: dataJson
+                    };
+
+            dataAdapter = new $.jqx.dataAdapter(source);
+            var treeGrid = $("#treeGrid").jqxTreeGrid(
+                    {
+                        height: 600,
+                        width: '100%',
+                        source: dataAdapter,
+                        sortable: true,//可拍续
+                        theme: "bootstrap",//主题
+                        hierarchicalCheckboxes: true,//选子，相应的父是否变化
+                        altRows: true,//隔行变色
+                        checkboxes: false,
+                        columnsResize: true,//自动调节列
+                        autoRowHeight: true,//自动调高
+                        filterable: true,
+                        editable: false,
+                        ready: function () {
+                            // expand row with 根节点id
+                            $("#treeGrid").jqxTreeGrid('expandRow', 32);
+                        },
+                        columns: [
+                            {text: '物料编码', dataField: 'itemCode', minWidth: 100, pinned: false},//pinned 固定
+                            {text: '物料名称', dataField: 'itemName', minWidth: 100, pinned: false},
+                            /*                            {text: 'sap编码', dataField: 'matnr', minWidth: 100, width: 120, pinned: false},
+                                                        {text: '工厂', dataField: 'werks', minWidth: 100, width: 120, pinned: false}*/
+                        ]
+                    });
+            //动态设置分屏div的大小
+            divFullScreen();//页面加载时全屏
+            $(window).bind('resize', function () {
+                divFullScreen();//最大化，还原窗口大小时DIV尺寸跟着变化，不过最好在CSS里给这个DIV加个min-width等于html,body的最小宽度。
+            });
+
+            //初始化分屏布局
+            $("#main").kendoSplitter({
+                orientation: "horizontal",
+                panes: [{size: "30%"}, {}]
+            });
+        });
+        //数据加载完成事件
+        $('#treeGrid').on('bindingComplete', function (event) {
+            NProgress.done();
+        });
+    }
+
+</script>
+
+
+<!-- 右边Grid配置 -->
+<script type="text/javascript">
+    var reg = /^[1-9]+\d*$/;
+    var row;
+    function getFormConfData(platformCode) {
+        var BaseUrl = _basePath;
+        seqSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "/hap/mam/optional/seq/query",
+                    type: "POST",
+                    dataType: "json"
+                },
+                update: {
+                    url: BaseUrl + "/hap/mam/optional/seq/submit",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                create: {
+                    url: BaseUrl + "/hap/mam/optional/seq/submit",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type)
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        seqModel.model.set('platformCode', platformCode);
+                        return Hap.prepareQueryParameter(seqModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "sequenceId",
+                    fields: {
+                        sequenceCode: {
+                            type: "string", validation: {
+                                sequenceCode: function (input) {
+                                    if (input.is("[name=sequenceCode]") && input.val() == "") {
+                                        input.attr("data-sequenceCode-msg", "必填！");
+                                        return false;
+                                    } else if (!reg.test(input.val())) {
+                                        input.attr("data-sequenceCode-msg", "编码需要是从1开始的正整数");
+                                        return false;
+                                    } else {
+                                        var length = $('#seqGrid').data().kendoGrid._data.length;
+                                        var gridData = $('#seqGrid').data().kendoGrid._data;
+                                        for (var i = 0; i < length; i++) {
+                                            if (gridData[i].optionCode != row.optionCode && gridData[i].sequenceCode == input.val()) {
+                                                input.attr("data-sequenceCode-msg", "序列编码重复！");
+                                                return false;
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                }
+                            }
+                        },
+                        platformCode: {editable: false, type: "string"},
+                        optionCode: {editable: false, type: "string"},
+                    }
+                }
+            }
+        });
+
+        $("#seqGrid").kendoGrid({
+            dataSource: seqSource,
+            width: '100%',
+            height: '520px',
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            selectable: 'multiple, rowbox',
+            pageable: {
+                pageSizes: [5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                /*                {
+                                    field: "sequenceId",
+                                    title: '<@spring.message "MamOptionalSeq.sequenceId"/>',
+                    width: 120
+                },*/
+                {
+                    field: "platformCode",
+                    title: '<@spring.message "MamOptionalSeq.platformCode"/>',
+                    width: 120
+                },
+                {
+                    field: "optionCode",
+                    title: '<@spring.message "MamOptionalSeq.optionCode"/>',
+                    width: 120
+                },
+                {
+                    field: "optionDescription",
+                    title: '<@spring.message "MamOptionalSeq.optionDescription"/>',
+                    width: 120
+                },
+                {
+                    field: "sequenceCode",
+                    title: '<@spring.message "MamOptionalSeq.sequenceCode"/>',
+                    width: 120,
+                    template: function (dataItem) {
+                        return dataItem['sequenceCode'] || ''
+                    },
+                    editor: function (container, options) {
+                        row = options.model;
+                        $('<input name="' + options.field + '"/>')
+                                .appendTo(container)
+                                .kendoMaskedTextBox({
+                                    change: function (e) {
+
+                                    },
+                                });
+
+                    }
+                },
+            ],
+            editable: true
+        });
+        $('#mask').remove();
+    }
+
+    $(document).ready(function () {
+        loadTree();
+        getFormConfData("");
+    });
+</script>
+</body>
+</html>

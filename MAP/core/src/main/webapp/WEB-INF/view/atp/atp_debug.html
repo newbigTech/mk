@@ -1,0 +1,293 @@
+<#--
+        * description: ATP debug info页面
+        * author:qiang.wang01@hand-china.com
+        * version: 1.0
+        *
+        -->
+<#include "../include/header.html">
+<body>
+
+<style>
+    .select-bar {
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        width: 100%;
+    }
+
+    .select-bar option {
+        color: #1a1a1a;
+    }
+
+    .k-state-selected {
+        background-color: #42a5f5;
+        color: #fff;
+    }
+
+</style>
+
+
+<script	src="${base.contextPath}/common/code?husmObtainMode=HUSM_OBTAIN_MODE"
+           type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?projectUom=HUSM_PZ_UOM"
+        type="text/javascript"></script>
+
+<script type="text/javascript">
+
+
+    viewModel = kendo.observable({
+        firstLoad: true, //预留标志位，判断页面是否是第一次加载
+        isNew:null, //用于判断form表单数据时候被编辑过的标志位
+        uid:null, //存储当前被编辑的dataItem uid
+        model: {
+
+        },
+    });
+
+
+    $("#startDebug").keydown(function(e){
+        if(e.keyCode == 13){
+            e.target.blur();
+            startDebug();
+        }
+    });
+
+
+    function selectDataItem() {
+        //获取在树上选择到的数据
+        var treeList = $("#treeList").data("kendoTreeList");
+        var row = treeList.select();
+        return treeList.dataItem(row);
+    }
+
+    //
+    function updateDataToSource(dataItem){
+        if(dataItem === undefined || dataItem === null){
+            return null;
+        }
+        var formData = viewModel.model.toJSON();
+        for ( var k in formData) {
+            dataItem.set(k, viewModel.model[k]);
+        }
+
+    }
+
+    //获取分屏需要的全屏参数
+    function divFullScreen(){
+        var width = $(window).width();//计算屏幕的宽度
+        var height = $(window).height();
+        $('#main').width(width-40);//设置div的宽度等于屏幕的宽度
+        $('#main').height(height-20);//设置div的宽度等于屏幕的宽度
+
+    }
+
+
+
+
+</script>
+
+<div class="container" style="width: auto; margin: 10px 0px 0px 0px; height: 100%">
+    <div id="main">
+        <#--ATP输入信息-->
+        <div id="left" class="col-xs-7">
+
+            <div class="panel panel-default" style="margin: 7px;">
+                <div class="row" id="item-info-data" style="margin: 7px">
+                        <div class="form-group">
+                            <div class="col-sm-4" style="text-align: left">
+                            <h5 style="text-align: left;margin-left:5px">ATP调试开关</h5>
+                            </div>
+                            <div class="col-sm-8" style="text-align: left">
+                                <input id="debugFlag" type="checkbox"
+                                       style="margin-top: 8px"
+                                       name="debugFlag" data-bind="checked:model.debugFlag" >
+                                <script type="text/javascript">
+                                    $("#debugFlag").kendoCheckbox({
+                                        checkedValue:'Y',
+                                        uncheckedValue:'N',
+                                        change : function(){
+                                           var value=this.value();
+                                            viewModel.model.debugFlag=value;
+                                        }
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                </div>
+            </div>
+
+
+
+            <div class="row" id="page-item-all"
+                 style="position: relative; margin: 0px; min-height:260px">
+                <form class="form-item" id="form-item-all">
+                    <div class="row" id="main-item-div" style="margin: 7px">
+                        <div class="panel panel-default" style="padding: 10px 0px">
+
+                            <div class="row" style="padding: 5px">
+                                <div class="col-md-12">
+                                    <div class="form-group ">
+                                        <label class="col-md-4 control-label">V码:</label>
+                                        <div class="col-md-8">
+                                            <input required id="vMatnr" name="vMatnr" type="text"
+                                                   data-bind="value:model.vMatnr"
+                                                   class="k-textbox" style="width: 100%;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row" style="padding: 5px">
+                                <div class="col-md-12">
+                                    <div class="form-group ">
+                                        <label class="col-md-4 control-label">商品编码:</label>
+                                        <div class="col-md-8">
+                                            <input required id="matnr" type="text"  class="k-textbox"
+                                                   data-bind="value:model.matnr" style="width: 100%;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row" style="padding: 5px">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">买入数量:</label>
+                                        <div class="col-md-8">
+                                            <input required  name="quantity" type="number"
+                                                   data-bind="value:model.quantity"
+                                                   class="k-textbox" style="width: 100%;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row" style="padding: 5px">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">收货地址码:</label>
+                                        <div class="col-md-8">
+                                            <input required  name="deliveryAddress" type="text"
+                                                   data-bind="value:model.deliveryAddress"
+                                                   class="k-textbox" style="width: 100%;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row" >
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <div class="col-sm-7">
+                                        </div>
+                                        <div id="startDebug" class="col-sm-4">
+                                            <span class="btn btn-primary" onclick = "startDebug ()" style="float:left;margin-right:5px;"><i class="fa fa-play" style="margin-right:3px;"></i>开始调用</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!--  物料信息 -->
+                    <div class="panel panel-default" style="margin: 7px;">
+
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group" >
+                                    <h5 style="text-align: left;margin-left:5px">ATP结果返回：</h5>
+                                    <div class="col-sm-12">
+                                    <textarea id="atpResponse" name="atpResponse" data-role="maskedtextbox" type="text" style="width: 100%;height: 250px;resize: none;margin:10px;font-size: 15px"
+                                              data-bind="value:model.atpResponse"
+                                              class="k-textbox" disabled></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+        <#--日志信息-->
+        <div id="right" style="padding: 0px">
+            <div class="panel-body" padding: 0px;">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group" >
+                        <h4 style="text-align: left;margin-left:5px">ATP日志信息：</h4>
+                        <div class="col-sm-11">
+                            <textarea id="atpLog" name="atpLog" data-role="maskedtextbox" type="text" style="width: 100%;height: 600px;resize: none;font-size: 15px;"
+                                      data-bind="value:model.atpLog"
+                                      class="k-textbox" disabled></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    //给from中的选配数量添加必输校验
+    $("#left").kendoValidator({
+        rules: {
+            required: function(input){
+                return $.trim(input.val()) !== "";
+            },
+        },
+        messages: {
+            required: "字段必输"
+        }
+    });
+
+    $(document).ready(function() {
+
+        divFullScreen();//页面加载时全屏
+        $(window).bind('resize', function (){
+            divFullScreen();//最大化，还原窗口大小时DIV尺寸跟着变化，不过最好在CSS里给这个DIV加个min-width等于html,body的最小宽度。
+        });
+
+        //初始化分屏布局
+        $("#main").kendoSplitter({
+            orientation: "horizontal",
+            panes: [ { size: "30%" }, {} ]
+        });
+
+    });
+
+
+    function startDebug(){
+        console.log(JSON.stringify(viewModel.model));
+        var validator =$("#left").data("kendoValidator");
+        if(validator.validate()) {
+            //每次掉用将atplog置空
+            viewModel.model.set("atpLog","");
+            $.ajax({
+                url: "${base.contextPath}/hap/im/atp/inface/startDebug",
+                contentType: "application/json",
+                type: "POST",
+                data: JSON.stringify(viewModel.model),
+                success: function (resp) {
+                    console.log(resp);
+                    if (resp.success) {
+                        for (var i = 0; i < resp.rows.length; i++) {
+                            viewModel.model.set("atpResponse", resp.rows[i].atpResponse);
+                            viewModel.model.set("atpLog", resp.rows[i].atpLog);
+                        }
+                    } else {
+                        kendo.ui.showErrorDialog({
+                            message: "发生错误"
+                        })
+                    }
+                }
+            });
+        }
+    }
+
+    kendo.bind($('#main'), viewModel);
+
+</script>
+</body>
+</html>

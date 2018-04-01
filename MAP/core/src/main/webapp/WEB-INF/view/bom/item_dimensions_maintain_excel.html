@@ -1,0 +1,94 @@
+<#--
+        * description: 产品外形尺寸维护excel导入导出界面
+        * version: 1.0
+        * author: chenzhigang@markor.com.cn
+        *
+    -->
+<#include "../include/header.html">
+<body>
+<script>
+    viewModel = kendo.observable({
+        model: {}
+    });
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <div class="panel" style="padding:0px;">
+            <form class="form-horizontal">
+                <div class="panel-body">
+                    <div class="row">
+                        <input type="file" name="files" id="importExcelFile">
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <span id="errorMessage"></span>
+                    </div>
+                </div>
+                <div class="panel-footer text-right">
+                    <a class="btn btn-success" id="download" onclick="downloadExcel()"  type="submit">下载模板</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $("#importExcelFile").kendoUpload({
+        async:{
+            saveUrl: "${base.contextPath}/markor/hap/mdm/bom/itemDimensionsInfo/upload?" +
+                                                                    "${_csrf.parameterName}=${_csrf.token}",
+            autoUpload: false
+        },
+        multiple: false,
+        localization: {
+            select: "请选择文件",
+            uploadSelectedFiles: "上传",
+            headerStatusUploading: "上传中...",
+            headerStatusUploaded: "文件上传成功!"
+        },
+        error:function (e) {
+            kendo.ui.showInfoDialog({
+                title: '提示信息',
+                message: '导入失败!'
+            });
+        },
+        success: function (e) {
+            if (e.response.success) {
+                kendo.ui.showInfoDialog({
+                    title: '提示信息',
+                    message: '添加成功'
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+
+                        // 导入成功后，服务端传回的message为配置数据对应的平台ID
+                        window.parent.refreshPage(parseInt(e.response.message));
+
+                        window.parent.$("#excelWindow").data("kendoWindow").close();
+                        window.parent.$("#Grid").data("kendoGrid").dataSource.page(1);
+                    }
+                })
+            } else {
+                kendo.ui.showErrorDialog({
+                    title: '提示信息',
+                    message: '导入失败!<br/>'
+                }).done(function (event) {
+                    $("#errorMessage").html('<h5>失败信息:</h5><br/>' + e.response.message)
+                });
+
+            }
+        }
+    });
+
+    function downloadExcel() {
+        var form = $("<form>");   //定义一个form表单
+        form.attr('style', 'display:none');   //在form表单中添加查询参数
+        form.attr('target', '');
+        form.attr('method', 'GET');
+        form.attr('action', "${base.contextPath}/markor/hap/mdm/bom/downloadExcelTemplate");
+        $('body').append(form);  //将表单放置在web中
+        form.submit();
+    }
+
+</script>
+</body>
+</html>

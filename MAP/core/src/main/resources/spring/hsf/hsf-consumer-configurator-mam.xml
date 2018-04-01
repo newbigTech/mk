@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:reference id="iMamApproveHisService" interface="com.hand.hap.mam.service.IMamApproveHisService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamAuditPlatformService" interface="com.hand.hap.mam.service.IMamAuditPlatformService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamAuditUserService" interface="com.hand.hap.mam.service.IMamAuditUserService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamBomQuantityService" interface="com.hand.hap.mam.service.IMamBomQuantityService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamImageDownloadService" interface="com.hand.hap.mam.service.IMamImageDownloadService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamOptionalSeqService" interface="com.hand.hap.mam.service.IMamOptionalSeqService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamPinVcodeService" interface="com.hand.hap.mam.service.IMamPinVcodeService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamSelectHeaderService" interface="com.hand.hap.mam.service.IMamSelectHeaderService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamSelectLineService" interface="com.hand.hap.mam.service.IMamSelectLineService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamSoApproveHisService" interface="com.hand.hap.mam.service.IMamSoApproveHisService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamVcodeHeaderService" interface="com.hand.hap.mam.service.IMamVcodeHeaderService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamVcodeLinesService" interface="com.hand.hap.mam.service.IMamVcodeLinesService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMamVcodeReviewHistoryService"
+                     interface="com.hand.hap.mam.service.IMamVcodeReviewHistoryService" group="configurator-api-4w"
+                     version="1.0.0"/>
+
+</beans>

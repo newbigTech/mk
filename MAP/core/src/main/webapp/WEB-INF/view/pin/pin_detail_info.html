@@ -1,0 +1,117 @@
+    <#--
+        * description: PIN码信息
+        * author:chenzhigang
+        * 2017/8/4
+        * version: 0.1
+        *
+    -->
+
+    <#include "/include/header.html">
+        <body>
+        <script type="text/javascript">
+
+            // PIN码
+            var pin = "${RequestParameters.pin!-1}";
+            console.log('query by pin = ' + pin);
+
+        </script>
+
+
+        <div id="page-content">
+            <div id="pinInfoGrid"></div>
+        </div>
+
+        <script type="text/javascript">
+
+            $(function () {
+                $.ajax({
+                    type: 'GET',
+                    url: "${base.contextPath}/hmall/pin/queryByCode?code=" + pin,
+                    dataType: 'JSON',
+                    // data: JSON.stringify(selections),
+                    // contentType: 'application/json',
+                    // async: false,
+                    success: function (result) {
+                        if (result.success) {
+                            // console.log(result.rows);
+
+                            $("#pinInfoGrid").kendoGrid({
+                                // height: "400px",
+                                resizable: true,
+                                navigatable: true,
+                                scrollable: true,
+                                selectable: true,
+                                rownumber: true,
+                                sortable: true,
+                                // selectable: 'multiple, rowbox',
+                                //pageable: {
+                                //    pageSizes: [5, 10, 20, 50],
+                                //    refresh: true,
+                                //    buttonCount: 5
+                                //},
+                                columns: [
+                                    {
+                                        field: "code",
+                                        title: 'PIN码',
+                                        width: 100
+                                    }, {
+                                        field: "eventCode",
+                                        title: '事件编号',
+                                        width: 100
+                                    }, {
+                                        field: "eventDes",
+                                        title: '事件描述',
+                                        width: 100
+                                    }, {
+                                        field: "system",
+                                        title: '系统',
+                                        width: 100
+                                    }, {
+                                        field: "operator",
+                                        title: '操作人员',
+                                        width: 100
+                                    }, {
+                                        field: "mobile",
+                                        title: '操作人电话',
+                                        width: 100
+                                    }, {
+                                        field: "operationTime",
+                                        title: '操作时间',
+                                        // format: "{0:n2}",
+                                        width: 100
+                                    }, {
+                                        field: "eventInfo",
+                                        title: '节点信息',
+                                        // format: "{0:n2}",
+                                        width: 100
+                                    }
+                                ],
+                                editable: false
+                            }).data("kendoGrid").setDataSource(new kendo.data.DataSource({
+                                data: result.rows,
+                                schema: {
+                                    model: {
+                                        id: "pinInfoId",
+                                        fields: {}
+                                    }
+                                }
+                            }));
+
+                        } else {
+                            kendo.ui.showWarningDialog({
+                                message: "查询失败\n" + response.message
+                            });
+                        }
+                    },
+                    error: function (err) {
+                        kendo.ui.showErrorDialog({
+                            message: '程序错误' + err
+                        });
+                    }
+                });
+            });
+
+        </script>
+
+        </body>
+        </html>

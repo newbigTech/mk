@@ -1,0 +1,87 @@
+---
+# bootstrap.yml
+spring:
+  application:
+    name: hmall-promote-server
+  profiles:
+    active: native
+  redis:
+    host: 10.5.30.101
+    port: 6379
+    database: 0
+    timeout: 20000
+    pool:
+      maxActive: 2000
+      maxIdle: 300
+      maxWait: 30000
+      minIdle: 100
+
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server:
+  port: 2230
+
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+eureka:
+  instance:
+    nonSecurePort: ${server.port:2230}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+---
+spring:
+  profiles: dev_idc
+  redis:
+    host: 10.5.30.101
+    port: 6379
+server.port: 7110
+---
+spring:
+  profiles: sit_idc
+  redis:
+    host: 10.5.72.40
+    port: 6380
+    password: Markor!6380
+    sentinel:
+      master: mymaster
+      nodes: 10.5.72.40:26000,10.5.72.41:26000,10.5.72.42:26000
+server.port: 7110
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2182
+---
+spring:
+  profiles: prod
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@172.16.10.110:1521:MAPDB
+    username: mapprod
+    password: mapprod
+  redis:
+    host: r-bp14415c7088aab4.redis.rds.aliyuncs.com
+    port: 6379
+    password: Markor2017
+    #sentinel:
+      #master: promotion-master
+      #nodes: 172.16.10.100:26379,172.16.10.101:26379,172.16.10.102:26379
+server.port: 7110
+dubbo:
+  registry:
+    address: zookeeper://172.16.10.30:2181
+---

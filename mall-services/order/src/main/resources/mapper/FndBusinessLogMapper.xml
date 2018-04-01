@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.FndBusinessLogMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.model.FndBusinessLog">
+        <result column="BUSINESS_LOG_ID" property="businessLogId" jdbcType="DECIMAL" />
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL" />
+        <result column="OPERATION_TYPE" property="operationType" jdbcType="VARCHAR" />
+        <result column="OPERATION_USER" property="operationUser" jdbcType="DECIMAL" />
+        <result column="OPERATION_TIME" property="operationTime" jdbcType="DATE" />
+        <result column="OPERATION_CONTENT" property="operationContent" jdbcType="VARCHAR" />
+        <result column="LAST_VERSION" property="lastVersion" jdbcType="DECIMAL" />
+        <result column="CURRENT_VERSION" property="currentVersion" jdbcType="DECIMAL" />
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR" />
+    </resultMap>
+
+</mapper>

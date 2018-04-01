@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsMaterialEntryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsMaterialEntry">
+        <result column="MATERIAL_ENTRY_ID" property="materialEntryId" jdbcType="DECIMAL"/>
+        <result column="MATERIAL_ID" property="materialId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+        <result column="TOTAL_FEE" property="totalFee" jdbcType="DECIMAL"/>
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="DATE"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="DECIMAL"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATED_BY" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="LAST_UPDATE_LOGIN" property="lastUpdateLogin" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_APPLICATION_ID" property="programApplicationId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_ID" property="programId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_UPDATE_DATE" property="programUpdateDate" jdbcType="DATE"/>
+        <result column="REQUEST_ID" property="requestId" jdbcType="DECIMAL"/>
+        <result column="ATTRIBUTE_CATEGORY" property="attributeCategory" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE1" property="attribute1" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE2" property="attribute2" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE3" property="attribute3" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE4" property="attribute4" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE5" property="attribute5" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE6" property="attribute6" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE7" property="attribute7" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE8" property="attribute8" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE9" property="attribute9" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE10" property="attribute10" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE11" property="attribute11" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE12" property="attribute12" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE13" property="attribute13" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE14" property="attribute14" jdbcType="VARCHAR"/>
+        <result column="ATTRIBUTE15" property="attribute15" jdbcType="VARCHAR"/>
+        <result column="PATCH_REASON" property="patchReason" jdbcType="VARCHAR"/>
+        <result column="POINTOFSERVICE_ID" property="pointofserviceId" jdbcType="VARCHAR"/>
+        <result column="POINTOFSERVICE" property="pointOfService" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="getAllEntryByMaterialId" resultMap="BaseResultMap" parameterType="com.hand.hmall.as.dto.AsMaterialEntry">
+        SELECT entry.MATERIAL_ENTRY_ID,
+        entry.MATERIAL_ID,
+        entry.ORDER_ID,
+        entry.CONSIGNMENT_ID,
+        entry.CODE,
+        entry.LINE_NUMBER,
+        entry.QUANTITY,
+        entry.UNIT,
+        entry.UNIT_FEE,
+        entry.IS_GIFT,
+        entry.TOTAL_FEE,
+        entry.ESTIMATE_DELIVERY_TIME,
+        entry.PRODUCT_ID,
+        product.code AS PRODUCT_CODE,
+        entry.PIN,
+        entry.SHIPPING_TYPE,
+        entry.NOTE,
+        entry.PATCH_REASON,
+        entry.CREATION_DATE,
+        entry.POINTOFSERVICE_ID,
+        hmp.DISPLAYNAME AS POINTOFSERVICE
+        FROM HMALL_AS_MATERIAL_ENTRY entry
+        LEFT JOIN HMALL_MST_PRODUCT product ON product.PRODUCT_ID =entry.PRODUCT_ID
+        LEFT JOIN HMALL_MST_POINTOFSERVICE hmp ON hmp.POINT_OF_SERVICE_ID =entry.POINTOFSERVICE_ID
+        <where>
+            <if test="materialId != null">
+                entry.MATERIAL_ID = #{materialId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

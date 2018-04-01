@@ -1,0 +1,187 @@
+<#include "../include/header.html">
+
+<body id="_attr_maintain_body_">
+
+    <script type="text/javascript">
+        var BaseUrl = _basePath;
+        var currentItemId; // 点击物料描述下某个单元，选中当前物料，此变量即表示当前物料ID
+    </script>
+
+    <div class='_l_ col-md-4' > <!-- 页面左侧部分 -->
+        <div style='padding-top: 12px; padding-bottom: 12px;'>
+			<!-- 平台名称查询输入框 -->
+            <input id="_mdm_item_bom_platform_name_" placeholder="平台名称" type="text"
+                   style="width:250px;margin-right:5px;" class="k-textbox">
+			<!-- 查询按钮 -->
+            <span id="_query_mdm_item_bom_platform_" class="btn btn-primary" data-bind='click:query_items'
+                  style="margin-right:5px;" type="submit">
+                <i class="fa fa-search" style="margin-right:3px;"></i>
+                查询
+            </span>
+        </div>
+        <div>
+			<!-- 平台表格 -->
+            <div id="grid"></div>
+        </div>
+    </div>
+    <div class='_r_ col-md-8' > <!-- 页面右侧部分 -->
+		<!-- 保存按钮 -->
+        <div id="_item_attr_mapping_save_div_" style="padding: 12px;">
+			<span id="_item_attr_mapping_save_button_"
+                  class="btn btn-primary"
+                  style="margin-right:5px;"
+                  type="submit">
+				<i class="fa fa-save" style="margin-right:3px;"></i>
+				保存
+			</span>
+        </div>
+		<!--  -->
+        <div id="_item_attr_mapping_" style='overflow: auto; height: 560px;'></div>
+    </div>
+
+    <div id="platformWindow"></div> <!-- 属性配置选择区 -->
+
+    <script>
+
+		/**
+		 * 点击查询按钮事件，根据平台名称片段查询（query_items方法会重新刷新物料列表）
+		 */
+        $('#_query_mdm_item_bom_platform_').click(function () {
+            query_items($('#_mdm_item_bom_platform_name_').val());
+        });
+
+		/**
+		 * 保存平台属性设置
+		 */
+        $("#_item_attr_mapping_save_button_").click(function () {
+
+            var validIds = []; // 被选中的属性头ID
+            $("#_item_attr_mapping_ input").each(function () {
+                console.log("$(this).data('kendoCheckbox').value() = " + $(this).data('kendoCheckbox').value());
+                if ($(this).data('kendoCheckbox').value() == 'Y') {
+                    validIds.push($(this).attr('id'));
+                }
+            });
+			
+            $.ajax({
+                url: "${base.contextPath}/markor/item/ctrl/cfg/bindItemAttrs/" + currentItemId,
+                method: 'post',
+                contentType: "application/json",
+                data: JSON.stringify(validIds),
+                success: function (rs) {
+                    kendo.ui.showInfoDialog({
+                        message: '保存成功'
+                    });
+                }
+            });
+
+        });
+
+        function query_items(nameFragment) {
+
+            var viewModel = kendo.observable({
+				/*
+                name: "John Doe",
+                displayGreeting: function () {
+                    var name = this.get("name");
+                    alert("Hello, " + name + "!!!");
+                }
+				*/
+            });
+
+            var ds = new kendo.data.DataSource({
+                transport: {
+                    read: {
+						// nameFragment若为null，则查询全部平台
+                        url: BaseUrl + "/markor/item/ctrl/cfg/items/" + (nameFragment ? nameFragment : ''),
+                        type: "GET",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'resp',
+                    total: 'total',
+                    model: {
+                        id: "itmeId",
+                        fields: {
+                            itemName: {type: "string", validation: {required: true}}
+                        }
+                    }
+                }
+            });
+
+            $("#grid").kendoGrid({
+                height: "560px",
+                columns: [
+                    {
+                        field: "itemName",
+                        title: '<@spring.message "markor.mdm.itemdesc"/>'
+                    },
+                    {
+                        hidden: true,
+                        field: "itemId",
+                        title: '<@spring.message "markor.mdm.itemdesc"/>'
+                    }
+                ],
+                dataSource: ds
+            });
+
+			// 点击物料描述列表下的某一项，右侧显示对应的属性配置表格
+            $("#grid").on("click", "tr", function (e) {
+                currentItemId = $(this).children("td:last-child").html();
+				if (currentItemId) { // 表头行无对应itemId，不重新加载属性头
+					loadAllLookupType(currentItemId);
+				}
+            });
+
+            $("#_item_attr_mapping_ *").remove(); // 重新查询平台后，清空属性配置表格
+        }
+
+		/**
+		 * 加载并显示物料(平台)ID对应的全部属性设置
+		 * @Param itemId 物料(平台)ID
+		 */
+        function loadAllLookupType(itemId) {
+			// 1. 加载全部属性
+            $.ajax({
+                url: "${base.contextPath}/markor/item/ctrl/cfg/lookupTypes",
+                success: function (types) {
+					// 2. 加载此物料有效属性
+                    $.ajax({
+                        url: "${base.contextPath}/markor/item/ctrl/cfg/validAttrs/" + itemId,
+                        success: function (validAttrs) {
+                            $("#_item_attr_mapping_").html(""); //3. 清除属性设置区旧数据
+
+                            for (var i in types) { // 4. 展现全部属性
+                                var t = types[i];
+                                $("#_item_attr_mapping_").append(
+                                    "<span class='col-md-3' style='padding: 6px;'><input id='" + t.headerId + "' type='checkbox' style='margin-right: 6px;'/>" + t.name + "</span>"
+                                );
+                            }
+
+							// 5. 使用kendo ui 的 checkbox控件
+                            var itemAttrStrl = $("#_item_attr_mapping_ input").kendoCheckbox({
+                                checkedValue: 'Y',
+                                uncheckedValue: 'N'
+                            });
+
+							// 6. 将有效属性对应的checkbox设置为勾选状态
+                            for (var i in validAttrs) {
+                                var va = validAttrs[i];
+                                $("#_item_attr_mapping_ #" + va).data("kendoCheckbox").value('Y');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+	</script>
+
+</body>
+</html>

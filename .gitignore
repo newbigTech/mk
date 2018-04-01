@@ -1,0 +1,28 @@
+# Created by .ignore support plugin (hsz.mobi)
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+**/out
+
+# Mac
+.DS_Store
+overlays/
+
+# Maven
+#**/log/
+**/target
+**/*.log
+**/tmp
+**/.tmp
+**/bin/**
+
+# Mac
+.DS_Store
+core/src/main/java/com/hand/hmall/pd/controllers/FindProductDetailController.java

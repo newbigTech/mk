@@ -1,0 +1,65 @@
+.h-text-box {
+  position: relative;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #dadada;
+  height: 36px;
+  width: 100%;
+  input {
+    position: relative;
+    z-index: 0;
+    display: block;
+    border-style: none;
+    background-color: transparent;
+    text-indent: 6px;
+    height: 100%;
+    width: 100%;
+  }
+  .icon {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-top: auto;
+    margin-bottom: auto;
+    &.left {
+      left: 3px;
+    }
+    &.right {
+      right: 3px;
+    }
+  }
+  &.icon-left input{
+    padding-left: 23px;
+    text-indent: 0;
+  }
+  &.icon-right input{
+    padding-right: 23px;
+  }
+  
+  .h-popup {
+    position: relative;
+    z-index: 1000;
+    width: 100%;
+    background-color: #fff;
+    li {
+      padding-right: 5px;
+      padding-left: 5px;
+      line-height: 35px;
+      cursor: pointer;
+      div{
+        padding-right: 7px;
+        padding-left: 7px;
+        border-bottom: 1px solid #dedbd7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      &:last-child div{
+        border-bottom: none;
+      }
+      &.selected {
+        background-color: #dadada;
+      }
+    }
+  }
+}

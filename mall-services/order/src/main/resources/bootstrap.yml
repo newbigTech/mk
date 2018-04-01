@@ -1,0 +1,108 @@
+---
+# bootstrap.yml
+spring:
+  application:
+    name: order
+  profiles:
+    active: native
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.30.101:1521:mkoracle
+    username: hap_dev
+    password: hap_dev
+
+mybatis:
+  type-aliases-package: com.hand.hmall.dto
+  mapper-locations: classpath:mapper/*.xml
+  config-location: classpath:mapper/config/mybatis-configuration.xml
+
+mapper:
+  mappers:
+      - tk.mybatis.mapper.common.Mapper
+  not-empty: false
+  before: true
+
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server:
+  port: 3334
+
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+eureka:
+  instance:
+    nonSecurePort: ${server.port:3334}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+  port: 21000
+
+rabbit:
+  address: 10.5.72.14:5672
+  username: dev
+  password: Mfr18$
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  exchangeName: map.business
+  queue: thirdparty.api
+---
+spring:
+  profiles: dev_idc
+server.port: 7002
+---
+spring:
+  profiles: sit_idc
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.72.13:1521:TEST
+    username: mk_test
+    password: mk_test
+server.port: 7002
+rabbit:
+  address: 10.5.72.18:5672
+  username: uat
+  password: Mfr18$
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2182
+  port: 21000
+---
+spring:
+  profiles: prod
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@172.16.10.110:1521:MAPDB
+    username: mapprod
+    password: mapprod
+server.port: 7002
+rabbit:
+  address: 172.16.10.90:5672
+  username: hmall
+  password: SvcsPwd456
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+dubbo:
+  registry:
+    address: zookeeper://172.16.10.30:2181
+  port: 21000
+---

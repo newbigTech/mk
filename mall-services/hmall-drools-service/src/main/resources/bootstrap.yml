@@ -1,0 +1,96 @@
+---
+# bootstrap.yml
+spring:
+  application:
+    name: hmall-drools-service
+  profiles:
+    active: native
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.30.101:1521:mkoracle
+    username: hap_dev
+    password: hap_dev
+  redis:
+    host: 10.5.30.101
+    port: 6379
+    database: 0
+    timeout: 20000
+    pool:
+      maxActive: 2000
+      maxIdle: 300
+      maxWait: 30000
+      minIdle: 100
+server:
+  port: 8887
+
+mybatis:
+  type-aliases-package: com.hand.hmall.dto
+  mapper-locations: classpath:mapper/*.xml
+  config-location: classpath:mapper/config/mybatis-configuration.xml
+
+mapper:
+  mappers:
+      - tk.mybatis.mapper.common.Mapper
+  not-empty: false
+  before: true
+
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:8888}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+---
+spring:
+  profiles: dev_idc
+server.port: 7111
+---
+spring:
+  profiles: sit_idc
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.72.13:1521:TEST
+    username: mk_test
+    password: mk_test
+  redis:
+    host: 10.5.72.40
+    port: 6380
+    password: Markor!6380
+#    sentinel:
+#      master: mymaster
+#      nodes: 10.5.72.40:26000,10.5.72.41:26000,10.5.72.42:26000
+server.port: 7111
+---
+spring:
+  profiles: prod
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@172.16.10.110:1521:MAPDB
+    username: mapprod
+    password: mapprod
+  redis:
+    host: r-bp14415c7088aab4.redis.rds.aliyuncs.com
+    port: 6379
+    password: Markor2017
+    #sentinel:
+      #master: promotion-master
+      #nodes: 172.16.10.100:26379,172.16.10.101:26379,172.16.10.102:26379
+server.port: 7111
+---
+

@@ -1,0 +1,631 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        notIn:[],
+        queryResource: function(e) {
+            $('#gridPush').data('kendoGrid').dataSource.page(1);
+        },
+        resetForm        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#gridPush').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+
+    var id='${RequestParameters.id}';
+    var value=[];
+    var definitionId='${RequestParameters.definitionId}';
+    var openType='${RequestParameters.openType}';
+    var disabled='${RequestParameters.disabled}';
+
+
+    if(openType=='BASE') {
+        for (var i in window.parent.viewModel.model.conditions) {
+            if (window.parent.viewModel.model.conditions[i].id == id) {
+                if (window.parent.viewModel.model.conditions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.conditions[i].parameters.rangeValue != undefined) {
+                        value = window.parent.viewModel.model.conditions[i].parameters.rangeValue.value;
+//                        console.log("Rangevalue",window.parent.viewModel.model.conditions[i].parameters.rangeValue);
+//                        console.log("value",value);
+                    }
+                }
+                break;
+            }
+        }
+    }else if(openType=='GROUP') {
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                for(var j in window.parent.groups_data[i].child)
+                {
+                    if(window.parent.groups_data[i].child[j].id==id)
+                    {
+                        if (window.parent.groups_data[i].child[j].parameters != undefined) {
+                            if (window.parent.groups_data[i].child[j].parameters.rangeValue != undefined) {
+                                if(window.parent.groups_data[i].child[j].parameters.rangeValue.value!=undefined)
+                                value = window.parent.groups_data[i].child[j].parameters.rangeValue.value;
+                            }
+                        }
+                        flag=true;
+                        break;
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+    }else if(openType=='GROUP_EXT') {
+
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                if(window.parent.groups_data[i].child!=undefined) {
+                    for (var j in window.parent.groups_data[i].child) {
+                        if (window.parent.groups_data[i].child[j].child != undefined) {
+                            for (var k in  window.parent.groups_data[i].child[j].child) {
+                                if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                    if (window.parent.groups_data[i].child[j].child[k].parameters != undefined) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.rangeValue != undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.rangeValue.value;
+                                        }
+                                    }
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+
+    } else if(openType=='CONTAINER') {
+        for (var i in window.parent.viewModel.model.containers) {
+            if(window.parent.viewModel.model.containers[i].child!=undefined) {
+                for(var j in window.parent.viewModel.model.containers[i].child ) {
+                    if (window.parent.viewModel.model.containers[i].child[j].id == id) {
+
+                        if (window.parent.viewModel.model.containers[i].child[j].parameters != undefined) {
+                            if (window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue != undefined) {
+                                value = window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue.value;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    viewModel.notIn=value;
+
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div id="appendPanel" class="panel" style="padding: 0px;">
+            <form class="form-horizontal" id="conditionForm" hidden="true">
+                <div class="panel-body">
+                    <div class="row">
+
+
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">商品ID</label>
+                                <div class="col-sm-8">
+                                    <input id="sku" type="text" placeholder="商品ID" style="width: 100%" data-bind="value:model.productId"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">商品编码</label>
+                                <div class="col-sm-8">
+                                    <input id="spu" type="text" placeholder="商品编码" style="width: 100%" data-bind="value:model.productCode"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">商品名称</label>
+                                <div class="col-sm-8">
+                                    <input id="name"   type="text" placeholder="商品名称" style="width: 100%" data-bind="value:model.name"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </form>
+            <script>
+                if(disabled!="true"){
+                    $('#conditionForm').removeAttr("hidden");
+                }
+            </script>
+            <div class="panel-footer text-right">
+
+                <span class="btn btn-primary" id="query" data-bind="click:queryResource" type="button"><i class="fa fa-search"></i> <@spring.message "hap.query"/></span>
+                <span class="btn btn-warning" id="resetForm" data-bind="click:resetForm" type="button"><i class="fa fa-refresh"></i> <@spring.message "hap.reset"/></span>
+                <span class="btn btn-default" disabled="true" id="relevance" style="cursor:pointer;" type="button"><i class="fa fa-retweet"></i> 关联</span>
+                <span class="btn btn-success" disabled="true" id="submit" type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+
+                <script>
+                    if(disabled!='true'){
+                        $('#submit').removeAttr("disabled");
+                        $('#submit').attr("onclick","saveProductCondition()");
+                        $('#relevance').removeAttr("disabled");
+                        $('#relevance').attr("onclick","relevance()");
+                    }
+                </script>
+            </div>
+        </div>
+
+        <div id='grid-container'>
+            <div class="col-sm-5">
+                <div id="gridPush" ></div>
+            </div>
+            <div class="col-sm-2">
+                <span id="push" onclick="push()"  class="btn-sm btn-success"><i class="fa fa-arrow-circle-right"></i> 添加</span>
+                <span id="pop"  onclick="pop()" class="btn-sm btn-warning"><i class="fa  fa-arrow-circle-left"></i> 移除</span>
+            </div>
+            <div class="col-sm-5">
+                <div id="gridPop"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="productExcel"></div>
+<div id="productExcelImport"></div>
+
+
+<script type="text/javascript">
+
+    kendo.bind($('#page-content'),viewModel);
+    kendo.bind($('#grid-container'),viewModel);
+
+
+    var BaseUrl = "${base.contextPath}",
+            dataSourcePush = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"/sale/range/product/selectAllProduct",
+                        type : "POST",
+                        contentType:"application/json"
+                    },
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            if(type =='create' || type =='update'){
+                                var map = viewModel.model.toJSON();
+                                datas = options.models.map(function(data){
+                                    data['__status'] = (type =='create' ? 'add' : 'update');
+                                    return data;
+
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+                            var map={};
+                            map.data =viewModel.model.toJSON();
+                            map.notIn=viewModel.notIn;
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+//                            for (var k in map) {
+//                                if (map[k] === '' || map[k] === null || map[k] === undefined)
+//                                    delete map[k]
+//                            }
+                            for (var j in map.data) {
+                                if (map.data[j] === '' || map.data[j] === null || map.data[j] === undefined)
+                                    delete map.data[j]
+                            }
+                            return kendo.stringify(map);
+
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging : true,
+                pageSize: 10,
+                schema: {
+                    data:'resp',
+                    total:'total',
+                    model: {
+                        id: "productId",
+                        fields: {
+                            productId:{editable:false, validation: { required: true }},
+                            productCode: {editable:false, validation: { required: true } },
+                            name: {editable:false, validation: { required: true } },
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+        dataSourcePop = new kendo.data.DataSource({
+            transport: {
+                read:  {
+                    url: BaseUrl+"/sale/mst/product/queryProductByIds",
+                    type : "POST",
+                    contentType:"application/json"
+                },
+                parameterMap: function(options, type) {
+                    if (type === "read") {
+                        var map={};
+                        map.productIds =viewModel.notIn;
+                        map.page = options.page;
+                        map.pageSize = options.pageSize;
+                        for (var k in map) {
+                            if (map[k] === '' || map[k] === null || map[k] === undefined)
+                                delete map[k]
+                        }
+                        return kendo.stringify(map);
+
+                    }
+                }
+            },
+            batch: true,
+            serverPaging : true,
+            pageSize: 10,
+            schema: {
+                data:'resp',
+                total:'total',
+                model: {
+                    id: "productId",
+                    fields: {
+                        productId:{editable:false, validation: { required: true }},
+                        productCode: {editable:false, validation: { required: true } },
+                        name: {editable:false, validation: { required: true } },
+
+
+                    }
+                },
+                errors: function(res){
+                    if(!res.success && res.msg) {
+                        return res.msg;
+                    }
+                }
+            },
+            error: function(e) {
+                kendo.ui.showErrorDialog({
+                    title:"提示",
+                    message:e.errors
+                })
+            }
+        });
+
+
+
+    var gridPush=$("#gridPush").kendoGrid({
+        dataSource: dataSourcePush,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+        selectable : 'multiple, rowbox',
+        pageable: {
+            pageSizes: ['All', 5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+
+        columns: [
+
+            {
+                field: "productId",
+                title: '商品ID',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+
+            },
+            {
+                field: "productCode",
+                title: '商品编码',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+            {
+                field: "name",
+                title: '商品名称',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+        ],
+        editable: true,
+        dataBound: function() {
+            var view = this.dataSource.view();
+            this.items().each(function(index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+
+
+
+
+
+
+
+    var gridPop=$("#gridPop").kendoGrid({
+        dataSource: dataSourcePop,
+        resizable: true,
+        scrollable: true,
+        navigatable: true,
+        height: '100%',
+        autoResize:true,
+        rownumber : true,
+        selectable : 'multiple, rowbox',
+        pageable: {
+            pageSizes: [20, 50,100,500,1000],
+            refresh: true,
+            buttonCount: 5
+        },
+
+        columns: [
+
+            {
+                field: "productId",
+                title: '商品ID',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+
+
+            },
+            {
+                field: "code",
+                title: '商品编码',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+            {
+                field: "name",
+                title: '商品名称',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            },
+        ],
+        editable: true,
+        dataBound: function() {
+            var view = this.dataSource.view();
+            this.items().each(function(index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+    var gridPop=$("#gridPop").data("kendoGrid");
+    var gridPush=$("#gridPush").data("kendoGrid");
+
+    function push()
+    {
+        var pushData=gridPush.selectedDataItems();
+        if(pushData.length>0) {
+            for (var i in pushData) {
+                var flag=true;
+                for(var j in gridPop.dataSource._data)
+                {
+                    if(gridPop.dataSource._data[j].productId==pushData[i].productId)
+                    {
+                        flag=false;
+                    }
+                }
+                if(flag)
+                {
+                    viewModel.notIn.push(pushData[i].productId);
+                    gridPop.dataSource._data.push(pushData[i]);
+                }
+            }
+            gridPush.dataSource.read();
+            gridPop.refresh();
+        }else {
+            kendo.ui.showWarningDialog({
+                title:"提示",
+                message:"请先勾选一个选项"
+            })
+        }
+
+    }
+    function pop()
+    {
+
+        var popData=gridPop.selectedDataItems();
+        for(var i in popData) {
+            var flagIndex=viewModel.notIn.indexOf(popData[i].productId);
+            if(flagIndex>-1){
+                viewModel.notIn.splice(flagIndex,1);
+            }
+            gridPop.dataSource._data.remove(popData[i]);
+
+        }
+        gridPush.dataSource.read();
+        gridPop.refresh();
+    }
+
+    function saveProductCondition()
+    {
+        if(openType=='BASE') {
+            console.log("BASE","n");
+            if (window.parent.viewModel.model.conditions != undefined) {
+                for (var i in window.parent.viewModel.model.conditions) {
+                    if (window.parent.viewModel.model.conditions[i].id == id) {
+                        if (window.parent.viewModel.model.conditions[i].parameters == undefined) {
+                            window.parent.viewModel.model.conditions[i].set("parameters", {});
+
+                        }
+                        if (window.parent.viewModel.model.conditions[i].parameters.rangeValue == undefined) {
+                            window.parent.viewModel.model.conditions[i].parameters.set("rangeValue", {});
+
+                        }
+
+                        window.parent.viewModel.model.conditions[i].parameters.rangeValue.value = viewModel.notIn;
+//                        window.parent.viewModel.model.conditions[i].productRelevance=gridPop.dataSource.data();
+                        break;
+                    }
+                }
+            }
+        }else if(openType=='GROUP'){
+            console.log("GROUP","n");
+             if (window.parent.groups_data != undefined) {
+
+                for (var i in window.parent.groups_data) {
+
+                    var flag=false;
+                    for(var j in window.parent.groups_data[i].child)
+                    {
+
+                        if(window.parent.groups_data[i].child[j].id==id)
+                        {
+                            if (window.parent.groups_data[i].child[j].parameters == undefined) {
+                                window.parent.groups_data[i].child[j].parameters={};
+
+                            }
+                            if (window.parent.groups_data[i].child[j].parameters.rangeValue == undefined) {
+                                window.parent.groups_data[i].child[j].parameters.rangeValue={};
+                            }
+                            window.parent.groups_data[i].child[j].parameters.rangeValue.value = viewModel.notIn;
+
+
+                            flag=true;
+                            break;
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+
+                }
+            }
+        }else if(openType=='GROUP_EXT'){
+            console.log("GROUP_EXT","n");
+            if (window.parent.groups_data != undefined) {
+                for (var i in window.parent.groups_data) {
+
+                    var flag=false;
+                    if(window.parent.groups_data[i].child!=undefined) {
+                        for (var j in window.parent.groups_data[i].child) {
+                            if (window.parent.groups_data[i].child[j].child != undefined) {
+                                for (var k in  window.parent.groups_data[i].child[j].child) {
+                                    if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters == undefined) {
+                                            window.parent.groups_data[i].child[j].child[k].parameters={};
+                                        }
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.rangeValue == undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.rangeValue={};
+                                        }
+                                        window.parent.groups_data[i].child[j].child[k].parameters.rangeValue.value=viewModel.notIn;
+//                                        window.parent.groups_data[i].child[j].child[k].productRelevance=gridPop.dataSource.data();
+
+                                        flag = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+
+                }
+            }
+        }else if(openType=='CONTAINER') {
+            console.log("CONTAINER","n");
+            if (window.parent.viewModel.model.containers != undefined) {
+                for (var i in window.parent.viewModel.model.containers) {
+                    if(window.parent.viewModel.model.containers[i].child!=undefined)
+                    {
+                        for(var j in window.parent.viewModel.model.containers[i].child) {
+                            if (window.parent.viewModel.model.containers[i].child[j].id == id) {
+                                if (window.parent.viewModel.model.containers[i].child[j].parameters == undefined) {
+                                    window.parent.viewModel.model.containers[i].child[j].set("parameters", {});
+
+                                }
+                                if (window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue == undefined) {
+                                    window.parent.viewModel.model.containers[i].child[j].parameters.set("rangeValue", {});
+
+                                }
+                                window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue.value = viewModel.notIn;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        window.parent.$("#productChooseWin").data("kendoWindow").close();
+    }
+
+
+    function relevance(){
+        var onClose = function () {
+            $("#productExcel").empty();
+        };
+
+        $("#productExcel").kendoWindow({
+            actions: ["Close"],
+            title: '添加条件',
+            draggable: true,
+            height: "90%",
+            width: "40%",
+            close: onClose,
+            content: "${base.contextPath}/sale/conditions/saleProductExcel.html?id=" + id + "&definitionId=" + definitionId+"&openType="+openType+"&disabled="+disabled,
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#productExcel").data("kendoWindow");
+        win.center().open();
+    }
+
+</script>
+</body>
+</html>

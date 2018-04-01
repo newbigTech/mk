@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.hmall.mapper.ServiceOrderMapper">
+
+    <!-- 服务单 -->
+    <resultMap id="ServiceOrderMap" type="com.hand.hmall.dto.ServiceOrder">
+        <result column="SERVICE_ORDER_ID" jdbcType="DECIMAL" property="serviceOrderId"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="ORDER_TYPE" jdbcType="VARCHAR" property="orderType"/>
+        <result column="STATUS" jdbcType="VARCHAR" property="status"/>
+        <result column="SV_CATEGORY1" jdbcType="VARCHAR" property="svCategory1"/>
+        <result column="SV_CATEGORY2" jdbcType="VARCHAR" property="svCategory2"/>
+        <result column="SALES_CODE" jdbcType="VARCHAR" property="salesCode"/>
+        <result column="COMPLAINT" jdbcType="VARCHAR" property="complaint"/>
+        <result column="NOTE" jdbcType="VARCHAR" property="note"/>
+        <result column="USER_ID" jdbcType="VARCHAR" property="userId"/>
+        <result column="MOBILE" jdbcType="VARCHAR" property="mobile"/>
+        <result column="ADDRESS" jdbcType="VARCHAR" property="address"/>
+        <result column="CS" jdbcType="VARCHAR" property="cs"/>
+        <result column="FINISH_TIME" jdbcType="TIMESTAMP" property="finishTime"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="APPOINTMENT_DATE" jdbcType="TIMESTAMP" property="appointmentDate"/>
+        <result column="EXECUTION_DATE" jdbcType="TIMESTAMP" property="executionDate"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate"/>
+    </resultMap>
+
+    <!-- 服务单行 -->
+    <resultMap id="ServiceOrderEntryMap" type="com.hand.hmall.dto.ServiceOrderEntry">
+        <result column="SERVICE_ORDER_ENTRY_ID" jdbcType="DECIMAL" property="serviceOrderEntryId"/>
+        <result column="BASE_PRICE" jdbcType="DECIMAL" property="basePrice"/>
+        <result column="BOM_APPROVED" jdbcType="VARCHAR" property="bomApproved"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="CONSIGNMENT_ID" jdbcType="DECIMAL" property="consignmentId"/>
+        <result column="CONSIGNMENT_CODE" jdbcType="VARCHAR" property="consignmentCode"/>
+        <result column="DISCOUNT_FEE" jdbcType="DECIMAL" property="discountFee"/>
+        <result column="DISCOUNT_FEEL" jdbcType="DECIMAL" property="discountFeel"/>
+        <result column="ESTIMATE_CON_TIME" jdbcType="TIMESTAMP" property="estimateConTime"/>
+        <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime"/>
+        <result column="INSTALLATION_FEE" jdbcType="DECIMAL" property="installationFee"/>
+        <result column="IS_GIFT" jdbcType="VARCHAR" property="isGift"/>
+        <result column="LINE_NUMBER" jdbcType="DECIMAL" property="lineNumber"/>
+        <result column="NOTE" jdbcType="VARCHAR" property="note"/>
+        <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber"/>
+        <result column="ORDER_ENTRY_TYPE" jdbcType="VARCHAR" property="orderEntryType"/>
+        <result column="PIN" jdbcType="VARCHAR" property="pin"/>
+        <result column="POINT_OF_SERVICE_ID" jdbcType="DECIMAL" property="pointOfServiceId"/>
+        <result column="PRARENT_LINE" jdbcType="DECIMAL" property="prarentLine"/>
+        <result column="PRE_INSTALLATIONFEE" jdbcType="DECIMAL" property="preInstallationfee"/>
+        <result column="PRE_SHIPPINGFEE" jdbcType="DECIMAL" property="preShippingfee"/>
+        <result column="PRODUCT_ID" jdbcType="DECIMAL" property="productId"/>
+        <result column="QUANTITY" jdbcType="DECIMAL" property="quantity"/>
+        <result column="REFUND_FEE" jdbcType="DECIMAL" property="refundFee"/>
+        <result column="REFUND_SUM" jdbcType="DECIMAL" property="refundSum"/>
+        <result column="REPRO_REASON1" jdbcType="VARCHAR" property="reproReason1"/>
+        <result column="REPRO_REASON2" jdbcType="VARCHAR" property="reproReason2"/>
+        <result column="RETURN_REASON1" jdbcType="VARCHAR" property="returnReason1"/>
+        <result column="RETURN_REASON2" jdbcType="VARCHAR" property="returnReason2"/>
+        <result column="SERVICE_ORDER_ID" jdbcType="DECIMAL" property="serviceOrderId"/>
+        <result column="SHIPPING_FEE" jdbcType="DECIMAL" property="shippingFee"/>
+        <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType"/>
+        <result column="SUTI_CODE" jdbcType="VARCHAR" property="sutiCode"/>
+        <result column="SVPRO_REASON1" jdbcType="VARCHAR" property="svproReason1"/>
+        <result column="SVPRO_REASON2" jdbcType="VARCHAR" property="svproReason2"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="TOTAL_FEE" jdbcType="DECIMAL" property="totalFee"/>
+        <result column="UNIT" jdbcType="VARCHAR" property="unit"/>
+        <result column="UNIT_FEE" jdbcType="DECIMAL" property="unitFee"/>
+        <result column="VPRODUCT_CODE" jdbcType="VARCHAR" property="vproductCode"/>
+
+    </resultMap>
+
+    <!-- 售后单 -->
+    <resultMap id="AfterSaleOrderMap" type="com.hand.hmall.dto.AfterSaleOrder">
+        <result column="RECEIPT_ORDER_ID" jdbcType="DECIMAL" property="receiptOrderId"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="RECEIPT_TYPE" jdbcType="VARCHAR" property="receiptType"/>
+        <result column="STATUS" jdbcType="VARCHAR" property="status"/>
+        <result column="SALES_CODE" jdbcType="VARCHAR" property="salesCode"/>
+        <result column="NOTE" jdbcType="VARCHAR" property="note"/>
+        <result column="USER_ID" jdbcType="VARCHAR" property="userId"/>
+        <result column="MOBILE" jdbcType="VARCHAR" property="mobile"/>
+        <result column="ADDRESS" jdbcType="VARCHAR" property="address"/>
+        <result column="CS" jdbcType="VARCHAR" property="cs"/>
+        <result column="FINISH_TIME" jdbcType="TIMESTAMP" property="finishTime"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="appointment_date" jdbcType="TIMESTAMP" property="appointmentDate"/>
+        <result column="execution_date" jdbcType="TIMESTAMP" property="executionDate"/>
+        <result column="technician_name" jdbcType="VARCHAR" property="technicianName"/>
+        <result column="is_charge" jdbcType="VARCHAR" property="isCharge"/>
+        <result column="links_code" jdbcType="VARCHAR" property="linksCode"/>
+        <result column="pay_status" jdbcType="VARCHAR" property="payStatus"/>
+        <result column="trans_fee" jdbcType="DECIMAL" property="transFee"/>
+        <result column="restore_fee" jdbcType="DECIMAL" property="restoreFee"/>
+        <result column="repair_fee" jdbcType="DECIMAL" property="repairFee"/>
+        <result column="should_pay" jdbcType="DECIMAL" property="shouldPay"/>
+        <result column="real_pay" jdbcType="DECIMAL" property="realPay"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="refund_status" jdbcType="VARCHAR" property="refundStatus"/>
+        <result column="refund_reason" jdbcType="VARCHAR" property="refundReason"/>
+        <result column="refound_sum" jdbcType="DECIMAL" property="refoundSum"/>
+        <result column="return_reason" jdbcType="VARCHAR" property="returnReason"/>
+        <result column="return_type" jdbcType="VARCHAR" property="returnType"/>
+        <result column="receive_position" jdbcType="VARCHAR" property="receivePosition"/>
+        <result column="logistics_number" jdbcType="VARCHAR" property="logisticsNumber"/>
+        <result column="return_fee" jdbcType="DECIMAL" property="returnFee"/>
+
+    </resultMap>
+
+    <!-- 服务单字段 -->
+    <sql id="ServiceOrderColumns">
+        asso.SERVICE_ORDER_ID,
+        asso.CODE,
+        asso.ORDER_TYPE,
+        asso.STATUS,
+        asso.SV_CATEGORY1,
+        asso.SV_CATEGORY2,
+        asso.COMPLAINT,
+        asso.NOTE,
+        asso.USER_ID,
+        asso.MOBILE,
+        asso.ADDRESS,
+        asso.CS,
+        asso.FINISH_TIME,
+        asso.SYNCFLAG,
+        asso.APPOINTMENT_DATE,
+        asso.EXECUTION_DATE,
+        asso.NAME,
+        asso.CREATION_DATE
+    </sql>
+
+    <!-- 服务单行字段 -->
+    <sql id="ServiceOrderEntryMapColumns">
+        soe.SERVICE_ORDER_ENTRY_ID,
+        soe.BASE_PRICE,
+        soe.BOM_APPROVED,
+        soe.CODE,
+        soe.CONSIGNMENT_ID,
+        soe.DISCOUNT_FEE,
+        soe.DISCOUNT_FEEL,
+        soe.ESTIMATE_CON_TIME,
+        soe.ESTIMATE_DELIVERY_TIME,
+        soe.INSTALLATION_FEE,
+        soe.IS_GIFT,
+        soe.LINE_NUMBER,
+        soe.NOTE,
+        soe.OBJECT_VERSION_NUMBER,
+        soe.ORDER_ENTRY_TYPE,
+        soe.PIN,
+        soe.POINT_OF_SERVICE_ID,
+        soe.PRARENT_LINE,
+        soe.PRE_INSTALLATIONFEE,
+        soe.PRE_SHIPPINGFEE,
+        soe.PRODUCT_ID,
+        soe.QUANTITY,
+        soe.REFUND_FEE,
+        soe.REFUND_SUM,
+        soe.REPRO_REASON1,
+        soe.REPRO_REASON2,
+        soe.RETURN_REASON1,
+        soe.RETURN_REASON2,
+        soe.SERVICE_ORDER_ID,
+        soe.SHIPPING_FEE,
+        soe.SHIPPING_TYPE,
+        soe.SUTI_CODE,
+        soe.SVPRO_REASON1,
+        soe.SVPRO_REASON2,
+        soe.SYNCFLAG,
+        soe.TOTAL_FEE,
+        soe.UNIT,
+        soe.UNIT_FEE,
+        soe.VPRODUCT_CODE
+    </sql>
+
+    <!-- 售后单字段 -->
+    <sql id="AfterSaleOrderMapColumns">
+        RECEIPT_ORDER_ID,
+        CODE,
+        RECEIPT_TYPE,
+        STATUS,
+        SALES_CODE,
+        NOTE,
+        USER_ID,
+        MOBILE,
+        ADDRESS,
+        CS,
+        FINISH_TIME,
+        SYNCFLAG,
+        APPOINTMENT_DATE,
+        EXECUTION_DATE,
+        TECHNICIAN_NAME,
+        IS_CHARGE,
+        LINKS_CODE,
+        PAY_STATUS,
+        TRANS_FEE,
+        RESTORE_FEE,
+        REPAIR_FEE,
+        SHOULD_PAY,
+        REAL_PAY,
+        NAME,
+        REFUND_STATUS,
+        REFUND_REASON,
+        RETURN_REASON,
+        RETURN_TYPE,
+        RECEIVE_POSITION,
+        LOGISTICS_NUMBER,
+        RETURN_FEE
+    </sql>
+
+
+    <!-- 根据订单ID查询服务单列表 -->
+    <select id="queryByOrderId" resultMap="ServiceOrderMap" parameterType="java.lang.Long">
+
+        SELECT
+        <include refid="ServiceOrderColumns"/>
+        FROM HMALL_AS_SERVICEORDER asso
+        WHERE asso.SALES_CODE in (
+        SELECT CODE FROM HMALL_OM_ORDER
+        WHERE ORDER_ID = #{orderId}
+        )
+    </select>
+
+
+    <!-- 根据订单单号查询对应的全部服务单 -->
+    <select id="queryByOrderCode" resultMap="ServiceOrderMap" parameterType="java.lang.String">
+        SELECT
+        <include refid="ServiceOrderColumns"/>
+        FROM HMALL_AS_SERVICEORDER asso
+        WHERE asso.SALES_CODE = #{orderCode}
+    </select>
+
+
+    <!-- 根据服务单ID查询服务单行 -->
+    <select id="selectServiceOrderEntries" resultMap="ServiceOrderEntryMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="ServiceOrderEntryMapColumns"/>
+        , c.CODE CONSIGNMENT_CODE
+        FROM HMALL_AS_SERVICEORDER_ENTRY soe JOIN HMALL_OM_CONSIGNMENT c
+        ON soe.CONSIGNMENT_ID = c.CONSIGNMENT_ID
+        WHERE soe.SERVICE_ORDER_ID = #{serviceOrderId}
+    </select>
+
+
+    <!-- 根据服务单ID查询售后单 -->
+    <select id="selectAfterSaleOrders" resultMap="AfterSaleOrderMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="AfterSaleOrderMapColumns"/>
+        FROM HMALL_AS_RECEIPT
+        WHERE LINKS_CODE in (
+        SELECT CODE FROM HMALL_AS_SERVICEORDER
+        WHERE SERVICE_ORDER_ID = #{serviceOrderId}
+        )
+    </select>
+
+
+    <select id="queryOrderByCode" resultType="java.util.Map" parameterType="java.lang.String">
+        SELECT * FROM HMALL_OM_ORDER
+            WHERE CODE = #{orderCode}
+    </select>
+
+
+    <!--
+    /**
+     * 根据订单编号查询服务单列表
+     * @param orderCode
+     * @return
+     */
+    List<ServiceOrder> selectByOrderCode(@Param("orderCode") String orderCode);
+    -->
+    <select id="selectByOrderCode" parameterType="java.lang.String" resultMap="ServiceOrderMap">
+        SELECT
+        <include refid="ServiceOrderColumns"/>
+        FROM HMALL_AS_SERVICEORDER asso WHERE asso.SALES_CODE = #{orderCode}
+    </select>
+
+
+    <!--
+        根据escOrderCode和外部网站名称查询对应的服务单列表
+        List<ServiceOrder> queryWebsiteServiceOrder(String escOrderCode, String webDisplay);
+    -->
+    <select id="queryWebsiteServiceOrder" resultMap="ServiceOrderMap">
+        select
+        <include refid="ServiceOrderColumns"/>
+        from hmall_as_serviceorder asso join hmall_om_order oo
+        on asso.order_id = oo.order_id
+        join hmall_mst_website web on oo.website_id = web.code
+        where oo.esc_order_code = #{escOrderCode} and web.display_name = #{webDisplay}
+        order by asso.creation_date desc
+    </select>
+
+
+    <!--
+    /**
+     * 查询服务单对应的媒体信息列表
+     * @param so
+     * @return
+     */
+    List<String> selectMediaURLs(ServiceOrder so);
+    -->
+    <select id="selectMediaURLs" parameterType="com.hand.hmall.dto.ServiceOrder" resultType="java.util.Map">
+        SELECT
+        *
+        from HMALL_MST_MEDIA WHERE SERVICE_ORDER_ID = #{serviceOrderId}
+    </select>
+
+    <!--
+    /**
+     * 根据用户ID查询用户信息，以Map结构返回
+     * @param userId
+     * @return
+     */
+    Map queryUserInfoByUserId(@Param("userId") String userId);
+    -->
+    <select id="queryUserInfoByUserId" resultType="java.util.Map" parameterType="java.lang.String">
+        select * from hmall_mst_user where user_id = #{userId}
+    </select>
+
+    <!--
+        /**
+         * 根据escOrderCode查询订单信息
+         * @param escOrderCode
+         * @return
+         */
+        Map queryByEscOrderCode(@Param("escOrderCode") String escOrderCode);
+    -->
+    <select id="queryByEscOrderCode" resultType="java.util.Map" parameterType="java.lang.String">
+        select * from hmall_om_order where ESC_ORDER_CODE = #{escOrderCode}
+    </select>
+
+    <!--
+        /**
+         * 根据PIN码查询订单行相关信息
+         * @param pin
+         * @return
+         */
+        Map queryOrderEntryInfoByPin(@Param("pin") String pin);
+    -->
+    <select id="queryOrderEntryInfoByPin" resultType="java.util.Map" parameterType="java.lang.String">
+        select * from hmall_om_order_entry ooe where ooe.pin = #{pin}
+    </select>
+
+</mapper>

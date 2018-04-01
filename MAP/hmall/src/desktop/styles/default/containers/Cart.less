@@ -1,0 +1,262 @@
+.Cart {
+
+  /*空购物车*/
+  .emptyCart {
+    .div-empty {
+      margin-top: 10px;
+      width: 1250px;
+      height: 420px;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      line-height: 300px;
+      background-color: #fff;
+      margin-bottom: 20px;
+      a {
+        color: #00a0ea;
+        cursor: pointer;
+      }
+    }
+
+
+
+  }
+  /*表格*/
+  table {
+    border-collapse: collapse;
+    background-color: #fff;
+    thead {
+      font-size: 13px;
+      font-weight: bold;
+      tr {
+        height: 44px;
+        text-align: left;
+        th {
+          &:nth-child(3){
+            padding-left: 100px;
+
+          }
+        }
+      }
+    }
+    tbody {
+      text-align: left;
+      .cartList {
+        z-index: 1;
+        backgroundColor:"#fff";
+        td {
+          padding-top: 25px;
+          border-top: 1px solid #dadada;
+          height: 130px;
+          &:nth-child(1){
+            padding-top: 23px;
+            padding-left: 10px;
+          }
+          &:nth-child(2){
+            color: #28788c;
+            cursor: pointer;
+          }
+          &:nth-child(3){
+            img {
+              float: left;
+              width: 80px;
+              height: 80px;
+              cursor: pointer;
+              margin-right: 20px;
+              border: 1px solid transparent;
+            }
+            img:hover {
+              border: 1px solid #ff0000;
+            }
+            ul {
+              li {
+                text-align: left;
+                width: 300px;
+              }
+            }
+            a:hover {
+              color: #ff0000;
+            }
+          }
+          &:nth-child(4){
+            text-align: left;
+          }
+          &:nth-child(5){
+            span {
+              font-weight: bold;
+              &:nth-child(5){
+                font-weight: normal;
+                color: #999;
+              }
+              &:nth-child(7){
+                color: #999;
+              }
+              &:nth-child(8){
+                color: #999;
+              }
+            }
+          }
+          &:nth-child(6){
+            div {
+              width: 70px;
+              height: 22px;
+              display: inline-flex;
+              input {
+                border-style: none;
+                background-color: transparent;
+                width: 28px;
+                text-align: center;
+              }
+              border: 1px solid #dadada;
+            }
+          }
+          &:nth-child(7){
+            font-weight: 700;
+          }
+          &:nth-child(8){
+            ul {
+              li {
+                color: #1b1b1b;
+                cursor: pointer;
+                .hover-span:hover {
+                  text-decoration:underline;
+                  color: #ff0000;
+                }
+              }
+            }
+          }
+        }
+      }
+      font-size: 12px;
+      .no-pickup {
+        display: none;
+      }
+      .pickup-express{
+        margin-top: 5px;
+        background-color: #d6d4d5;
+        font-weight: bold;
+        color: #1b1b1b;
+        td {
+          &:first-child {
+            padding-left: 10px;
+          }
+        }
+      }
+      /*已享优惠*/
+      .account-introduce{
+        font-size: 12px;
+        border-top: 1px solid #dadada;
+        td {
+          padding-top: 10px;
+          padding-bottom: 10px;
+          span {
+            margin-left: 25px;
+            color: #ff0000;
+          }
+        }
+      }
+      /*tr*/
+      tr:first-child {
+        height: 38px;
+        background-color: #dad5d1;
+      }
+      tr:last-child {
+        height: 8px;
+        background-color: #f0f0f0;
+        border-bottom: hidden;
+      }
+    }
+  }
+  /*全选模块*/
+  .check-all {
+    margin-bottom: 28px;
+    .check-all-body{
+      background-color: #ffffff;
+      height: 52px;
+      line-height: 52px;
+      >ul {
+        >li {
+          float: left;
+          margin-left: 30px;
+          font-size: 12px;
+          font-weight: bold;
+          cursor: pointer;
+          position: relative;
+          &:nth-child(1){
+            margin-left: 10px;
+            margin-right: 10px;
+            span {
+              margin-top: -3px;
+            }
+          }
+          &:nth-child(2){
+            margin-left: 0px;
+          }
+          &:nth-child(5){
+            margin-right: 5px;
+
+          }
+          &:nth-child(6){
+            margin-left: 10px;
+            //.wechat {}
+            //.wechat-overflow {
+            //  display: none;
+            //  position: absolute;
+            //  img {
+            //    width: 100px;
+            //  }
+            //}
+            //.wechat:hover .wechat-overflow {
+            //  display: block;
+            //}
+          }
+          &:nth-child(7){
+            float: right;
+            button {
+              font-size: 16px;
+              font-family: '\5FAE\8F6F\96C5\9ED1   Regular', '\5FAE\8F6F\96C5\9ED1', Microsoft Yahei, Hiragino Sans GB, WenQuanYi Micro Hei, sans-serif;
+            }
+          }
+          &:nth-child(8){
+            font-weight: normal;
+            float: right;
+            color: #1b1b1b;
+            font-size: 12px;
+            span {
+              &:nth-child(2){
+                color: #ff0000;
+                font-size: 18px;
+                font-weight: bold;
+              }
+              &:nth-child(3){
+                color: #ff0000;
+                font-size: 18px;
+                font-weight: bold;
+              }
+            }
+          }
+          &:nth-child(9){
+            float: right;
+            font-weight: normal;
+            span {
+              &:nth-child(2){
+                color: #ff0000;
+                font-size: 16px;
+                font-weight: bold;
+              }
+            }
+          }
+          img {
+            position: absolute;
+            width: 100px;
+            z-index: 1000;
+            margin-left: 10px;
+            border: 1px solid #d4d4d4;
+          }
+        }
+      }
+    }
+  }
+
+
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OmMailtemplateMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OmMailtemplate">
+        <result column="ID" property="id" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="TEMPLATE_NAME" property="templateName" jdbcType="VARCHAR" />
+        <result column="SENDTYPE" property="sendtype" jdbcType="VARCHAR" />
+        <result column="MSG_TEMPLATE" property="msgTemplate" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectByMailTemplate" parameterType="com.hand.hmall.om.dto.OmMailtemplate" resultMap="BaseResultMap">
+        SELECT omt.id,
+        omt.code,
+        omt.TEMPLATE_NAME,
+        omt.SENDTYPE,
+        omt.MSG_TEMPLATE
+        FROM hmall_om_mailtemplate omt
+        WHERE 1 = 1
+        <if test="id != null and id > 0">
+            AND omt.id = #{id}
+        </if>
+        <if test="code != null and code != '' and code != 'undefined'">
+            AND omt.code = #{code}
+        </if>
+        <if test="templateName != null and templateName != '' and templateName != 'undefined'">
+            AND omt.TEMPLATE_NAME = #{templateName}
+        </if>
+        <if test="sendtype != null and sendtype != '' and sendtype != 'undefined'">
+            AND omt.SENDTYPE = #{sendtype}
+        </if>
+    </select>
+
+</mapper>

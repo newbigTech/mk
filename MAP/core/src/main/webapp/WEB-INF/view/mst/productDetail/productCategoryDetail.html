@@ -1,0 +1,109 @@
+<#--
+        * description: 类别结构页面
+        * author: rui.sun@hand-china.com
+        * version: 0.1
+        * #copyright#
+        -->
+    <#include "../../include/header.html">
+        <script type="text/javascript">
+
+            var categoryId = '${RequestParameters.categoryId!0}';
+            var viewModel = kendo.observable({
+                model: {},
+            });
+            if(categoryId != null && categoryId !=''){
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/mst/product/category/query?categoryId=' + categoryId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                            }
+                        }
+                    }
+                });
+            }
+
+        </script>
+        <body>
+        <div id="page-content">
+            <div id="detail" class="panel">
+                <div class="panel-body" id="lab-body">
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "类别编码:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width k-textbox"
+                                       data-role="maskedtextbox" id="categoryCode" data-bind="value:model.categoryCode"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "类别名称:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width k-textbox"
+                                       data-role="maskedtextbox" id="categoryName"
+                                       data-bind="value:model.categoryName"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "类别等级:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width k-textbox"
+                                       data-role="maskedtextbox" id="categoryLevel"
+                                       data-bind="value:model.categoryLevel"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <script>
+                kendo.bind($("#detail"), viewModel);
+            </script>
+
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-success k-grid-save-changes" onclick="saveFunction()"
+                  style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+            </div>
+            <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+        </div>
+        <script>
+            viewModel.model.set("categoryId", categoryId);
+            viewModel.model.set("syncflag", 'N');
+            viewModel.model.set("objectVersionNumber", 1);
+            function saveFunction() {
+                var url = '/mst/product/category/insert';
+                if(viewModel.model.categoryId!=0 && viewModel.model.categoryId!=''){
+                    url = '/mst/product/category/update';
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}'+url,
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify([viewModel.model.toJSON()]),
+                    success: function (data) {
+                        console.log(data);
+                        if (data.categoryId != null && data.categoryId != '') {
+                            kendo.ui.showConfirmDialog({
+                                title: $l('hap.tip.info'),
+                                message: $l('保存成功！')
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    window.parent.$("#editWin").data("kendoWindow").close();
+                                }
+                            })
+                        }
+                    }
+                });
+            }
+        </script>
+        </body>
+        </html>

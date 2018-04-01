@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.ServiceorderEntryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.ServiceorderEntry">
+        <result column="SERVICE_ORDER_ENTRY_ID" property="serviceOrderEntryId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="DECIMAL"/>
+        <result column="PARENT_LINE" property="parentLine" jdbcType="DECIMAL"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT_FEE" property="discountFee" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT_FEEL" property="discountFeel" jdbcType="DECIMAL"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="TOTAL_FEE" property="totalFee" jdbcType="DECIMAL"/>
+        <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="DATE"/>
+        <result column="ESTIMATE_CON_TIME" property="estimateConTime" jdbcType="DATE"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="VPRODUCT_CODE" property="vproductCode" jdbcType="VARCHAR"/>
+        <result column="SUTI_CODE" property="sutiCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_ENTRY_TYPE" property="orderEntryType" jdbcType="VARCHAR"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_FEE" property="shippingFee" jdbcType="DECIMAL"/>
+        <result column="INSTALLATION_FEE" property="installationFee" jdbcType="DECIMAL"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="POINT_OF_SERVICE_ID" property="pointOfServiceId" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="BOM_APPROVED" property="bomApproved" jdbcType="VARCHAR"/>
+        <result column="PRE_SHIPPINGFEE" property="preShippingfee" jdbcType="DECIMAL"/>
+        <result column="PRE_INSTALLATIONFE" property="preInstallationfee" jdbcType="DECIMAL"/>
+        <result column="SVPRO_REASON1" property="svproReason1" jdbcType="VARCHAR"/>
+        <result column="SVPRO_REASON2" property="svproReason2" jdbcType="VARCHAR"/>
+        <result column="REPRO_REASON1" property="reproReason1" jdbcType="VARCHAR"/>
+        <result column="REPRO_REASON2" property="reproReason2" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON1" property="returnReason1" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON2" property="returnReason2" jdbcType="VARCHAR"/>
+        <result column="REFUND_FEE" property="refundFee" jdbcType="VARCHAR"/>
+        <result column="REFUND_SUM" property="refundSum" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="ORDER_ENTRY_ID" property="orderEntryId" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="orderEntry_quantity" property="orderEntryQuantity" jdbcType="DECIMAL"/>
+        <result column="orderEntry_unitfee" property="orderEntryUnitFee" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <resultMap id="refundOrderEntryInfo" type="com.hand.hmall.as.dto.ServiceorderEntry">
+        <result column="SERVICE_ORDER_ENTRY_ID" property="serviceOrderEntryId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="CONSIGNMENT_CODE" property="consignmentCode" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="REFUND_ORDER_CODE" property="refundOrderCode" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="dispatchOrderEntryInfo" type="com.hand.hmall.as.dto.ServiceorderEntry">
+        <result column="SERVICE_ORDER_ENTRY_ID" property="serviceOrderEntryId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="VPRODUCT_CODE" property="vproductCode" jdbcType="VARCHAR"/>
+        <result column="SUTI_CODE" property="sutiCode" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT_FEE" property="discountFee" jdbcType="DECIMAL"/>
+        <result column="TOTAL_FEE" property="totalFee" jdbcType="DECIMAL"/>
+        <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+        <result column="SVPRO_REASON1" property="svproReason1" jdbcType="VARCHAR"/>
+        <result column="SVPRO_REASON2" property="svproReason2" jdbcType="VARCHAR"/>
+        <result column="REPRO_REASON1" property="reproReason1" jdbcType="VARCHAR"/>
+        <result column="REPRO_REASON2" property="reproReason2" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 查询派工单关联的售后单行数据 -->
+    <select id="selectDispatchOrderEntry" parameterType="java.lang.Long" resultMap="dispatchOrderEntryInfo">
+        SELECT ase.service_order_entry_id,
+        ase.vproduct_code,
+        ase.suti_code,
+        ase.discount_fee,
+        ase.total_fee,
+        ase.is_gift,
+        ase.svpro_reason1,
+        ase.svpro_reason2,
+        ase.repro_reason1,
+        ase.repro_reason2,
+        ase.note,
+        ase.service_order_id,
+        ase.consignment_id,
+        ase.product_id,
+        ase.base_price,
+        ase.unit_fee,
+        ase.quantity,
+        oc.code consignmentCode,
+        mp.code productCode,
+        mp.name
+        FROM HMALL_AS_SERVICEORDER_ENTRY ase
+        LEFT JOIN hmall_om_consignment oc
+        ON oc.consignment_id = ase.consignment_id
+        LEFT JOIN HMALL_MST_PRODUCT mp
+        ON ase.product_id = mp.product_id
+        WHERE 1 = 1
+        <if test="_parameter != null">
+            AND ase.SERVICE_ORDER_ID = #{_parameter}
+        </if>
+    </select>
+
+    <!-- 查询退款单关联的售后单行数据 -->
+    <select id="selectRefundOrderEntry" parameterType="java.lang.Long" resultMap="refundOrderEntryInfo">
+        SELECT ase.service_order_entry_id,
+        ase.service_order_id,
+        ase.consignment_id,
+        ase.product_id,
+        ase.base_price,
+        ase.unit_fee,
+        ase.refund_fee,
+        ase.refund_sum,
+        ase.quantity,
+        ase.code refundOrderCode,
+        oc.code consignmentCode,
+        oo.code,
+        mp.code productCode,
+        mp.name
+        FROM HMALL_AS_SERVICEORDER_ENTRY ase
+        LEFT JOIN hmall_om_consignment oc
+        ON oc.consignment_id = ase.consignment_id
+        LEFT JOIN hmall_om_order oo
+        ON oc.order_id = oo.order_id
+        LEFT JOIN HMALL_MST_PRODUCT mp
+        ON ase.product_id = mp.product_id
+        WHERE 1 = 1
+        <if test="_parameter != null">
+            AND ase.SERVICE_ORDER_ID = #{_parameter}
+        </if>
+
+    </select>
+
+    <!-- 查询服务单关联的订单行-->
+    <select id="queryServiceOrderInfo" parameterType="com.hand.hmall.as.dto.ServiceorderEntry" resultMap="BaseResultMap">
+        SELECT ooe.SERVICE_ORDER_ENTRY_ID,
+        ooe.SERVICE_ORDER_ID,
+        ooe.code,
+        ooe.quantity,
+        ooe.parent_line,
+        ooe.unit,
+        ooe.base_price,
+        ooe.discount_fee,
+        ooe.discount_feel,
+        ooe.unit_fee,
+        ooe.total_fee,
+        ooe.estimate_delivery_time,
+        ooe.estimate_con_time,
+        ooe.is_gift,
+        ooe.product_id,
+        mp.code productCode,
+        mp.name,
+        ooe.vproduct_code,
+        ooe.order_entry_type,
+        ooe.pin,
+        ooe.shipping_fee,
+        ooe.installation_fee,
+        ooe.syncflag,
+        ooe.shipping_type,
+        ooe.point_of_service_id,
+        ooe.consignment_id,
+        ooe.note,
+        ooe.line_number,
+        ooe.bom_approved,
+        ooe.pre_shippingfee,
+        ooe.pre_installationfee,
+        ooe.SVPRO_REASON1,
+        ooe.SVPRO_REASON2,
+        ooe.REPRO_REASON1,
+        ooe.REPRO_REASON2,
+        ooe.RETURN_REASON1,
+        ooe.RETURN_REASON2,
+        ooe.REFUND_FEE,
+        ooe.REFUND_SUM,
+        ooe.ORDER_ENTRY_ID,
+        co.status
+        FROM HMALL_AS_SERVICEORDER_ENTRY ooe
+        LEFT JOIN hmall_mst_product mp
+        ON ooe.product_id = mp.product_id
+        left join hmall_om_order_entry entry
+        on ooe.order_entry_id = entry.order_entry_id
+        LEFT JOIN HMALL_OM_CONSIGNMENT co
+        ON entry.consignment_id = co.consignment_id
+        <where>
+            <if test="serviceOrderId != null">
+                ooe.SERVICE_ORDER_ID = #{serviceOrderId}
+            </if>
+        </where>
+    </select>
+    <!--根据服务单id查询退货单对应的所有服务单行-->
+    <select id="queryReturnOrder" parameterType="com.hand.hmall.as.dto.ServiceorderEntry" resultMap="BaseResultMap">
+        SELECT
+        ooe.SERVICE_ORDER_ENTRY_ID,
+        ooe.SERVICE_ORDER_ID,
+        ooe.code,
+        ooe.quantity,
+        ooe.parent_line,
+        ooe.unit,
+        ooe.base_price,
+        ooe.discount_fee,
+        ooe.discount_feel,
+        ooe.unit_fee,
+        ooe.total_fee,
+        ooe.estimate_delivery_time,
+        ooe.estimate_con_time,
+        ooe.is_gift,
+        ooe.product_id,
+        mp.NAME,
+        ooe.vproduct_code,
+        ooe.order_entry_type,
+        ooe.pin,
+        ooe.shipping_fee,
+        ooe.installation_fee,
+        ooe.syncflag,
+        ooe.shipping_type,
+        ooe.point_of_service_id,
+        ooe.consignment_id,
+        ooe.note,
+        ooe.line_number,
+        ooe.bom_approved,
+        ooe.pre_shippingfee,
+        ooe.pre_installationfee,
+        ooe.SVPRO_REASON1,
+        ooe.SVPRO_REASON2,
+        ooe.REPRO_REASON1,
+        ooe.REPRO_REASON2,
+        ooe.RETURN_REASON1,
+        ooe.RETURN_REASON2,
+        ooe.REFUND_FEE,
+        ooe.REFUND_SUM
+        FROM HMALL_AS_SERVICEORDER_ENTRY ooe
+        LEFT JOIN hmall_mst_product mp
+        ON ooe.product_id = mp.product_id
+        <where>
+            <if test="serviceOrderId != null">
+                ooe.SERVICE_ORDER_ID = #{serviceOrderId}
+            </if>
+        </where>
+    </select>
+    <select id="getServiceOrderListExcludeProductId" parameterType="com.hand.hmall.as.dto.ServiceorderEntry" resultMap="BaseResultMap">
+        SELECT * FROM HMALL_AS_SERVICEORDER_ENTRY entry
+        <where>
+            <if test="serviceOrderId !=null and serviceOrderId!=''">
+                and entry.SERVICE_ORDER_ID = #{serviceOrderId}
+            </if>
+            <if test="excludeProductIds!=null">
+                and entry.PRODUCT_ID not IN
+                <foreach item="excludeProductId" index="index" collection="excludeProductIds"
+                         open="(" separator="," close=")">
+                    #{excludeProductId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--创建退换货界面中，通过勾选的服务单行来查找商品编码，商品名称以及数量等属性 -->
+    <select id="selectByOrderServiceOrderEntryIdList" parameterType="java.util.List" resultMap="BaseResultMap">
+        select entry.service_order_entry_id,
+                p.code PRODUCT_CODE,
+                p.name,
+                entry.quantity,
+                entry.order_entry_id,
+                entry.service_order_id,
+                entry.SVPRO_REASON1,
+                entry.SVPRO_REASON2,
+                entry.return_reason1,
+                entry.return_reason2,
+                entry.vproduct_code,
+                entry.product_id,
+                entry.line_number,
+                oe.quantity orderEntry_quantity,
+                oe.unit_fee orderEntry_unitfee
+        from hmall_as_serviceorder_entry entry
+        left join hmall_mst_product p
+        on p.product_id = entry.product_id
+        left join hmall_om_order_entry oe
+        on entry.order_entry_id = oe.order_entry_id
+         where entry.service_order_entry_id in
+             <foreach collection="list" index="index" item="item"
+                      separator="," open="(" close=")">
+                 #{item.serviceOrderEntryId,jdbcType=DECIMAL}
+             </foreach>
+    </select>
+</mapper>

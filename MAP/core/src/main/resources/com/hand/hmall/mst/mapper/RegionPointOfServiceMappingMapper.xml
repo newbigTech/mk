@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.RegionPointOfServiceMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.RegionPointOfServiceMapping">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="REGION_CODE" property="regionCode" jdbcType="VARCHAR"/>
+        <result column="POINT_OF_SERVICE" property="pointOfService" jdbcType="VARCHAR"/>
+        <result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectByRegion" parameterType="java.lang.String" resultMap="BaseResultMap" >
+        SELECT m.MAPPING_ID,m.REGION_CODE,m.POINT_OF_SERVICE,m.ENABLE_FLAG FROM HMALL_MST_REGION_POS_MAPPING m
+        WHERE m.REGION_CODE = #{regionCode} AND m.ENABLE_FLAG = 'Y'
+    </select>
+
+</mapper>

@@ -1,0 +1,789 @@
+<#--
+        * description:物耗单详情页面
+        * author:qinzhipeng
+        * 2017/8/22
+        * version: 0.1
+        *
+        -->
+    <#include "/include/header.html">
+        <script src="${base.contextPath}/common/code?serviceOrderStatus=HMALL.AS.MATERIAL.STATUS" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?patchReason=HMALL_AS_PATCH_REASON" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?orderReason=HMALL_AS_ORDER_REASON" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?responsibleParty=HMALL_AS_RESPONSIBLE_PARTY" type="text/javascript"></script>
+        <style type="text/css">
+            #forms .form-group label {
+                text-align: right;
+                font-size: auto;
+                margin-top: 8px;
+            }
+
+            #forms .row {
+                margin-top: 10px;
+            }
+
+            span.k-widget.k-tooltip-validation {
+                display: inline-block;
+                width: 160px;
+                text-align: left;
+                border: 0;
+                padding: 0;
+                margin: 0;
+                background: none;
+                box-shadow: none;
+                color: red;
+            }
+            .k-tooltip-validation .k-warning {
+                display: none;
+            }
+
+            span.k-widget.k-tooltip-validation {
+                display: none !important;
+            }
+        </style>
+        <body>
+        <script type="text/javascript">
+            //物耗单code
+            var linksCode = "${RequestParameters.linksCode!0}";
+            var serviceOrderId = "${RequestParameters.serviceOrderId!0}";
+            var receiptOrderId = "${RequestParameters.receiptOrderId!0}";
+            var orderId = "${RequestParameters.orderId!0}";
+            var orderCode = "${RequestParameters.orderCode!0}";
+            var userGroup = "${RequestParameters.userGroup!0}";
+            var userId = "${RequestParameters.userId!0}";
+            var customerid = "${RequestParameters.customerid!0}";
+            var escOrderCode = "${RequestParameters.escOrderCode!0}";
+            console.log();
+            var viewModel = kendo.observable({
+                model: {
+                    linksCode: null,
+                    serviceOrderId: serviceOrderId,
+                    orderId: orderId,
+                    orderCode: null,
+                    userGroup:userGroup,
+                    escOrderCode: escOrderCode,
+                    pointOfService:"",
+                    pointofserviceId:"",
+                    userId:userId,
+                    customerid:customerid
+
+                }
+            });
+
+
+        </script>
+        <script type="text/javascript">
+            //选择产品页面
+            function selectProduct() {
+                window.selectProduct = function () {
+                    var selectProduct = $("#selectProduct").kendoWindow({
+                        title: '商品选择',
+                        title: '商品选择',
+                        width: "1100px",
+                        height: "600px",
+                        content: "${base.contextPath}/as/as_material_select_product.html",
+                        actions: [
+                            "Pin",
+                            "Close"
+                        ],
+                        modal: true,
+                        visible: false,
+                        iframe: true,
+                        close: function () {
+                            //window 关闭  刷新 本页面的  Grid
+                            //$('#Grid').data('kendoGrid').dataSource.page(1);
+                        }
+                    }).data("kendoWindow");
+                    selectProduct.center().open();
+
+                }
+                //打开选择平台窗口
+                selectProduct();
+
+            }
+        </script>
+        <div id="page-content">
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                <span id="save" class="btn btn-primary" style="float:left;margin-right:5px;" onclick="saveServiceOrder()"><@spring.message "hap.save"/></span>
+                <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="syncRetail()"><@spring.message "hmall.serverorder.syncflag"/></span>
+            </div>
+
+            <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+
+                <form id="forms" style="padding-bottom: 20px">
+                    <div class="panel-body" style=" border: 1px solid #eeeeee;">
+                        <div>
+                            <label>基本信息</label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.code"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild form-control " data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.code" class="k-textbox"
+                                               readonly>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.responsible_party"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild" id="responsible_party" style="width: 100%" name='<@spring.message "hmall.as.material.responsible_party"/>' type="text"
+                                               data-bind="value:model.responsibleParty" required>
+                                        <script type="text/javascript">
+                                            $("#responsible_party").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                dataSource: responsibleParty
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label "><@spring.message "hmall.as.material.cstatus"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild" id="status" style="width: 100%" name='<@spring.message "hmall.as.material.cstatus"/>' type="text" data-bind="value:model.status"
+                                               required>
+                                        <script type="text/javascript">
+                                            $("#status").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                dataSource: serviceOrderStatus
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.order_reason"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild" id="order_reason" style="width: 100%" name='<@spring.message "hmall.as.material.order_reason"/>' type="text"
+                                               data-bind="value:model.orderReason" required>
+                                        <script type="text/javascript">
+                                            $("#order_reason").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                dataSource: orderReason
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.serviceorder.appointmentdate"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="appointment_date" class="rangeChild" name='<@spring.message "hmall.serviceorder.appointmentdate"/>' data-bind="value:model.appointmentDate" style="width:100%" required/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.serviceorder.ischarge"/></label>
+                                    <div class="col-sm-8">
+                                        <div class="full_width" id="is_charge" style="margin-top: 8px;"  type="text"  data-bind="enabled:true,value:model.isCharge" ></div>
+                                        <script type="text/javascript">
+                                            $("#is_charge").kendoRadio({
+                                                layout: '',//vertical
+                                                readonly: false,
+                                                items: [{
+                                                    label: "是",
+                                                    value: "Y"
+                                                }, {
+                                                    label: "否",
+                                                    value: "N"
+                                                }],
+                                                change: function (e) {
+
+                                                }
+                                            }).data("kendoRadio");
+                                        </script>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.serviceorder.usergroup"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild form-control" data-role="maskedtextbox" placeholder=''style="width: 100%" type="text"  data-bind="value:model.userGroup" class="k-textbox" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "客户ID"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild form-control" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.customerid"
+                                               name='<@spring.message "hmall.as.material.user_id"/>' class="k-textbox" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.name"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.name" class="k-textbox" required
+                                               name='<@spring.message "hmall.as.material.name"/>'>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.address"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.address" class="k-textbox" required
+                                               name='<@spring.message "hmall.as.material.address"/>'>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.mobile"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.mobile" class="k-textbox" required
+                                               name='<@spring.message "hmall.as.material.mobile"/>'>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.note"/></label>
+                                    <div class="col-sm-8">
+                                        <textarea class="equalChild" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.note" class="k-textbox"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "平台订单编号"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild form-control" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.escOrderCode"
+                                               class="k-textbox" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.service_id"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild form-control" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.linksCode"
+                                               class="k-textbox" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.sync_retail"/></label>
+                                    <div class="col-sm-8">
+                                        <div id="syncflag" class="full_width" style="margin-top: 8px;" data-bind="value:model.syncRetail"></div>
+                                        <script type="text/javascript">
+                                            $("#syncflag").kendoRadio({
+                                                layout: '',//vertical
+                                                readonly: false,
+                                                editable:false,
+                                                items: [{
+                                                    label: "是",
+                                                    value: "Y"
+                                                }, {
+                                                    label: "否",
+                                                    value: "N"
+                                                }],
+                                                change: function (e) {
+
+                                                }
+                                            }).data("kendoRadio");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "SAP系统单号"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild form-control" data-role="maskedtextbox" placeholder='' style="width: 100%" type="text" data-bind="value:model.sapCode"
+                                               class="k-textbox" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body" style=" border: 1px solid #eeeeee;margin-top: 10px;">
+                        <div>
+                            <label>其他信息</label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.responsible_person"/></label>
+                                    <div class="col-sm-8">
+                                        <input class="equalChild form-control" style="width: 100%" type="text" data-bind="value:model.cs" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.createtime"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="createTime" class="equalChild form-control" data-bind="value:model.creationDate" style="width:100%" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label"><@spring.message "hmall.as.material.finishtime"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="finishTime" class="equalChild form-control" data-bind="value:model.finishTime" style="width:100%" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </form>
+
+
+            </div>
+
+            <div style="clear:both;margin-top: -20px;height:50px;" id="btns">
+                <span  class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" onclick="selectProduct();" type="submit"><@spring.message "hap.new"/></span>
+                <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" onclick="deleteData();" type="reset"><@spring.message "hap.delete"/></span>
+            </div>
+
+            <div>
+                <div id="grid"></div>
+            </div>
+            <span class="userName" style="display: none">${Session.userName}</span>
+        </div>
+        <script type="text/javascript">
+            var selectServiceOrderEntries = [];//选择的物耗单行
+            kendo.bind($('#page-content'), viewModel);
+            $("#appointment_date").kendoDateTimePicker({
+                animation: {
+                    close: {
+                        effects: "fadeOut zoom:out",
+                        duration: 300
+                    },
+                    open: {
+                        effects: "fadeIn zoom:in",
+                        duration: 300
+                    }
+                },
+                format: "yyyy-MM-dd HH:mm:ss",
+                change: function () {
+
+                }
+            });
+
+            //同步到retail
+            function syncRetail() {
+               if(viewModel.model.id!=null){
+                   var data ={};
+                   data.id = viewModel.model.id;
+                   $.ajax({
+                       type: 'POST',
+                       url: "${base.contextPath}/hmall/as/material/materialSyncRetail",
+                       dataType: "json",
+                       contentType: "application/json",
+                       data:kendo.stringify(data),
+                       success: function (data) {
+                          if(data.success){
+                              viewModel.model.set("syncRetail","Y");
+                              viewModel.model.set("sapCode",data.code);
+                              kendo.ui.showInfoDialog({
+                                  message: "同步成功"
+                              });
+                          }else{
+                              kendo.ui.showInfoDialog({
+                                  message:data.message
+                              });
+                          }
+                       },
+                       error: function (data) {
+                       }
+                   });
+               }else{
+                   kendo.ui.showInfoDialog({
+                       message: "请先保存当前物耗单"
+                   });
+               }
+            }
+
+            var _grid_ = $("#grid").kendoGrid({
+                height: "320px",
+                pageable: true,
+                resizable: true,
+                editable: false,
+                navigatable: true,
+                scrollable: true,
+
+                selectable: 'multiple, rowbox',
+                rownumber: true,
+                sortable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 10
+                },
+                columns: [{
+                    field: "productCode",
+                    title: '<@spring.message "hmall.as.material.entry.product_id"/>',
+                    width: 120
+
+                }, {
+                    field: "unitFee",
+                    title: '<@spring.message "hmall.as.material.entry.unit_fee"/>',
+                    width: 120
+
+                }, {
+                    field: "quantity",
+                    title: '<@spring.message "hmall.as.material.entry.quantity"/>',
+                    width: 120
+                }, {
+                    field: "unit",
+                    title: '<@spring.message "hmall.as.material.entry.unit"/>',
+                    width: 80
+                }, {
+                    field: "patchReason",
+                    title: '<@spring.message "补件原因"/>',
+                    width: 80,
+                    template: function (dataItem) {
+                        var v = dataItem.patchReason;
+                        if (v == null) {
+                            v = "";
+                        }
+                        $.each(patchReason, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            }
+                        })
+                        return v;
+                    },
+                    editor: function (container, options) {
+                        $('<input name="patchReason"  style="background-color: #fbeed5"/>')
+                            .appendTo(container)
+                            .kendoDropDownList({
+                                dataTextField: "meaning",
+                                dataValueField: "value",
+                                valuePrimitive: true,
+                                dataSource: patchReason
+                            }).data("kendoDropDownList");
+                    }
+                }, {
+                    field: "pointOfService",
+                    title: '<@spring.message "提货地点"/>',
+                    width: 120,
+                    template:function(dataItem){
+                        if(dataItem.pointOfService !=null){
+                            return dataItem.pointOfService;
+                        }else{
+                            return '';
+                        }
+                    },
+                    editor : function(container, options){
+                        $('<input  name="' + options.field + '"/>').appendTo(container).kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_POINTOFSERVICE")},
+                            {
+                                select : function(e){
+                                    options.model.set("pointOfService_input",e.item.displayname);
+                                    options.model.set("pointOfService",e.item.displayname);
+                                    options.model.set("pointofserviceId",e.item.pointOfServiceId);
+                                    console.log(options);
+                                },
+                                query:function(e){
+
+                                }
+                            }))
+                    },
+                }, {
+                    field: "note",
+                    title: '<@spring.message "hmall.as.material.entry.note"/>',
+                    width: 80
+                }
+                ],
+                editable: true,
+                dataBound: function () {
+                    var rows = this.items();
+                    var page = this.pager.page() - 1;
+                    var pagesize = this.pager.pageSize();
+                    $(rows).each(
+                        function () {
+                            var index = $(this).index() + 1 + page * pagesize;
+                            var rowLabel = $(this).find(".row-number");
+                            $(rowLabel).html(index);
+                        });
+                }
+            }).data("kendoGrid");
+
+            //删除选择的物耗单行
+            function deleteData() {
+                var checked = _grid_.selectedDataItems();
+                if (_grid_.selectedDataItems().length) {
+                    kendo.ui.showConfirmDialog({
+                        title: $l('hap.tip.info'),
+                        message: $l('hap.tip.delete_confirm')
+                    }).done(function (event) {
+                        if (event.button == 'OK') {
+
+                            var selectServiceOrderEntriesCopy = selectServiceOrderEntries;
+
+                            $.ajax({
+                                type: 'POST',
+                                url: "${base.contextPath}/hmall/as/material/entry/deleteOrderEntry",
+                                dataType: 'JSON',
+                                contentType: "application/json",
+                                data: JSON.stringify(checked),
+                                success: function (result) {
+                                    for (var i in result.rows) {
+                                        allServiceOrderEntries.push(result.rows[i]);
+                                    }
+                                },
+                                error: function (data) {
+                                }
+                            });
+                            console.log(selectServiceOrderEntriesCopy);
+                            for (var i in selectServiceOrderEntriesCopy) {
+                                for (var j in checked) {
+
+                                    if (selectServiceOrderEntriesCopy[i].productId == checked[j].productId) {
+                                        selectServiceOrderEntries.splice(jQuery.inArray(selectServiceOrderEntriesCopy[i], selectServiceOrderEntries), 1);
+                                    }
+
+                                }
+                            }
+                            refreshServiceOrderEntryGrid();
+
+                        }
+                    })
+                }
+
+            }
+
+            //获取物耗单行列表
+            function getSelectServiceOrderList(receiptOrderId) {
+                selectServiceOrderEntries=[];
+                $.ajax({
+                    type: 'GET',
+                    url: "${base.contextPath}/hmall/as/material/entry/getAllEntryByMaterialId?materialId=" + receiptOrderId,
+                    dataType: 'JSON',
+                    success: function (result) {
+                        for (var i in result.rows) {
+                            selectServiceOrderEntries.push(result.rows[i]);
+                        }
+                        refreshServiceOrderEntryGrid();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+            //刷新行grid
+            function refreshServiceOrderEntryGrid() {
+                var _dataSource_ = new kendo.data.DataSource({
+                    data: selectServiceOrderEntries,
+                    schema: {
+                        model: {
+                            id: "serviceOrderEntryId",
+                            fields: {
+                                productCode:{editable:false},
+                                unit:{editable:false},
+                                unitFee:{ validation: { required: true } },
+                                quantity:{ validation: { required: true,type:'number' } },
+                                patchReason:{ validation: { required: true } }
+                            }
+                        }
+                    }
+                });
+                _grid_.setDataSource(_dataSource_);
+            }
+            /*** desc:
+             * 商品选择页面点击选择按钮后调用
+             */
+
+            function addProducts(selections) {
+                $("#selectProduct").data("kendoWindow").close();
+                for (var i in selections) {
+                    selectServiceOrderEntries.push(transObject(selections[i]));
+                }
+                refreshServiceOrderEntryGrid();
+            }
+            function transObject(fromObj) {
+                var toObj = {};
+                toObj.productId = fromObj.productId;
+                toObj.productCode = fromObj.code;
+                toObj.productDesc = fromObj.name;
+                toObj.unit = fromObj.unit;
+                toObj.pointOfService = "";
+                toObj.pointOfServiceId = "";
+                return toObj;
+            }
+            function getMaterialInfo(receiptOrderId) {
+                //获取物耗单信息
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/material/query?id=' + receiptOrderId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                if(a0[k]!=null){
+                                    viewModel.model.set(k, a0[k]);
+                                }
+
+                            }
+                            viewModel.model.set("linksCode", linksCode);
+                            viewModel.model.set("orderCode", orderCode);
+                            viewModel.model.set("escOrderCode", escOrderCode);
+                            if(viewModel.model.status=="FINI"){
+                                $("#save").hide();
+                                $("#btns").hide();
+                            }
+                        }
+                    }
+                });
+                getSelectServiceOrderList(receiptOrderId);
+            }
+            //根据receiptOrderId判断是新建还是编辑
+            if (receiptOrderId != 0) {
+                getMaterialInfo(receiptOrderId);
+            } else {
+                //获取用户信息
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/serviceorder/selectUserInfoByOrderId?orderId=' + orderId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                            }
+                            viewModel.model.set("linksCode", linksCode);
+                            viewModel.model.set("orderId", orderId);
+                            viewModel.model.set("serviceOrderId", serviceOrderId);
+                            viewModel.model.set("orderCode", orderCode);
+                            viewModel.model.set("escOrderCode", escOrderCode);
+                            viewModel.model.set("cs", $(".userName").text());
+                            viewModel.model.set("status", "NEW");//默认新建
+                            viewModel.model.set("isCharge","Y");//默认收费
+                            viewModel.model.set("syncRetail","N");
+                            var d = new Date();
+                            var vYear = d.getFullYear();
+                            var vMon = d.getMonth() + 1;
+                            var vDay = d.getDate();
+                            var h = d.getHours();
+                            var m = d.getMinutes();
+                            var se = d.getSeconds();
+                            var time = vYear +"-"+ (vMon < 10 ? "0" + vMon : vMon) + "-"+ (vDay < 10 ? "0" + vDay : vDay) + " "+ (h < 10 ? "0" + h : h) + ":"+ (m < 10 ? "0" + m : m) + ":"+(se < 10 ? "0" + se : se);
+                            viewModel.model.set("creationDate", time);
+                            // viewModel.model.set("receiptType", receiptType);
+                        }
+                    }
+                });
+
+            }
+            //保存
+            function saveServiceOrder() {
+                var data={};
+
+                data = viewModel.model.toJSON();
+                data.asMaterialEntries = _grid_._data;
+                for(var i in data.asMaterialEntries){
+                    if(!data.asMaterialEntries[i].unitFee){
+                        var a = parseInt(i) + 1;
+                        kendo.ui.showInfoDialog({
+                            message: "第" + a + "行单价为空。"
+                        });
+                        return;
+                    }
+                    if(!data.asMaterialEntries[i].quantity){
+                        var a = parseInt(i) + 1;
+                        kendo.ui.showInfoDialog({
+                            message: "第" + a + "行数量为空。"
+                        });
+                        return;
+                    }
+                        if(!data.asMaterialEntries[i].patchReason){
+                            var a = parseInt(i) + 1;
+                            kendo.ui.showInfoDialog({
+                                message: "第" + a + "行补件原因为空。"
+                            });
+                            return;
+                        }
+                        if(!data.asMaterialEntries[i].pointOfService){
+                            var a = parseInt(i) + 1;
+                            kendo.ui.showInfoDialog({
+                                message: "第" + a + "行提货地点为空。"
+                            });
+                            return;
+                        }
+                    data.asMaterialEntries[i].serviceOrderId =serviceOrderId;
+                    data.asMaterialEntries[i].orderId =orderId;
+
+                }
+                var validator = $("#forms").kendoValidator().data("kendoValidator");
+                if (validator.validate()) {
+
+                    //先保存获取物耗单id
+                    $.ajax({
+                        url: "${base.contextPath}/hmall/as/material/saveMaterialOrder",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(data),
+                        error: function (info) {
+                            alert("Connection error");
+                        },
+                        success: function (data) {
+                            if (data.success) {
+                                getMaterialInfo(data.message);
+                                kendo.ui.showInfoDialog({
+                                    message: "<@spring.message 'hap.tip.success'/>"
+                                });
+
+
+                            }else{
+                                kendo.ui.showInfoDialog({
+                                    message: data.message
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+
+        </script>
+        <!-- 选择商品 -->
+        <div id="selectProduct"></div>
+        </body>
+        </html>

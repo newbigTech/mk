@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallOmPartsMappingMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallOmPartsMapping">
+    <id column="MAPPING_ID" jdbcType="DECIMAL" property="mappingId" />
+    <result column="ORDER_ENTRY_ID" jdbcType="DECIMAL" property="orderEntryId" />
+    <result column="PARTS_ID" jdbcType="DECIMAL" property="partsId" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    MAPPING_ID, ORDER_ENTRY_ID, PARTS_ID, SYNCFLAG, OBJECT_VERSION_NUMBER, CREATION_DATE, 
+    CREATED_BY, LAST_UPDATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, 
+    PROGRAM_ID, PROGRAM_UPDATE_DATE, REQUEST_ID, ATTRIBUTE_CATEGORY
+  </sql>
+
+  <select id="countPartMapping" parameterType="java.lang.Long" resultType="java.lang.Integer">
+    select count(*) FROM HMALL_OM_PARTS_MAPPING WHERE ORDER_ENTRY_ID = #{orderEntryId}
+    AND  PARTS_ID = #{productId}
+  </select>
+
+</mapper>

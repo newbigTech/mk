@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration status="error">
+    <properties>
+        <property name="LOG_HOME">logs/hmall-eureka-server</property>
+        <property name="FILE_NAME">mylog</property>
+    </properties>
+
+    <!--先定义所有的appender-->
+    <appenders>
+        <!--这个输出控制台的配置-->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!--这个都知道是输出日志的格式-->
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{userId}] %logger - %msg%n"/>
+        </Console>
+        <!--文件会打印出所有信息，这个log每次运行程序会自动清空，由append属性决定，这个也挺有用的，适合临时测试用-->
+        <!--<File nalogs"log" fileNalogs"log/sunlogs.log" append="false">-->
+        <!--<PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %class{36} %L %M - %msg%xEx%n"/>-->
+        <!--</File>-->
+
+        <!--这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <!--<RollingFile name="RollingFile" fileName="logs/logs.log"-->
+        <!--filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}logs.log.gz">-->
+        <!--<PatternLayout pattern="%d{yyyy-MM-dd 'at' HH:mm:ss z} %-5level %class{36} %L %M - %msg%xEx%n"/>-->
+        <!--<SizeBasedTriggeringPolicy size="1MB"/>-->
+        <!--</RollingFile>-->
+
+        <RollingRandomAccessFile name="MyFile"
+                                 fileName="${LOG_HOME}/${FILE_NAME}.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/${FILE_NAME}-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" />
+                <SizeBasedTriggeringPolicy size="5 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20" />
+        </RollingRandomAccessFile>
+
+        <!--<File name="od" fileName="od_logslogs.log" append="true">-->
+        <!--<PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %class{36} %L %M - %msg%xEx%n"/>-->
+        <!--</File>-->
+    </appenders>
+    <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
+    <loggers>
+        <!--建立一个默认的root的logger-->
+        <root level="info">
+            <appender-ref ref="Console"/>
+            <appender-ref ref="MyFile"/>
+        </root>
+		
+		<logger name="com.hand.hmall.util.redis.dao" level="debug" additivity="false">
+        	<appender-ref ref="MyFile" />
+    	</logger>
+    	
+    	<logger name="org.apache.tomcat.embed" level="info" additivity="false">
+        	<appender-ref ref="MyFile" />
+    	</logger>
+    	
+        <logger name="org.springframework.core" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.boot.autoconfigure.logging.AutoConfigurationReportLoggingInitializer" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.beans" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.aop" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.context" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.aop" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+		<logger name="org.springframework.web" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.security" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+        <logger name="org.springframework.boot" level="info" additivity="false">
+        	<appender-ref ref="MyFile"/>
+        </logger>
+    </loggers>
+</configuration>

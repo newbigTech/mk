@@ -1,0 +1,352 @@
+<#--
+        * description: 套件详情页面
+        * author: rui.sun@hand-china.com
+        * version: 0.1
+        * #copyright#
+        -->
+    <#include "../../include/header.html">
+        <script src="${base.contextPath}/common/code?isSinSaleData=SYS.YES_NO" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?approvalStatus=HMALL.PRODUCT.APPROVAL_STATUS" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?saleStatusData=HMALL.PRODUCT.SALE_STATUS" type="text/javascript"></script>
+        <script type="text/javascript">
+            var productId = '${RequestParameters.productId!0}';
+            var catalogversion = '${RequestParameters.catalogversion}';
+            var viewModel = kendo.observable({
+                model: {
+                    catalogversionId:catalogversion,
+                },
+                createFunction: function () {
+                    $('#Grid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#Grid').data('kendoGrid').saveChanges();
+                },
+                queryFunction: function (e) {
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                },
+                resetFunction: function (e) {
+                    var formData = viewModel.model.toJSON();
+                    for (var k in formData) {
+                        viewModel.model.set(k, null);
+                    }
+                    viewModel.model.set("catalogversionId",catalogversion);
+                }
+            });
+
+            function saveFunction() {
+                var checked = $('#Grid').data('kendoGrid').selectedDataItems();
+
+                var gridData = [];
+                for (var i = 0; i < checked.length; i++) {
+                    gridData
+                            .push({
+                                productHeadId: productId,
+                                componentId: checked[i].productId,
+                                quantity:1,
+                                __status: "add",
+                            });
+                }
+                ;
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/mst/suitline/mapping/submit',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify(gridData),
+                    success: function (data) {
+                        if (data.success == false) {
+                            kendo.ui.showErrorDialog({
+                                message: data.message
+                            });
+                        }else{
+                            kendo.ui.showConfirmDialog({
+                                title: $l('hap.tip.info'),
+                                message: $l('保存成功！')
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    window.parent.$('#suitProductGrid').data('kendoGrid').dataSource.page(dataSource._page);
+                                    window.parent.$("#editWin").data("kendoWindow").close();
+                                }
+                            })
+                        }
+                    }
+                });
+            }
+
+            //版本目录数据
+            var catalogData = new Array();
+            $.ajax({
+                url : '${base.contextPath}/hmall/mst/catalogversion/selectCatalog',
+                type : 'POST',
+                contentType : "application/json;charset=utf-8",
+                cache : false,
+                dataType : 'json',
+                async : false,
+                success : function(data) {
+                    catalogData = data.rows;
+                }
+            });
+
+        </script>
+        <body>
+        <div id="page-content">
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                <span onclick="saveFunction()" class="btn btn-info"
+                      style="float:left;"><@spring.message "hap.save"/></span>
+            </div>
+            <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+            <div id="queryPanel" class="pull-right" style="margin-right:5px;padding-bottom:10px;">
+                <div class="k-query-simple" id="query-form">
+                    <input id="code" type="text" class="form-control full_width"  placeholder='<@spring.message "商品编码"/>'
+                           data-bind="value:model.code">
+                    <input id="name" type="text"  class="form-control full_width" style="margin-left: 5px;" placeholder='<@spring.message "商品名称"/>'
+                           data-bind="value:model.name">
+                </div>
+                <script>kendo.bind($('#query-form'), viewModel);</script>
+                <!--更多查询-->
+                <div class="k-query-detail" id="query-form2">
+                    <div class="rows">
+                        <input id="approvalStatus" type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.product.approvalstatus"/>'
+                               data-bind="value:model.approvalStatus">
+                        <script type="text/javascript">
+                            $("#approvalStatus").kendoDropDownList({
+                                dataTextField: "meaning",
+                                dataValueField: "value",
+                                valuePrimitive: true,
+                                dataSource: approvalStatus,
+                            }).data("kendoDropDownList");
+                        </script>
+                        <input id="saleStatus" type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.product.saleStatus"/>'
+                               data-bind="value:model.saleStatus">
+                        <script type="text/javascript">
+                            $("#saleStatus").kendoDropDownList({
+                                dataTextField: "meaning",
+                                dataValueField: "value",
+                                valuePrimitive: true,
+                                dataSource: saleStatusData,
+                            }).data("kendoDropDownList");
+                        </script>
+                    </div>
+                </div>
+                <script>kendo.bind($('#query-form2'), viewModel);</script>
+            </div>
+
+            <div style="clear:both">
+                <div id="Grid"></div>
+            </div>
+        </div>
+        <script>
+            $('#queryPanel').kendoQueryPanel({
+                queryFunction: function () {
+                    viewModel.queryFunction();
+                },
+                resetFunction: function () {
+                    viewModel.resetFunction();
+                }
+            })
+
+            var BaseUrl = _basePath;
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hmall/mst/product/selectSuitProduct?productId=" + productId,
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/hmall/mst/product/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/hmall/mst/product/remove",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/hmall/mst/product/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "productId",
+                        fields: {}
+                    }
+                }
+            });
+
+            $("#Grid").kendoGrid({
+                dataSource: dataSource,
+                height: '100%',
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 10
+                },
+                columns: [
+                    {
+                        field: "imageUrl",
+                        title: '<@spring.message "hmall.product.imageUrlId"/>',
+                        width: 120,
+                        template: function (dataItem) {
+                            var url = dataItem['imageUrl'];
+                            if (url != null && url != "") {
+                                return "<img src='" + dataItem['imageUrl'] + "' width='60' height='60'>"
+                            } else {
+                                return "";
+                            }
+                        },
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "code",
+                        title: '<@spring.message "hmall.product.code"/>',
+                        width: 120,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "name",
+                        title: '<@spring.message "hmall.product.name"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "catalogversionId",
+                        title: '<@spring.message "hmall.product.catalogversion"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        template: function (dataItem) {
+                            var catalogversionId = dataItem.catalogversionId;
+                            if (catalogversionId == null) {
+                                return '';
+                            }
+                            $.each(catalogData, function (i, n) {
+                                if (n.catalogversionId == catalogversionId) {
+                                    catalogversionId = n.catalogName;
+                                    return catalogversionId;
+                                } else {
+                                    return '';
+                                }
+                            })
+                            return catalogversionId;
+                        },
+                    }, {
+                        field: "approvalStatus",
+                        title: '<@spring.message "hmall.product.approvalStatus"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        template: function (dataItem) {
+                            var v = dataItem.approvalStatus;
+                            if (v == null) {
+                                return '';
+                            }
+                            $.each(approvalStatus, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                } else {
+                                    return '';
+                                }
+                            })
+                            return v;
+                        }
+                    }, {
+                        field: "saleStatus",
+                        title: '<@spring.message "hmall.product.saleStatus"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        template: function (dataItem) {
+                            var v = dataItem.saleStatus;
+                            if (v == null) {
+                                return '';
+                            }
+                            $.each(saleStatusData, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                } else {
+                                    return '';
+                                }
+                            })
+                            return v;
+                        }
+                    }, {
+                        field: "isSinSale",
+                        title: '<@spring.message "hmall.product.isAlone"/>',
+                        width: 120,
+                        template: function (dataItem) {
+                            var v = dataItem.isSinSale;
+                            if (v == null) {
+                                return '';
+                            }
+                            $.each(isSinSaleData, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                } else {
+                                    return '';
+                                }
+                            })
+                            return v;
+                        },
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "creationDate",
+                        title: '<@spring.message "hmall.product.creationDate"/>',
+                        width: 120,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    },
+                ],
+                editable: false
+            });
+
+            Hap.autoResizeGrid("#Grid");
+        </script>
+        </body>

@@ -1,0 +1,13 @@
+# application.yml
+#zuul
+zuul:
+  routes:
+    hpay-back-service:
+      path: /hpay/**
+      serviceId: hpay-back-service
+    hpay-thirdParty-service:
+        path: /thirdParty/**
+        serviceId: hpay-thirdparty-service
+    hmall-logistics-server:
+        path: /hmall-logistics-service/**
+        serviceId: hmall-logistics-service

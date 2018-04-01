@@ -1,0 +1,189 @@
+<#include "../include/header.html">
+    <#--
+            * description: 交期修改页面
+            * version: 1.0
+            * author: yanjie.zhang@hand-china.com
+            * updateDate:2017/11/05
+            *
+            -->
+        <script type="text/javascript">
+            var viewModel = kendo.observable({
+                model: {},
+            });
+        </script>
+        <body>
+        <div id="content-container">
+            <div id="page-content">
+                <div class="panel" id="panel-top" style="padding: 0px;">
+                    <div class="panel-footer text-left">
+                        <button id="save_btn" onclick="saveData()" class="btn btn-primary">保存</button>
+                    </div>
+                    <form class="form-horizontal" id="conditionForm">
+                        <div class="panel-body" id="baseInfo">
+                            <div>
+                                <label></label>
+                            </div>
+                            <div>
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">最大交期天数:</label>
+                                            <div class="col-sm-8">
+                                                <input id="maxDay" required type="text" style="width: 100%;"
+                                                       data-bind="value:model.maxDay" class="k-textbox">
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($("#maxDay"), viewModel)</script>
+                                    </div>
+
+                                    <div class="col-sm-5">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">是否启动:</label>
+                                            <div class="col-sm-8">
+                                                <input id="enableFlag" type="checkbox"
+                                                       data-bind="value:model.enableFlag" style="margin-top: 8px">
+                                                <script type="text/javascript">
+                                                    $("#enableFlag").kendoCheckbox({
+                                                        checkedValue: 'Y',
+                                                        uncheckedValue: 'N',
+                                                        change: function () {
+                                                            var value = this.value();
+                                                            viewModel.model.enableFlag = value;
+                                                        }
+                                                    });
+                                                </script>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($("#enableFlag"), viewModel)</script>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">固定交期:</label>
+                                            <div class="col-sm-8">
+                                                <input id="regularDate" required type="text" style="width: 100%;"
+                                                       data-bind="value:model.regularDate">
+                                            </div>
+                                        </div>
+                                        <script>
+                                            $("#regularDate").kendoDatePicker({
+                                                animation: {
+                                                    close: {
+                                                        effects: "fadeOut zoom:out",
+                                                        duration: 300
+                                                    },
+                                                    open: {
+                                                        effects: "fadeIn zoom:in",
+                                                        duration: 300
+                                                    }
+                                                },
+                                                format: "yyyy-MM-dd"
+                                            });
+                                            kendo.bind($("#regularDate"), viewModel)</script>
+                                    </div>
+
+                                    <div class="col-sm-5">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">是否启动:</label>
+                                            <div class="col-sm-8">
+                                                <input id="regularFlag" type="checkbox"
+                                                       data-bind="value:model.regularFlag" style="margin-top: 8px">
+                                                <script type="text/javascript">
+                                                    $("#regularFlag").kendoCheckbox({
+                                                        checkedValue: 'Y',
+                                                        uncheckedValue: 'N',
+                                                        change: function () {
+                                                            var value = this.value();
+                                                            viewModel.model.regularFlag = value;
+                                                        }
+                                                    });
+                                                </script>
+                                            </div>
+                                        </div>
+                                        <script>kendo.bind($("#regularFlag"), viewModel)</script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            //给from中的选配数量添加必输校验
+            $("#page-content").kendoValidator({
+                rules: {
+                    required: function (input) {
+                        return $.trim(input.val()) !== "";
+                    },
+                },
+                messages: {
+                    required: "字段必输"
+                }
+            });
+
+
+            //保存信息
+            function saveData() {
+                var validator = $("#page-content").data("kendoValidator");
+                if (validator.validate()) {
+
+                    if (isNaN(viewModel.model.maxDay)) {
+                        kendo.ui.showErrorDialog({
+                            message: "最大交期请输入正确数值！"
+                        })
+                        return;
+                    }
+
+
+                    $.ajax({
+                        url: "${base.contextPath}/hap/atp/calculate/change/submitData",
+                        contentType: "application/json",
+                        type: "POST",
+                        data: JSON.stringify(viewModel.model),
+                        success: function (data) {
+                            if (data.success) {
+                                var formData = data.rows[0] || {};
+                                for (var k in formData) {
+                                    viewModel.model.set(k, formData[k]);
+                                }
+                                kendo.ui.showInfoDialog({
+                                    message: "保存成功"
+                                })
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    message: "发生错误"
+                                })
+                            }
+                        }
+                    });
+                }
+            }
+
+            function loadData() {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hap/atp/calculate/change/queryData',
+                    dataType: "json",
+                    contentType: "application/json",
+                    sync: false,
+                    success: function (data) {
+                        if (data.success) {
+                            var formData = data.rows[0] || {};
+                            for (var k in formData) {
+                                viewModel.model.set(k, formData[k]);
+                            }
+                        }
+                    }
+                });
+            }
+
+            $(function () {
+                loadData();
+            })
+        </script>
+        </body>
+        </html>

@@ -1,0 +1,155 @@
+#message-menu {
+  padding-top: 14px;
+  ul {
+    li {
+      width: 210px;
+      height: 40px;
+      line-height: 35px;
+      font-size: 16px;
+      text-align: left;
+      padding-left: 30px;
+      cursor:pointer;
+      .show{
+        position:absolute;
+        width: 20px;
+        margin-left: 5px;
+        span{
+          display: block;
+          margin: 12px 0px;
+          height: 14px;
+          line-height: 15px;
+          background: #f00;
+          border-radius: 8px;
+          margin-left: 5px;
+          font-size: 12px;
+          color: #fff;
+          text-align: center
+        }
+      }
+        
+      .dis{
+        display:none;
+      }
+      &.list-head {
+        p{
+          display:inline-block;
+        }
+        p:first-child{
+          border-left: 5px solid #000;
+          height: 20px;
+          margin: 10px 0px;
+          position: absolute;
+          left: 10px;
+          }
+        height: 40px;
+        line-height: 40px;
+        color: #000;
+        position: relative;
+      }
+    }
+  }
+  
+  #accountInformation {
+    margin-left: 28px;
+    .i4 {
+      min-height:436px;
+      margin-bottom:30px;
+      .noMessage{
+        font-size: 16px;
+        margin: 40px 40px;
+        text-align: center;
+      }
+    }
+  
+    .i5 {
+      height: 40px;
+      border-bottom: 1px solid #e8e7e4;
+      font-size: 16px;
+      color: #333333;
+    }
+  
+    .i6 {
+      margin-left: 32px;
+      height: 40px;
+      line-height: 42px;
+      display:inline-block;
+    }
+    .msgNum{
+      font-size: 14px;
+      color: #a5a5a5;
+      margin-left: 10px;
+    }
+  
+    .i7 {
+      margin-left: 32px;
+      padding-bottom: 20px;
+      width: 900px;
+      border-bottom: 1px solid #e8e7e4;
+    }
+    
+    .noread{
+      width: 6px;
+      height: 6px;
+      background-color: #f00;
+      position: absolute;
+      margin-top: -20px;
+      margin-left: -20px;
+      border-radius: 3px;
+    }
+  
+    .i8 {
+      height: 40px;
+      vertical-align: middle;
+      line-height:60px;
+      font-size: 14px;
+      color: #333333;
+    }
+    
+    .i9 {
+    
+      width: 750px;
+      font-size: 16px;
+      color: #333333;
+    }
+  
+    .i10 {
+      span{
+        display: block;
+        margin: 7px 0px;
+        padding: 5px 0px;
+        p{
+          display: inline-block;
+          margin: 0px 10px;
+        }
+      }
+     
+    }
+  
+    .i11 {
+      margin-left: 650px;
+      font-size: 14px;
+      color: #0000FF;
+      p{
+        cursor:pointer;
+      }
+      p:hover{
+        color:red;
+      }
+    }
+    
+  }
+}
+.head-message{
+    position: relative;
+}
+.head-message:after{
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background-color: #ed1c24;
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    border-radius: 50%;
+}

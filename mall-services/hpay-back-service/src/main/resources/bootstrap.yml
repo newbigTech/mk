@@ -1,0 +1,119 @@
+spring:
+  application:
+    name: hpay-back-service
+  profiles:
+    active: native
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server:
+  port: 7705
+
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:7705}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+rabbit:
+  address: 10.5.72.14:5672
+  username: dev
+  password: Mfr18$
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  logFilePath: /mnt/logs/
+  exchangeName: map-logs
+  queue: thirdparty.api
+  outQueue: mservices.log.outbound
+alipay:
+  notifyUrl: http://apitest.zeststore.com/hpay/v1/return/alipayReturn
+wechat:
+  notifyUrl: http://apitest.zeststore.com/hpay/v1/return/wechatpayReturn
+union:
+  notifyUrl: http://apitest.zeststore.com/hpay/v1/return/unionpayReturn
+zmall:
+  notifyUrl: http://10.5.72.7:8089/zpay-gateway/pay/notify
+  authorizationOpenIdUrl: http://test1.zest.com/zmall/allow/user/authorization
+hmall:
+  notifyUrl: http://10.5.72.20/core/api/public/hmall/as/svsales/paymentinfo
+---
+spring:
+  profiles: sit_idc
+server:
+  port: 7705
+rabbit:
+  address: 10.5.72.18:5672
+  username: uat
+  password: Mfr18$
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  logFilePath: /mnt/logs/
+  queue: thirdparty.api
+  outQueue: mservices.log.outbound
+
+alipay:
+  notifyUrl: http://apitest.zeststore.com/hpay/v1/return/alipayReturn
+wechat:
+  notifyUrl: http://apitest.zeststore.com/hpay/v1/return/wechatpayReturn
+union:
+  notifyUrl: http://apitest.zeststore.com/hpay/v1/return/unionpayReturn
+zmall:
+  notifyUrl: http://test.zest.com/zpay-gateway/pay/notify
+  authorizationOpenIdUrl: http://test.zest.com/zmall/allow/user/authorization
+hmall:
+  notifyUrl: http://10.5.72.20/core/api/public/hmall/as/svsales/paymentinfo
+---
+spring:
+  profiles: dev_idc
+server:
+  port: 7705
+rabbit:
+  address: 10.5.72.14:5672
+  username: dev
+  password: Mfr18$
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  logFilePath: /mnt/logs/
+  queue: thirdparty.api
+  outQueue: mservices.log.outbound
+---
+spring:
+  profiles: prod
+server:
+  port: 7705
+rabbit:
+  address: 172.16.10.90:5672
+  username: hmall
+  password: SvcsPwd456
+  virtualHost: /
+  concurrentConsumers: 5
+  maxConcurrentConsumers: 10
+  logFilePath: /mnt/logs/
+alipay:
+  notifyUrl: http://api.zeststore.com/hpay/v1/return/alipayReturn
+wechat:
+  notifyUrl: http://api.zeststore.com/hpay/v1/return/wechatpayReturn
+union:
+  notifyUrl: http://api.zeststore.com/hpay/v1/return/unionpayReturn
+zmall:
+  notifyUrl: http://172.16.20.63/zpay-gateway/pay/notify
+hmall:
+  notifyUrl: http://172.16.10.249/core/api/public/hmall/as/svsales/paymentinfo
+---

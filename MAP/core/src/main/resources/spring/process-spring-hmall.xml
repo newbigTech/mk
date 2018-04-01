@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!-- 流程节点配置 -->
+
+    <!-- 抽象的返货单流程节点类 -->
+    <bean id="abstractConsignmentNode" class="com.hand.hmall.process.consignment.node.AbstractConsignmentNode" abstract="true">
+        <property name="iConsignmentProcessService" ref="iConsignmentProcessService"/>
+    </bean>
+
+    <!-- 发货单拆单 -->
+    <bean id="consignmentSplitNode" class="com.hand.hmall.process.consignment.node.ConsignmentSplitNode"
+          parent="abstractConsignmentNode">
+        <property name="index" value="100"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 预计发货时间计算 -->
+    <bean id="estimateConTimeCalculateNode" class="com.hand.hmall.process.consignment.node.EstimateConTimeCalculateNode"
+          parent="abstractConsignmentNode">
+        <property name="index" value="150"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 承运商选择 -->
+    <bean id="carrierChooseNode" class="com.hand.hmall.process.consignment.node.CarrierChooseNode"
+          parent="abstractConsignmentNode">
+        <property name="index" value="200"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 发货单异常判定 -->
+    <bean id="abnormalJudgmentNode" class="com.hand.hmall.process.consignment.node.AbnormalJudgmentNode"
+          parent="abstractConsignmentNode">
+        <property name="index" value="300"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 发货单流程驱动 -->
+    <bean id="consignmentProcessManager" class="com.hand.hmall.process.engine.ProcessManager">
+        <property name="processNodeList">
+            <list>
+                <ref bean="consignmentSplitNode"/>
+                <ref bean="estimateConTimeCalculateNode"/>
+                <ref bean="carrierChooseNode"/>
+                <ref bean="abnormalJudgmentNode"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 订单流程抽象节点 -->
+    <bean id="abstractOrderNode" class="com.hand.hmall.process.order.node.AbstractOrderNode" abstract="true">
+        <property name="iOrderProcessService" ref="iOrderProcessService"/>
+    </bean>
+
+    <!-- 订单套件组件生成 -->
+    <bean id="suiteComponentsGenerateNode" class="com.hand.hmall.process.order.node.SuiteComponentsGenerateNode" parent="abstractOrderNode">
+        <property name="index" value="100"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 订单行采购价生成 -->
+    <bean id="orderPriceGenerateNode" class="com.hand.hmall.process.order.node.OrderPriceGenerateNode" parent="abstractOrderNode">
+        <property name="index" value="200"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 外采皮沙发定制信息生成 -->
+    <bean id="outsideProcurementNode" class="com.hand.hmall.process.order.node.OutsideProcurementNode" parent="abstractOrderNode">
+        <property name="index" value="250"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 主推款包装尺寸计算 -->
+    <bean id="sizeCalculateNode" class="com.hand.hmall.process.order.node.SizeCalculateNode" parent="abstractOrderNode">
+        <property name="index" value="275"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 订单行工艺审核 -->
+    <bean id="bomApproveNode" class="com.hand.hmall.process.order.node.BomApproveNode" parent="abstractOrderNode">
+        <property name="index" value="300"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 订单行库存占用 -->
+    <bean id="invOccupyNode" class="com.hand.hmall.process.order.node.InvOccupyNode" parent="abstractOrderNode">
+        <property name="index" value="400"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 订单生成发货单 -->
+    <bean id="consignmentGenerateNode" class="com.hand.hmall.process.order.node.ConsignmentGenerateNode" parent="abstractOrderNode">
+        <property name="index" value="500"/>
+        <property name="use" value="true"/>
+    </bean>
+
+    <!-- 订单流程驱动 -->
+    <bean id="orderProcessManager" class="com.hand.hmall.process.engine.ProcessManager">
+        <property name="processNodeList">
+            <list>
+                <ref bean="suiteComponentsGenerateNode"/>
+                <ref bean="orderPriceGenerateNode"/>
+                <ref bean="outsideProcurementNode"/>
+                <ref bean="sizeCalculateNode"/>
+                <ref bean="bomApproveNode"/>
+                <ref bean="invOccupyNode"/>
+                <ref bean="consignmentGenerateNode"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 发货单流程多线程驱动 -->
+    <bean id="consignmentProcessDriver" class="com.hand.hmall.process.engine.ConsignmentProcessDriver"/>
+    <!-- 订单流程多线程驱动 -->
+    <bean id="orderProcessDriver" class="com.hand.hmall.process.engine.OrderProccessDriver"/>
+
+    <!-- 流程相关的Service -->
+    <bean id="iConsignmentProcessService" class="com.hand.hmall.process.consignment.service.impl.ConsignmentProcessServiceImpl"/>
+    <bean id="iOrderProcessService" class="com.hand.hmall.process.order.service.impl.OrderProcessServiceImpl"/>
+</beans>

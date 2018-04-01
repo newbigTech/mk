@@ -1,0 +1,750 @@
+<#--
+        * description: 选配结果审核
+        * author: qinzhipeng
+        * date 2017/07/22
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/resources/js/mask.js"></script>
+        <script type="text/javascript">
+            var viewModel = kendo.observable({
+                model: {
+                    historyId: null,
+                    vcode: null,
+                    pinCode: null,
+                    isQuery: "true"
+                },
+                createFunction: function () {
+                    $('#Grid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#Grid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+
+                }
+            });
+            var historyViewModel = kendo.observable({
+                model: {
+                    platformCode: null,
+                    description: null,
+                    vcode: null
+
+                }
+            });
+        </script>
+        <body>
+        <div class="container" style="width: auto; margin: 10px 0px 0px 0px; height: 100%">
+            <div id="main" style="padding: 0px">
+                <div id="left">
+                    <h5 id="normal-name" style="text-align: left;margin-left:5px"></h5>
+                    <div class="col-sm-12" id='normal-picture' style="text-align:center;overflow: auto;padding-left: 0px;padding-right: 0px;margin-bottom: 10px">
+                    </div>
+                    <h5 id="boom-name" style="text-align: left;margin-left:5px;"></h5>
+                    <div class="col-sm-12" id='boom-picture' style="text-align:center;">
+                    </div>
+                </div>
+                <div id="right">
+                    <div id="page-content">
+                        <div id="query-form" style="padding-bottom:10px;">
+            <span>
+               <!--<span class="btn btn-primary" style="margin-right: 10px" onclick="downloadImg('normal',viewModel.model.vcode)"><@spring.message "显示三维效果图"/></span>
+                <span class="btn btn-primary" style="margin-right: 10px" onclick="downloadImg('boom',viewModel.model.vcode)"><@spring.message "显示三维爆炸图"/></span>&ndash;&gt;-->
+                <span class="btn btn-primary" style="margin-right: 20px;background-color: limegreen; border-color: limegreen;" onclick="reviewDialog('Y')"><@spring.message "审核确认"/></span>
+                <span class="btn btn-primary" style="margin-right: 20px;background-color: red; border-color: red;" onclick="reviewDialog('D')"><@spring.message "审核未通过"/></span>
+                <span>商品编码: <span id="productCode"></span></span>
+                <span>商品描述: <span id="productDesc"></span></span>
+            </span>
+                            <span style="display: block">
+                <span class="btn btn-primary" style="margin:10px 10px 0px 0px;" onclick="getRemoteImage(viewModel.model.vcode)"><@spring.message "重新加载三维效果图"/></span>
+                <div style="clear:both"></div>
+            </span>
+                            <!--<span class="pull-right">
+                               <span class="btn btn-primary" style="float:right;margin-right: 20px;" onclick="hideOrShow()">字段选择</span>
+                               <div style="clear:both"></div>
+                           </span>-->
+
+                        </div>
+                        <script>kendo.bind($('#query-form'), viewModel);</script>
+                        <div style="clear:both">
+                            <div id="Grid" style="height=100%"></div>
+                        </div>
+                        <div>
+                            <div id="eidtWindow"></div>
+                        </div>
+                        <div id="divMMHeight" style="height:1mm;display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            //获取分屏需要的全屏参数
+            function divFullScreen() {
+                var width = $(window).width();//计算屏幕的宽度
+                var height = $(window).height();
+                $('#main').width(width - 20);//设置div的宽度等于屏幕的宽度
+                $('#main').height(height - 20);//设置div的宽度等于屏幕的宽度
+                $("#normal-picture").height(height / 2 - 20);
+            }
+
+            var mmtoPx = $("#divMMHeight").height();
+            var hideFlag = true;
+            var BaseUrl = _basePath;
+            var vCodeLinesEntries = [];
+            historyDataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hap/mam/vcode/review/history/query",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+
+                            return Hap.prepareQueryParameter(historyViewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "lineId",
+                        fields: {}
+                    }
+                }
+            });
+
+            var _grid_ = $("#Grid").kendoGrid({
+                height: '500px',
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                columnMenu: true,// 实现列显示与否
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "itemCode",
+                        title: '零部件图片',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        template: function (dataItem) {
+                            if (dataItem.vcode != null && dataItem.vcode != '') {
+                                return downloadImg('partsphoto', dataItem.itemCode, 50 * mmtoPx, 40 * mmtoPx);
+                            }
+                        },
+                        width: 240,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    },
+                    {
+                        field: "itemCode",
+                        title: '物料编码',
+                        width: 120
+                    },
+                    {
+                        field: "itemName",
+                        title: '物料描述',
+                        width: 120
+                    },
+                    {
+                        field: "quantity",
+                        title: '数量',
+                        width: 120
+                    },
+                    {
+                        field: "meins",
+                        title: '单位',
+                        width: 120
+                    },
+                    {
+                        field: "postp",
+                        title: '项目类别',
+                        width: 120
+                    },
+                    {
+                        field: "potx1",
+                        title: '选配项编码',
+                        width: 120
+                    },
+                    {
+                        field: "potx2",
+                        title: '选配项描述',
+                        width: 120
+                    },
+                    {
+                        field: "mtart",
+                        title: '物料类型',
+                        width: 120
+                    },
+                    {
+                        field: "stocking",
+                        title: '备货类型',
+                        width: 120
+                    },
+
+                    {
+                        field: "vcode",
+                        title: 'V码',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.mandt",
+                        title: '<@spring.message "ImBomInface.mandt"/>',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.ecnnumber",
+                        title: '<@spring.message "ImBomInface.ecnnumber"/>',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.publishno",
+                        title: '<@spring.message "ImBomInface.publishno"/>',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.item",
+                        title: '项目号 ',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.state",
+                        title: '状态',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.matnr",
+                        title: '物料号',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.werks",
+                        title: '工厂',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.stlan",
+                        title: 'BOM 用途',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.stlal",
+                        title: '可选的 BOM',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.bmeng",
+                        title: '基本数量',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.stlst",
+                        title: 'BOM 状态',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.postp",
+                        title: '项目类别（物料单）',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.posnr",
+                        title: '项目类别（物料单）',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.idnrk",
+                        title: 'BOM 组件',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.menge",
+                        title: '组件数量',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.meins",
+                        title: '组件计量单位',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.potx1",
+                        title: 'BOM 项目文本（行1）',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.potx2",
+                        title: 'BOM 项目文本（行2）',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.ausch",
+                        title: '部件废品百分数',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.alpgr",
+                        title: '部件废品百分数',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.alprf",
+                        title: '部件废品百分数',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.ewahr",
+                        title: '可选项目',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.roms1",
+                        title: '尺寸1',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.roms2",
+                        title: '尺寸2',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.roms3",
+                        title: '尺寸3',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.lgort",
+                        title: '生产订单的发货地点',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.sortf",
+                        title: '排序字符串',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.objdp",
+                        title: 'OD,相关性',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.mlsize",
+                        title: '毛料SIZE',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.zdate",
+                        title: '写入日期',
+                        width: 120
+                    },
+                    {
+                        field: "imBomInface.ztime",
+                        title: '写入时间',
+                        width: 120
+                    }
+
+                ],
+                editable: false
+            }).data("kendoGrid");
+
+            //动态设置分屏div的大小
+            divFullScreen();//页面加载时全屏
+            $(window).bind('resize', function () {
+                divFullScreen();//最大化，还原窗口大小时DIV尺寸跟着变化，不过最好在CSS里给这个DIV加个min-width等于html,body的最小宽度。
+            });
+
+            //初始化分屏布局
+            $("#main").kendoSplitter({
+                orientation: "horizontal",
+                panes: [{size: "35%"}, {}]
+            });
+
+            //绑定dom树到viewModel，这样才能将其管理起来
+            kendo.bind($('#left'), viewModel);
+            kendo.bind($('#right'), viewModel);
+            kendo.bind($('#main'), viewModel);
+
+
+            function confirmPlatform(option) {
+
+                startMask("请稍后...", "");
+                var selectData = option.gridData;
+                var window = $("#platformWindow");
+                window.data("kendoWindow").close();
+                viewModel.model.set("historyId", selectData.historyId);
+                viewModel.model.set("vcode", selectData.vcode);
+                viewModel.model.set("pinCode", selectData.pinCode);
+                historyViewModel.model.set("platformCode", selectData.productCode);
+                historyViewModel.model.set("description", selectData.productDesc);
+                $("#normal-picture").html("");
+                var normal = normalImgList(viewModel.model.vcode, viewModel.model.pinCode);
+                if (normal != "") {
+                    for (var i = 0; i < normal.rows.length; i++) {
+                        var img = "<img src='" + normal.rows[i] + "' width='" + 100 * mmtoPx + "' height='" + 70 * mmtoPx + "'  style='margin-bottom: 5px;'  />";
+                        $("#normal-picture").append(img);
+                    }
+                }
+                $("#boom-picture").html("");
+                var boom = downloadImg('boom', viewModel.model.vcode, 100 * mmtoPx, 70 * mmtoPx);
+                $("#boom-picture").append(boom);
+
+                document.getElementById("boom-name").innerHTML = viewModel.model.vcode + "的3D爆炸图：";
+                document.getElementById("normal-name").innerHTML = viewModel.model.vcode + "的3D效果图：";
+
+                $.ajax({
+                    type: 'POST',
+                    url: BaseUrl + "/hap/mam/vcode/lines/selectMamResultByVCode",
+                    dataType: 'JSON',
+                    contentType: "application/json",
+                    data: kendo.stringify(viewModel.model.toJSON()),
+                    success: function (result) {
+                        //update by heng.zhang  数据加载前，容器先清空  20170912
+                        vCodeLinesEntries = [];
+                        /*end*/
+                        for (var i in result.rows) {
+                            vCodeLinesEntries.push(result.rows[i]);
+
+                        }
+                        refreshData();
+                    },
+                    error: function (data) {
+                    }
+                });
+                endMask();
+                addRecord();
+                getVcodeReviewNum();
+                //初始化时隐藏列
+                /* hideColumns();*/
+
+            }
+            //刷新行信息
+            function refreshData() {
+                var _dataSource_ = new kendo.data.DataSource({
+                    data: vCodeLinesEntries,
+                    schema: {
+                        model: {
+                            id: "lineId",
+                            fields: {}
+                        }
+                    }
+                });
+                _grid_.setDataSource(_dataSource_);
+            }
+            /*//隐藏列
+             function hideColumns() {
+             hideFlag = true;
+             var grid = $("#Grid").data("kendoGrid");
+             for(var i=10;i<42;i++){
+             grid.hideColumn(i);
+             }
+             }
+
+             //显示列
+             function showColumns() {
+             hideFlag = false;
+             var grid = $("#Grid").data("kendoGrid");
+             for(var i=10;i<42;i++){
+             grid.showColumn(i);
+             }
+             }*/
+
+            /* //显示或隐藏列
+             function hideOrShow() {
+             if(hideFlag){
+             showColumns();
+             }else{
+             hideColumns();
+             }
+             }*/
+
+
+            function deleteData() {
+
+                Hap.deleteGridSelection({
+                    grid: $('#Grid')
+                });
+
+            }
+
+            Hap.autoResizeGrid("#Grid");
+            // Hap.autoResizeGrid("#recordGrid");
+            function reviewDialog(status) {
+
+                if (viewModel.model.vcode != null) {
+                    if (checkOccupy()) {
+                        if (status == "Y") {
+                            kendo.ui.showConfirmDialog({
+                                title: $l('hap.tip.info'),
+                                message: $l('是否确认审核通过？')
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    review(status, "");
+                                }
+                            });
+                        } else {
+                            reasonWindow();
+                        }
+                    } else {
+                        return;
+                    }
+
+                } else {
+                    kendo.ui.showInfoDialog({
+                        message: "请选择V码"
+                    });
+                }
+
+            }
+            //审核
+            function review(status, reason) {
+                var data = {};
+                data.vcode = viewModel.model.vcode;
+                data.pinCode = viewModel.model.pinCode;
+                data.historyId = viewModel.model.historyId;
+                data.approveStatus = status;
+                data.refuseReason = reason;
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hap/mam/vcode/lines/selectMamResultReview',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        if (data.success) {
+                            kendo.ui.showInfoDialog({
+                                message: "审核完成"
+                            }).done(function (event) {
+                                platformWindow();
+                            });
+                            getVcodeReviewNum();
+                        } else {
+                            kendo.ui.showInfoDialog({
+                                message: data.message
+                            });
+                        }
+                    }
+                });
+            }
+
+            //查询该数据是否已被占用   modified by heng.zhang 20170911 同一个PIN码不可同时被两个相同的账号，审核
+            function checkOccupy() {
+                var data = {};
+                data.vcode = viewModel.model.vcode;
+                data.pinCode = viewModel.model.pinCode;
+                data.historyId = viewModel.model.historyId;
+                var flag;
+                $.ajax({
+                    type: 'POST',
+                    async: false,
+                    url: "${base.contextPath}/hap/mam/vcode/lines/checkMamOccupy",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (data) {
+                        if (data.success) {
+                            flag = true;
+                            return;
+                        } else {
+                            flag = false;
+                            kendo.ui.showInfoDialog({
+                                message: data.message
+                            });
+
+                        }
+                    }
+                });
+                return flag;
+            }
+
+            //下载图片
+            function downloadImg(type, code, height, width) {
+                if (code == null || code == "") {
+                    kendo.ui.showInfoDialog({
+                        message: "请选择V码"
+                    });
+                } else {
+                    var imageData = null;
+                    var middle = middle;
+                    $.ajax({
+                        url: '${base.contextPath}/hap/mam/vcode/lines/img/download?type=' + type + "&code=" + code,
+                        type: 'POST',
+                        contentType: "application/json;charset=utf-8",
+                        cache: false,
+                        dataType: 'json',
+                        async: false,
+                        success: function (data) {
+                            if (data.success == true) {
+                                imageData = data.rows[0];
+                            }
+                        }
+                    });
+                    if (imageData != null) {
+                        return "<img src='" + imageData + "' width='" + height + "' height='" + width + "'  />";
+                    } else {
+                        return "";
+                    }
+                }
+            }
+            //效果图列表
+            function normalImgList(code, pin) {
+                if (code == null || code == "") {
+                    kendo.ui.showInfoDialog({
+                        message: "请选择V码"
+                    });
+                } else {
+                    var imageData = null;
+                    var middle = middle;
+                    $.ajax({
+                        url: '${base.contextPath}/hap/mam/vcode/lines/suitimg/download',
+                        type: 'POST',
+                        contentType: "application/json;charset=utf-8",
+                        cache: false,
+                        dataType: 'json',
+                        async: false,
+                        data: JSON.stringify({"vcode": code, "pin": pin}),
+                        success: function (data) {
+                            if (data.success == true) {
+                                imageData = data;
+                            }
+                        }
+                    });
+                    if (imageData != null) {
+                        return imageData;
+                    } else {
+                        return "";
+                    }
+                }
+            }
+
+            function getRemoteImage(vcode) {
+                if (vcode == null || vcode == "") {
+                    kendo.ui.showInfoDialog({
+                        message: "请选择V码"
+                    });
+                } else {
+                    $.ajax({
+                        url: '${base.contextPath}/hap/mam/vcode/lines/img/getRemoteImage?vcode=' + vcode + '&pin=' + viewModel.model.pinCode,
+                        type: 'POST',
+                        contentType: "application/json;charset=utf-8",
+                        cache: false,
+                        async: false,
+                        success: function (data) {
+                            if (data.success == true) {
+                                var imgs = normalImgList(vcode, viewModel.model.pinCode);
+                                if (imgs != "") {
+                                    for (var i = 0; i < imgs.rows.length; i++) {
+                                        var img = "<img src='" + imgs.rows[i] + "' width='" + 100 * mmtoPx + "' height='" + 70 * mmtoPx + "'  style='margin-bottom: 5px;'  />";
+                                        $("#normal-picture").append(img);
+                                    }
+                                }
+                            } else {
+                                kendo.ui.showInfoDialog({
+                                    message: data.message
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+
+            //初始化加载
+            $(document).ready(function () {
+                //选择平台窗口
+                window.platformWindow = function () {
+                    var platformWindow = $("#platformWindow").kendoWindow({
+                        title: 'PIN码选择',
+                        width: "1150px",
+                        height: "560px",
+                        content: "${base.contextPath}/mam/pin_choose.html",
+                        actions: [
+                            "Pin",
+                            "Close"
+                        ],
+                        position: {top: 100, left: 200},
+                        modal: true,
+                        visible: false,
+                        iframe: true,
+                        close: function () {
+                            //window 关闭  刷新 本页面的  Grid
+                            //$('#Grid').data('kendoGrid').dataSource.page(1);
+                        }
+                    }).data("kendoWindow");
+                    platformWindow.maximize();
+                    platformWindow.open();
+
+                }
+                window.reasonWindow = function () {
+                    var reasonWindow = $("#reasonWindow").kendoWindow({
+                        title: '拒绝原因',
+                        width: "450px",
+                        height: "260px",
+                        content: "${base.contextPath}/mam/reason.html",
+                        actions: [
+                            "Close"
+                        ],
+                        modal: true,
+                        visible: false,
+                        iframe: true,
+                        close: function () {
+                            //window 关闭  刷新 本页面的  Grid
+                            //$('#Grid').data('kendoGrid').dataSource.page(1);
+                        }
+                    }).data("kendoWindow");
+                    reasonWindow.center().open();
+
+                }
+                //打开选择平台窗口
+                platformWindow();
+
+            });
+            //增加访问记录
+            function addRecord() {
+                historyViewModel.model.set("vcode", viewModel.model.vcode);
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hap/mam/vcode/review/history/addHistory',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify(historyViewModel.model),
+                    success: function (data) {
+                        if (data.success) {
+                        }
+                    }
+                });
+
+            }
+            function getVcodeReviewNum() {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hap/mam/so/approve/his/getReviewNum?vcode=' + viewModel.model.vcode + "&approveStatus=Y",
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            $("#reviewNum").text(data.total)
+                        }
+                    }
+                });
+            }
+        </script>
+        <!-- 选择平台窗口 -->
+        <div id="platformWindow"></div>
+        <div id="reasonWindow"></div>
+        </body>
+        </html>

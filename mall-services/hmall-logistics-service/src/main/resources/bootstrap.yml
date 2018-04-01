@@ -1,0 +1,53 @@
+# bootstrap.yml
+spring:
+  application:
+    name: hmall-logistics-service
+  profiles:
+    active: native
+
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server.port: 7113
+
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:7113}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+  protocol:
+    dubbo:
+      port: 20881
+---
+spring:
+  profiles: sit_idc
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2182
+server.port: 7113
+---
+spring:
+  profiles: prod
+dubbo:
+  registry:
+    address: zookeeper://172.16.10.30:2181
+server.port: 7113
+---

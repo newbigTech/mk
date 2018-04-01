@@ -1,0 +1,48 @@
+
+/*流程*/
+.cart-flow {
+  background-color: #fff;
+  margin-bottom: 10px;
+  ul {
+    text-align: center;
+    line-height: 72px;
+    li {
+      display: inline-block;
+      font-size: @big-font-size;
+      div{
+        display: inline-block;
+        color: #fff;
+        height:32px;
+        width:32px;
+        background-color: #dadada;
+        border-radius:25px;
+        line-height:32px;
+      }
+      span {
+        margin-left: 10px;
+        color: #999;
+      }
+      &:after {
+        display: inline-block;
+        content: "";
+        width: 18px;
+        height: 18px;
+        margin: 0 60px;
+        vertical-align: middle;
+        background-image: url(../../images/cart-step-arrow.png);
+      }
+      &:last-child:after {
+        display: none;
+      }
+      &.active {
+        div {
+          background-color: #000;
+        }
+        span {
+          color: #1b1b1b;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}

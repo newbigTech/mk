@@ -1,0 +1,78 @@
+.h-product {
+  .product-content {
+    width: 235px;
+    background-color: #fff;
+    padding: 10px;
+    .product-background {
+      position: relative;
+      margin-bottom: 10px;
+      .background-pic {
+        width: 100%;
+        height: 215px;
+        display: block;
+      }
+      .corner-mark {
+        position: absolute;
+        &.TR {
+          top: 5px;
+          right: 5px;
+        }
+        &.BR {
+          right: 5px;
+          bottom: 5px;
+        }
+        &.TL {
+          top: 5px;
+          left: 5px;
+        }
+        &.BL {
+          bottom: 5px;
+          left: 5px;
+        }
+      }
+      .cover {
+        position: absolute;
+        transition: all 0.35s;
+        bottom: 0px;
+        left: 0px;
+        overflow: hidden;
+        width: 100%;
+        background-color: rgba(175,175,175,0.5);
+        z-index: 10;
+        .cover-color {
+          margin-left: 5px;
+          margin-right: 5px;
+          margin-top: 4px;
+          .h-picture {
+            cursor: pointer;
+            height: 35px;
+            width: 35px;
+            border: 1px solid transparent;
+            margin-left: 3px;
+            margin-right: 3px;
+            &.selected {
+              border-color: #000;
+            }
+          }
+        }
+      }
+    }
+    a >p {
+      line-height: 13px;
+      height: 38px;
+    }
+    
+    a >h3 {
+      font-size: @big-font-size;
+      line-height: 14px;
+      margin: 0;
+    }
+  }
+}
+
+.C5 .h-product .product-content {
+  width: 242px;
+  .background-pic {
+    height: 222px;
+  }
+}

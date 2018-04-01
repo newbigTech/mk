@@ -1,0 +1,104 @@
+<#--
+        * description: 促销和优惠券选择页面
+        * author:yuxiaoli
+        * 2017/8/16
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script>
+            var activities = window.parent.activities;
+            var couponList = window.parent.couponList;
+
+            var viewModel = kendo.observable({
+                model: {
+
+                },
+                closeWin: function(e){
+                    window.parent.$("#editWin").data("kendoWindow").close();
+                }
+            });
+        </script>
+       <style type="text/css">
+            * {margin:0;padding: 0}
+            .container{
+                margin-top: 0px;
+                border: 0px solid #AAAAAA;
+                padding: 20px;
+            }
+            .rows{
+                clear: both;
+            }
+            .row {
+                width: 150px;
+                display: inline-block;
+                height: 60px;
+                float: left;
+                text-align: center;
+                margin-top: 10px;
+                margin-left:5px;
+            }
+        </style>
+        <div id="content" class="container">
+            <div class="rows">
+                <div class="row"></div>
+                <div class="row">编码</div>
+                <div class="row">描述</div>
+            </div>
+            <div class="rows">
+                <div class="row">促销选择</div>
+                <div class="row" style="margin-left: 10px"><input id="activityName" class="form-control" data-bind="value:model.activityId" style="height:30px;"/></div>
+                <script>
+                    $("#activityName").kendoDropDownList({
+                        dataTextField: "activityName",
+                        dataValueField: "activityId",
+                        valuePrimitive: true,
+                        dataSource: activities,
+                        select:function(e){
+                            viewModel.model.set("activityDes",e.dataItem.activityDes);
+                        }
+                    }).data("kendoDropDownList");
+                </script>
+                <div class="row" style="margin-left: 30px"><input id="activityDes" class="form-control" data-bind="value:model.activityDes" style="height:30px;" readonly/></div>
+            </div>
+            <div class="rows">
+                <div class="row">优惠券选择</div>
+                <div class="row" style="margin-left: 10px"><input id="couponName" class="form-control" data-bind="value:model.couponId" style="height:30px;" /></div>
+                <script>
+                    $("#couponName").kendoDropDownList({
+                        dataTextField: "couponName",
+                        dataValueField: "couponId",
+                        valuePrimitive: true,
+                        dataSource: couponList,
+                        select:function(e){
+                            viewModel.model.set("couponDesc",e.dataItem.couponDes);
+                        }
+                    }).data("kendoDropDownList");
+                </script>
+                <div class="row" style="margin-left: 30px"><input id="couponDesc" class="form-control" data-bind="value:model.couponDesc" style="height:30px;" readonly/></div>
+            </div>
+            <span id class="btn btn-default" style="float:right;margin-right:5px;" data-bind="click:closeWin">取消选择</span>
+            <span id class="btn btn-primary" style="float:right;margin-right:5px;" onclick="selectChoose()">确认选择</span>
+            <script>
+                function selectChoose(){
+                    var gridData = window.parent.gridData;
+                    $.each(gridData,function(i,n){
+                        n["chosenCoupon"]=viewModel.model.couponId;
+                        n["chosenPromotion"]=viewModel.model.activityId;
+                    })
+                    $.ajax({
+                        type: 'POST',
+                        url: "${base.contextPath}/hmall/om/order/entry/querySaleActivityOptions?flag=Y",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(gridData),
+                        success: function (data) {
+                            window.parent.promotionResult = data;
+                            window.parent.$("#editWin").data("kendoWindow").close();
+                        }
+                    })
+                }
+            </script>
+        </div>
+
+        <script>kendo.bind($('#content'), viewModel);</script>
+

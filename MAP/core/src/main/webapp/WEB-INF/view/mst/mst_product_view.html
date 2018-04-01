@@ -1,0 +1,3480 @@
+<#--
+* description: 商品详情页面
+* author: xiaoli.yu@hand-china.com
+* version: 1.0
+* #copyright#
+-->
+<#include "../include/header.html"/>
+<script src="${base.contextPath}/common/code?yesOrNo=SYS.YES_NO&approvalStatus=HMALL.PRODUCT.APPROVAL_STATUS&saleStatusData=HMALL.PRODUCT.SALE_STATUS&originCountryData=HMALL.PRODUCT.ORIGIN_COUNTRY&sourcePlaceData=HMALL.PRODUCT.SOURCE_PLACE&stypeData=HMALL.PRODUCT.STYPE
+&productTypeData=HMALL.PRODUCT.PRODUCT_TYPE&customTypeData=HMALL.PRODUCT.CUSTOM_TYPE&designTypeData=HMALL.PRODUCT.DESIGN_TYPE&productStatusData=HMALL.PRODUCT_STATUS&unitData=HMALL.UNIT&priceTypeData=HMALL.PRICE_TYPE&priceGroupData=HMALL.PRICE_GROUP&mainColorData=HMALL.PRODUCT.MAINCOLOR&
+shippingTypeData=HMALL.SHIPPING_TYPE&addFunctionData=HMALL.PRODUCT.SPECIALFUNCTION&sofaCombiningFormData=HMALL.PRODUCT.SOFTCOMBINATION&fillerData=HMALL.PRODUCT.FILTER&suitableUsersData=HMALL.PRODUCT.SUITABLE_USERS&materialData=HMALL.PRODUCT.MATERIAL&woodenCraftsData=HMALL.PRODUCT.WOODEN_CRAFTS&
+designElementData=HMALL.PRODUCT.DESIGN_ELEMENT&leatherRangeData=HMALL.PRODUCT.LEATHER_RANGE&leatherCraftData=HMALL.PRODUCT.LEATHER_CRAFT&drawerRailNumData=HMALL.PRODUCT.DRAWER_RAIL_NUM&paintCraftData=HMALL.PRODUCT.PAINT_CRAFT&drawerNumberData=HMALL.PRODUCT.DRAWER_NUMBER
+&seriesNameData=HMALL.PRODUCT.SERIES_NAME&customChannelSourceData=HMALL.PRODUCT.CUSTOM_CHANNEL&customSupportTypeData=HMALL.PRODUCT.CUSTOM_SUPPORT&" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?hascustomData=HMALL.PRODUCT.HASCUSTOM" type="text/javascript"></script>
+
+<style type="text/css">
+    .full_width {
+        width: 100%;
+    }
+</style>
+<body>
+<script type="text/javascript">
+    var productId = '${RequestParameters.productId!0}';
+    var code = '${RequestParameters.code!0}';
+    var noticeStatus = '${RequestParameters.noticeStatus!0}';
+    var notificationId = '${RequestParameters.notificationId!0}';        var brandName = null;
+    var baseProductCode = null;
+    var viewModel = kendo.observable({
+        model: {
+            brandName: brandName,
+            baseProductCode: baseProductCode,
+            syncflag: "N",
+        },
+    });
+
+    <!--将rownumber中的#改成序号 -->
+    $(function () {
+        var rownumList = $('[data-index="0"]');
+        for (var i = 0; i < rownumList.length; i++) {
+            var rownumText = $(rownumList[i]).html();
+            if ("#" == rownumText) {
+                $(rownumList[i]).html("序号");
+                $(rownumList[i]).eq(0).parent().parent().prev().children().eq(0).css("width", "50px");
+                $(rownumList[i]).eq(0).parent().parent().parent().parent().parent().next().children("table").children("colgroup").children().eq(0).css("width", "50px");
+            }
+        }
+    });
+
+    $(document).ready(function () {
+        if (productId == 0) {
+            $("#delete")[0].style.display = 'none';
+            $("#dsync")[0].style.display = 'none';
+            $("#hide1")[0].style.display = 'none';
+            $("#hide2")[0].style.display = 'none';
+            $("#hide3")[0].style.display = 'none';
+        }else{
+            $("#code").attr("readonly",true);
+            $("#catalogversionId").data("kendoDropDownList").enable(false);
+        }
+        if(noticeStatus != 0 && noticeStatus == "PENDDING"){
+            $("#confirmNotice")[0].style.display = "block";
+        }        });
+
+    if (productId != 0) {
+        $.ajax({
+            type: 'POST',
+            url: '${base.contextPath}/hmall/mst/product/query?productId=' + productId,
+            dataType: "json",
+            contentType: "application/json",
+            success: function (data) {
+                if (data.success) {
+                    /*后台查询的数据绑定view.model*/
+                   /* console.log("查询的数据",data.rows[0].hascustom);*/
+                    var a0 = data.rows[0] || {};
+                    for (var k in a0) {
+                    /*    if(k=="hascustom"){
+                            alert(k);
+                            a0[k]=null;
+                            viewModel.model.set(k, a0[k]);
+                            continue;
+                        }*/
+                        viewModel.model.set(k, a0[k]);
+                        if (k == "brandId" && a0.brandId != null) {
+                            $.ajax({
+                                url: '${base.contextPath}/hmall/mst/brand/query?brandId=' + a0.brandId,
+                                success: function (data) {
+                                    if (data.success) {
+                                        var v = data.rows[0] || {};
+                                        //$("#brandName").data("kendoLov").text(v.name);
+                                        viewModel.model.set("brandName", v.name);
+                                    }
+                                }
+                            });
+                        }
+                        if (k == "baseProductId" && a0.baseProductId != null) {
+                            $.ajax({
+                                url: '${base.contextPath}/hmall/mst/product/query?productId=' + a0.baseProductId,
+                                success: function (data) {
+                                    if (data.success) {
+                                        var v = data.rows[0] || {};
+                                        //$("#baseProductId").data("kendoLov").text(v.code);
+                                        viewModel.model.set("baseProductCode", v.code);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function confirmNotice(){
+        kendo.ui.showConfirmDialog({
+            title:'<@spring.message "确认信息"/>',
+            message: '<@spring.message "确定要确认通知？"/>'
+        }).done(function(event) {
+            if (event.button == 'OK') {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/om/to/do/notice/confirm?notificationId='+notificationId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success == true) {
+                            kendo.ui.showConfirmDialog({
+                                title: $l('hap.tip.info'),
+                                message: $l('确认通知成功！')
+                            }).done(function(event){
+                                if (event.button == 'OK') {
+                                    window.top.closeTab("PRODUCT_"+productId);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    }//版本目录数据
+    var catalogData = new Array();
+    $.ajax({
+        url: '${base.contextPath}/hmall/mst/catalogversion/selectCatalog',
+        type: 'POST',
+        contentType: "application/json;charset=utf-8",
+        cache: false,
+        dataType: 'json',
+        async: false,
+        success: function (data) {
+            catalogData = data.rows;
+        }
+    });
+
+    //保存按钮
+    function saveData() {
+        var validator = $("#productDetails").data("kendoValidator");
+        if (validator.validate()) {
+            var data = viewModel.model.toJSON();
+            $.ajax({
+                url: '${base.contextPath}/hmall/mst/product/save',
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: kendo.stringify([data]),
+                success: function (data) {
+                    if (data.success) {
+                        var a0 = data.rows[0] || {};
+
+                        for (var k in a0) {
+                            if (k == "productId" || k == "creationDate" || k == "lastUpdateDate") {
+                                viewModel.model.set(k, a0[k]);
+                            }
+                        }
+                        kendo.ui.showInfoDialog({
+                            title: $l('hap.tip.info'),
+                            message: $l('hap.tip.success')
+                        });
+                        productId = a0.productId;
+                        code = a0.code;
+                        viewModel.model.set("objectVersionNumber", a0.objectVersionNumber);
+                        $("#delete")[0].style.display = 'block';
+                        $("#dsync")[0].style.display = 'block';
+                        $("#hide1")[0].style.display = 'block';
+                        $("#hide2")[0].style.display = 'block';
+                        $("#hide3")[0].style.display = 'block';
+                        $("#code").attr("readonly", true);
+                        $("#catalogversionId").data("kendoDropDownList").enable(false);
+                    } else {
+                        kendo.ui.showErrorDialog({
+                            title: $l('hap.error'),
+                            message: data.message
+                        });
+                    }
+                }
+            });
+        }
+
+    }
+    var version;
+    //同步按钮
+    function syncData() {
+
+        $.ajax({
+            type: 'POST',
+            url: '${base.contextPath}/hmall/mst/syncconfig/versionTo?catalogVersionId=' + viewModel.model.catalogversionId,
+            dataType: "json",
+            async: false,
+            contentType: "application/json",
+            success: function (data) {
+                if (data.success == false) {
+                    kendo.ui.showErrorDialog({
+                        message: data.message
+                    });
+                } else {
+                    version = data.rows;
+                }
+            }
+        });
+
+        if (version.length < 1) {
+            kendo.ui.showInfoDialog({
+                message: "<@spring.message '没有可同步的目录版本！'/>"
+            })
+        } else if (version.length == 1) {
+            syncAjax(version[0].catalogto, version[0].versionto);
+        } else {
+            batchLabel(version);
+        }
+    }
+
+    //取消按钮
+    function addlableOff() {
+        $("#batch_add_lable").data("kendoWindow").close();
+    }
+    //新增按钮
+    function addlableConfirm() {
+        //获取多选框，选中的集合
+        var versionSelect = $("#form-field-select-2").val();
+        var catalogTo = null;
+        var versionTo = null;
+        for (var i = 0; i < version.length; i++) {
+            if (version[i].versionNameTo == versionSelect.toString()) {
+                catalogTo = version[i].catalogto;
+                versionTo = version[i].versionto;
+            }
+        }
+        ;
+        syncAjax(catalogTo, versionTo);
+        addlableOff();
+
+    }
+</script>
+<div id="productDetails" style="margin-top: 5px">
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                 <span class="btn btn-success k-grid-save-changes" onclick="saveData()"
+                       style="float:left;margin-right:5px;margin-left:15px;"><i
+                         class="fa fa-save"></i><@spring.message "hap.save"/></span>
+        <span id="dsync" onclick="syncData()" class="btn btn-info" style="float:left;margin-right:5px;"><i
+                class="fa fa-refresh"></i><@spring.message "同步"/></span>
+        <span id="confirmNotice" onclick="confirmNotice()" class="btn btn-info" style="float:left;margin-right:5px;display: none"><i
+                class="fa fa-bell"></i><@spring.message "确认通知"/></span>
+    </div>
+    <div id="editWin"></div>
+    <div class="col-sm-12" style="margin-top:0px;">
+        <div id="tabStrip">
+            <ul>
+                <li id="base"><@spring.message "hmall.product.base"/></li>
+                <li id="saleProperty"><@spring.message "hmall.product.saleProperty"/></li>
+                <li id="media"><@spring.message "hmall.product.media"/></li>
+                <li id="specifications"><@spring.message "hmall.product.specifications"/></li>
+                <li id="others"><@spring.message "hmall.product.others"/></li>
+            </ul>
+            <div id="page-content1">
+                <!--基础面板-->
+                <div class="panel" id="baseInfo" style="padding: 0;border:none;">
+
+                    <div class="row" style="margin-top:10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="code"><@spring.message
+                                'hmall.product.code'/></label>
+                            <div class="col-sm-8">
+                                <input id="code" name="code" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.code"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="catalogversionId"><@spring.message
+                                'hmall.product.catalogVersion'/></label>
+                            <div class="col-sm-8">
+                                <input id="catalogversionId" name="catalogversionId" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.catalogversionId"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#catalogversionId").kendoDropDownList({
+                                    dataTextField: "catalogName",
+                                    dataValueField: "catalogversionId",
+                                    valuePrimitive: true,
+                                    dataSource: catalogData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="name"><@spring.message
+                                'hmall.product.name'/></label>
+                            <div class="col-sm-8">
+                                <input id="name" name="name" type="text"
+                                       class="form-control full_width k-textbox" data-bind="value:model.name"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="nameEn"><@spring.message '英文名称'/></label>
+                            <div class="col-sm-8">
+                                <input id="nameEn" name="nameEn" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.nameEn"/>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="approvalStatus"><@spring.message
+                                'hmall.product.approvalStatus'/></label>
+                            <div class="col-sm-8">
+                                <input id="approvalStatus" name="approvalStatus" type="text"
+                                       class="form-control full_width" data-bind="value:model.approvalStatus"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#approvalStatus").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: approvalStatus,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="miniOrderQuantity"><@spring.message
+                                'hmall.product.miniOrderQuantity'/></label>
+                            <div class="col-sm-8">
+                                <input id="miniOrderQuantity" name="miniOrderQuantity" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.miniOrderQuantity"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="creationDate"><@spring.message 'hmall.product.creationDate'/></label>
+                            <div class="col-sm-8">
+                                <input id="creationDate" name="creationDate" type="text"
+                                       class="form-control full_width" data-bind="value:model.creationDate"
+                                       readonly/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="lastUpdateDate"><@spring.message
+                                'hmall.product.lastUpdateDate'/></label>
+                            <div class="col-sm-8">
+                                <input id="lastUpdateDate" name="lastUpdateDate" type="text"
+                                       class="form-control full_width" data-bind="value:model.lastUpdateDate"
+                                       readonly/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="syncflag"><@spring.message
+                                'hmall.product.syncflag'/></label>
+                            <div class="col-sm-8">
+                                <div id="syncflag" class="full_width"
+                                     data-bind="enabled: true,value:model.syncflag"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#syncflag").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                            </script>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="productId"><@spring.message 'hmall.product.productId'/></label>
+                            <div class="col-sm-8">
+                                <input id="productId" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.productId" readonly/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="style"><@spring.message
+                                'hmall.product.style'/></label>
+                            <div class="col-sm-8">
+                                <input id="style" name="style" type="text" value="HMALL_MST_PRODUCT"
+                                       class="form-control full_width k-textbox" data-bind="" readonly/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="fetchImageFlag"><@spring.message
+                                '是否已获取图片'/></label>
+                            <div class="col-sm-8">
+                                <div id="fetchImageFlag" name="fetchImageFlag"
+                                     class="full_width" data-bind="enabled: true,value:model.fetchImageFlag"></div>
+                            </div>
+                        </div>
+                        <script type="text/javascript">
+                            $("#fetchImageFlag").kendoRadio({
+                                layout: '',//vertical
+                                readonly: false,
+                                items: [{
+                                    label: "是",
+                                    value: "Y"
+                                }, {
+                                    label: "否",
+                                    value: "N"
+                                }],
+                            }).data("kendoRadio");
+                        </script>
+                    </div>
+                    <!--第5行-->
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="escName"><@spring.message 'hmall.product.escName'/></label>
+                            <div class="col-sm-8">
+                                <input id="escName" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.escName"/>
+                            </div>
+                        </div>
+                        <!--是否可定制-->
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="hascustom"><@spring.message'hmall.product.hascustom'/></label>
+                            <div class="col-sm-8">
+                                <input id="hascustom" name="hascustom" type="text"
+                                       class="form-control full_width" data-bind="value:model.hascustom"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#hascustom").kendoDropDownList({
+                                    optionLabel: "",
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: hascustomData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <script type="text/javascript">kendo.bind($('#baseInfo'), viewModel);</script>
+                <div id="hide1" class="col-sm-12" style="margin-top:0px;">
+
+                    <div id="tabStrip1">
+                        <ul>
+                            <li id="pricerow"><@spring.message "hmall.pricerow"/></li>
+                            <li id="productStructure"><@spring.message "hmall.productStructure"/></li>
+                            <li id="category"><@spring.message "hmall.categoryStructure"/></li>
+                            <li id="odtype"><@spring.message "频道子表"/></li>
+                        </ul>
+                        <div id="page-content1_1">
+                            <div style="clear: both;">
+                                <div id="pricerowGrid"></div>
+                            </div>
+                        </div>
+                        <div id="page-content1_2">
+                            <div class="row" style="margin-top: 10px;" id="baseProduct">
+                                <div class="form-group col-sm-6">
+                                    <label class="col-sm-2"><@spring.message
+                                        "homs.product.baseProduct"/>:</label>
+                                    <div class="col-sm-6">
+                                        <input id="baseProductId" type="text" class="form-control"
+                                               data-bind="value:model.baseProductId,text:model.baseProductCode"/>
+                                    </div>
+                                    <script type="text/javascript">
+                                        $("#baseProductId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_PRODUCT")}, {
+                                            query: function (e) {
+
+                                            },
+                                            select: function (e) {
+                                                productId = e.item.productId;
+                                            }
+                                        }));
+                                    </script>
+                                    <!--<div class="col-sm-1">-->
+                                    <!--<span class="btn btn-primary " data-bind="click:queryProductFunction" style="margin-right:5px;width:50px;"-->
+                                    <!--data-bind=""><@spring.message "hap.query"/></span>-->
+                                    <!--</div>-->
+                                </div>
+                            </div>
+                            <script type="text/javascript">kendo.bind($('#baseProduct'), viewModel);</script>
+                            <div style="clear: both;">
+                                <div id="productStructureGrid"></div>
+                            </div>
+                        </div>
+                        <div id="page-content1_3">
+
+                            <div style="clear: both;">
+                                <div id="categoryStructureGrid"></div>
+                            </div>
+                        </div>
+                        <div id="page-content1_4">
+                            <div style="clear: both;">
+                                <div id="odtypeGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-content2">
+
+                <div class="panel" id="salePropertyInfo" style="padding: 0;border:none;">
+
+                    <div class="row" style="margin-top:10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="saleStatus"><@spring.message
+                                'hmall.product.saleStatus'/></label>
+                            <div class="col-sm-8">
+                                <input id="saleStatus" type="text" class="form-control full_width"
+                                       data-bind="value:model.saleStatus"/>
+                            </div>
+                            <script>
+                                $("#saleStatus").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: saleStatusData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="originCountry"><@spring.message
+                                'hmall.product.originCountry'/></label>
+                            <div class="col-sm-8">
+                                <input id="originCountry" name="originCountry" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.originCountry"/>
+                            </div>
+                            <script>
+                                $("#originCountry").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: originCountryData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="sourcePlace"><@spring.message
+                                'hmall.product.sourcePlace'/></label>
+                            <div class="col-sm-8">
+                                <input id="sourcePlace" name="sourcePlace" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.sourcePlace"/>
+                            </div>
+                            <script>
+                                $("#sourcePlace").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: sourcePlaceData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="stype"><@spring.message
+                                'hmall.product.stype'/></label>
+                            <div class="col-sm-8">
+                                <input id="stype" name="stype" type="text"
+                                       class="form-control full_width" data-bind="value:model.stype"/>
+                            </div>
+                            <script>
+                                $("#stype").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: stypeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="brandName"><@spring.message 'hmall.product.brandName'/></label>
+                            <div class="col-sm-8">
+                                <input id="brandName" name="brandName" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.brandId,text:model.brandName"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#brandName").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_BRAND")}, {
+                                    query: function (e) {
+
+                                    },
+                                    select: function (e) {
+
+                                    }
+                                }));
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="isSpeSale"><@spring.message 'hmall.product.isSpeSale'/></label>
+                            <div class="col-sm-8">
+                                <div id="isSpeSale" class="full_width"
+                                     data-bind="enabled: true,value:model.isSpeSale"></div>
+                                <script type="text/javascript">
+                                    $("#isSpeSale").kendoRadio({
+                                        layout: '',//vertical
+                                        readonly: false,
+                                        items: [{
+                                            label: "是",
+                                            value: "Y"
+                                        }, {
+                                            label: "否",
+                                            value: "N"
+                                        }],
+                                        change: function (e) {
+
+                                        }
+                                    }).data("kendoRadio");
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="stype"><@spring.message
+                                '商品V码'/></label>
+                            <div class="col-sm-8">
+                                <input id="vProductCode" type="text"
+                                       class="full_width k-textbox" data-bind="value:model.vProductCode"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="stype"><@spring.message
+                                '平台号'/></label>
+                            <div class="col-sm-8">
+                                <input id="platformCode" type="text"
+                                       class="full_width k-textbox" data-bind="value:model.platformCode"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="supplier"><@spring.message
+                                '供应商'/></label>
+                            <div class="col-sm-8">
+                                <input id="supplier" type="text"
+                                       class="full_width k-textbox" data-bind="value:model.supplier"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="customChannelSource"><@spring.message
+                                '定制来源频道'/></label>
+                            <div class="col-sm-8">
+                                <input id="customChannelSource" type="text"
+                                       class="full_width" data-bind="value:model.customChannelSource"/>
+                            </div>
+                            <script>
+                                $("#customChannelSource").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: customChannelSourceData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="customSupportType"><@spring.message
+                                '定制支持类型'/></label>
+                            <div class="col-sm-8">
+                                <input id="customSupportType" type="text"
+                                       class="full_width" data-bind="value:model.customSupportType"/>
+                            </div>
+                            <script>
+                                $("#customSupportType").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: customSupportTypeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="warehouse"><@spring.message
+                                '仓库'/></label>
+                            <div class="col-sm-8">
+                                <input id="warehouse" type="text"
+                                       class="full_width k-textbox" data-bind="value:model.warehouse"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h5>商品类型</h5>
+                    </div>
+                    <hr style="margin-top: 10px;"/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="productType"><@spring.message 'hmall.product.producttype'/></label>
+                            <div class="col-sm-8">
+                                <input id="productType" type="text" class="form-control full_width"
+                                       data-bind="value:model.productType"/>
+                            </div>
+                            <script>
+                                $("#productType").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: productTypeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="customType"><@spring.message
+                                'hmall.product.customType'/></label>
+                            <div class="col-sm-8">
+                                <input id="customType" name="customType" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.customType"/>
+                            </div>
+                            <script>
+                                $("#customType").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: customTypeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="designType"><@spring.message
+                                'hmall.product.designType'/></label>
+                            <div class="col-sm-8">
+                                <input id="designType" name="designType" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.designType"/>
+                            </div>
+                            <script>
+                                $("#designType").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: designTypeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h5>产品状态</h5>
+                    </div>
+                    <hr style="margin-top: 10px;"/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="productStatus"><@spring.message 'hmall.product.productStatus'/></label>
+                            <div class="col-sm-8">
+                                <input id="productStatus" type="text" class="form-control full_width"
+                                       data-bind="value:model.productStatus"/>
+                            </div>
+                            <script>
+                                $("#productStatus").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: productStatusData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="listingTime"><@spring.message
+                                'hmall.product.listingTime'/></label>
+                            <div class="col-sm-8">
+                                <input id="listingTime" name="listingTime" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.listingTime"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#listingTime").kendoDateTimePicker({
+                                    // format: "yyyy-MM-dd HH:mm:ss",
+                                });
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="delistingTime"><@spring.message
+                                'hmall.product.delistingTime'/></label>
+                            <div class="col-sm-8">
+                                <input id="delistingTime" name="delistingTime" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.delistingTime"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#delistingTime").kendoDateTimePicker({
+                                    //  format: "yyyy-MM-dd HH:mm:ss",
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <script type="text/javascript">
+                    kendo.bind($("#salePropertyInfo"), viewModel);
+                </script>
+
+                <div id="hide2" class="col-sm-12" style="margin-top:0px;">
+
+                    <div id="tabStrip2">
+                        <ul>
+                            <li id="suitProductTab"><@spring.message "hmall.suitProduct"/></li>
+                            <li id="patchProductTab"><@spring.message "hmall.patchProduct"/></li>
+                        </ul>
+                        <div id="page-content2_1">
+                            <div class="row" style="margin-top: 10px;">
+
+                            </div>
+                            <div style="clear: both;">
+                                <div id="suitProductGrid"></div>
+                            </div>
+                        </div>
+                        <div id="page-content2_2">
+
+                            <div style="clear: both;">
+                                <div id="patchProductGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-content3">
+                <div id="hide3" class="col-sm-12" style="margin-top:0px;">
+                    <div id="tabStrip3">
+                        <ul>
+                            <li id="longImageTab"><@spring.message "长主图"/></li>
+                            <li id="squareImageTab"><@spring.message "方主图"/></li>
+                            <li id="longBigImageTab"><@spring.message "长大主图"/></li>
+                            <li id="otherImageTab"><@spring.message "其他"/></li>
+                        </ul>
+                        <div id="page-content3_1">
+                            <div style="clear: both;">
+                                <div id="longImageGrid"></div>
+                            </div>
+                        </div>
+                        <div id="page-content3_2">
+                            <div style="clear: both;">
+                                <div id="squareImageGrid"></div>
+                            </div>
+                        </div>
+                        <div id="page-content3_3">
+                            <div style="clear: both;">
+                                <div id="longBigImageGrid"></div>
+                            </div>
+                        </div>
+                        <div id="page-content3_4">
+                            <div style="clear: both;">
+                                <div id="otherImageGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="page-content4">
+                <div class="panel" id="specificationsInfo" style="padding: 0;border:none;">
+
+                    <div class="row" style="margin-top:10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="shape"><@spring.message 'hmall.product.shape'/></label>
+                            <div class="col-sm-8">
+                                <input id="shape" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.shape"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="texture"><@spring.message
+                                'hmall.product.texture'/></label>
+                            <div class="col-sm-8">
+                                <input id="texture" name="texture" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.texture"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   id="isResin"><@spring.message 'hmall.product.isResin'/></label>
+                            <div class="col-sm-8">
+                                <div id="isResin2" class="full_width"
+                                     data-bind="enabled: true,value:model.isResin"></div>
+                                <script type="text/javascript">
+                                    $("#isResin2").kendoRadio({
+                                        layout: '',//vertical
+                                        readonly: false,
+                                        items: [{
+                                            label: "是",
+                                            value: "Y"
+                                        }, {
+                                            label: "否",
+                                            value: "N"
+                                        }],
+                                        change: function (e) {
+
+                                        }
+                                    }).data("kendoRadio");
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="textureSpecification"><@spring.message
+                                'hmall.product.textureSpecification'/></label>
+                            <div class="col-sm-8">
+                                <input id="textureSpecification" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.textureSpecification"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="maintainSpecification"><@spring.message
+                                'hmall.product.maintainSpecification'/></label>
+                            <div class="col-sm-8">
+                                <input id="maintainSpecification" name="maintainSpecification" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.maintainSpecification"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h5>尺寸</h5>
+                    </div>
+                    <hr style="margin-top: 10px;"/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="pLong"><@spring.message 'hmall.product.pLong'/></label>
+                            <div class="col-sm-8">
+                                <input id="pLong" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.pLong"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="pWide"><@spring.message
+                                'hmall.product.pWide'/></label>
+                            <div class="col-sm-8">
+                                <input id="pWide" name="pWide" type="text"
+                                       class="form-control full_width k-textbox" data-bind="value:model.pWide"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="pHigh"><@spring.message
+                                'hmall.product.pHigh'/></label>
+                            <div class="col-sm-8">
+                                <input id="pHigh" name="pHigh" type="text"
+                                       class="form-control full_width k-textbox" data-bind="value:model.pHigh"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="sizeSpecification"><@spring.message
+                                'hmall.product.sizeSpecification'/></label>
+                            <div class="col-sm-8">
+                                <input id="sizeSpecification" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.sizeSpecification"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="sizeUnit"><@spring.message
+                                'hmall.product.sizeUnit'/></label>
+                            <div class="col-sm-8">
+                                <input id="sizeUnit" name="sizeUnit" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.sizeUnit"/>
+                            </div>
+                            <script>
+                                $("#sizeUnit").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: unitData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h5>包装</h5>
+                    </div>
+                    <hr style="margin-top: 10px;"/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="packingLong"><@spring.message 'hmall.product.packingLong'/></label>
+                            <div class="col-sm-8">
+                                <input id="packingLong" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.packingLong"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="packingWide"><@spring.message
+                                'hmall.product.packingWide'/></label>
+                            <div class="col-sm-8">
+                                <input id="packingWide" name="packingWide" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.packingWide"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="packingHigh"><@spring.message
+                                'hmall.product.packingHigh'/></label>
+                            <div class="col-sm-8">
+                                <input id="packingHigh" name="packingHigh" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.packingHigh"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="packingVolume"><@spring.message 'hmall.product.packingVolume'/></label>
+                            <div class="col-sm-8">
+                                <input id="packingVolume" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.packingVolume"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="packingUnit"><@spring.message
+                                'hmall.product.packingUnit'/></label>
+                            <div class="col-sm-8">
+                                <input id="packingUnit" name="packingUnit" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.packingUnit"/>
+                            </div>
+                            <script>
+                                $("#packingUnit").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: unitData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="packingVolUnit"><@spring.message
+                                'hmall.product.packingVolUnit'/></label>
+                            <div class="col-sm-8">
+                                <input id="packingVolUnit" name="packingVolUnit" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.packingVolUnit"/>
+                            </div>
+                            <script>
+                                $("#packingVolUnit").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: unitData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h5>装量</h5>
+                    </div>
+                    <hr style="margin-top: 10px;"/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="grossWeight"><@spring.message 'hmall.product.grossWeight'/></label>
+                            <div class="col-sm-8">
+                                <input id="grossWeight" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.grossWeight"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="netWeight"><@spring.message
+                                'hmall.product.netWeight'/></label>
+                            <div class="col-sm-8">
+                                <input id="netWeight" name="netWeight" type="text"
+                                       class="form-control full_width k-textbox"
+                                       data-bind="value:model.netWeight"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="weightUnit"><@spring.message
+                                'hmall.product.weightUnit'/></label>
+                            <div class="col-sm-8">
+                                <input id="weightUnit" name="weightUnit" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.weightUnit"/>
+                            </div>
+                            <script>
+                                $("#weightUnit").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: unitData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h5>容量</h5>
+                    </div>
+                    <hr style="margin-top: 10px;"/>
+
+                    <div class="row">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="netCapacity"><@spring.message 'hmall.product.netCapacity'/></label>
+                            <div class="col-sm-8">
+                                <input id="netCapacity" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.netCapacity"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="qgp"><@spring.message
+                                'hmall.product.qgp'/></label>
+                            <div class="col-sm-8">
+                                <input id="qgp" name="qgp" type="text" class="form-control full_width k-textbox"
+                                       data-bind="value:model.qgp"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" for="netCapacityUnit"><@spring.message
+                                'hmall.product.netCapacityUnit'/></label>
+                            <div class="col-sm-8">
+                                <input id="netCapacityUnit" name="netCapacityUnit" type="text"
+                                       class="form-control full_width"
+                                       data-bind="value:model.netCapacityUnit"/>
+                            </div>
+                            <script>
+                                $("#netCapacityUnit").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: unitData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                </div>
+                <script type="text/javascript">
+                    kendo.bind($("#specificationsInfo"), viewModel);
+                </script>
+            </div>
+
+            <div id="page-content5">
+                <div class="panel" id="otherInfo" style="padding: 0;border:none;">
+                    <div class="row" style="margin-top:10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="mainColor"><@spring.message '主颜色'/></label>
+                            <div class="col-sm-8">
+                                <input id="mainColor" type="text" class="form-control full_width"
+                                       data-bind="value:model.mainColor"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#mainColor").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: mainColorData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="rewardProduct"><@spring.message '是否积分商品'/></label>
+                            <div class="col-sm-8">
+                                <div id="rewardProduct" class="full_width"
+                                     data-bind="enabled:true,value:model.rewardProduct"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#rewardProduct").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                                kendo.bind($("#rewardProduct"), viewModel);
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="defaultDelivery"><@spring.message '配送方式'/></label>
+                            <div class="col-sm-8">
+                                <input id="defaultDelivery" type="text" class="form-control full_width"
+                                       data-bind="value:model.defaultDelivery"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#defaultDelivery").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: shippingTypeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="isPackaging"><@spring.message '是否需要组装'/></label>
+                            <div class="col-sm-8">
+                                <div id="isPackaging" class="full_width"
+                                     data-bind="enabled:true,value:model.isPackaging"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#isPackaging").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="addFunction1"><@spring.message '附加功能1'/></label>
+                            <div class="col-sm-8">
+                                <input id="addFunction1" type="text" class="form-control full_width"
+                                       data-bind="value:model.addFunction1"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#addFunction1").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: addFunctionData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="isStorage"><@spring.message '是否带储物空间'/></label>
+                            <div class="col-sm-8">
+                                <div id="isStorage" class=" full_width"
+                                     data-bind="enabled:true,value:model.isStorage"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#isStorage").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="addFunction2"><@spring.message '附加功能2'/></label>
+                            <div class="col-sm-8">
+                                <input id="addFunction2" type="text" class="form-control full_width"
+                                       data-bind="value:model.addFunction2"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#addFunction2").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: addFunctionData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="addFunction3"><@spring.message '附加功能3'/></label>
+                            <div class="col-sm-8">
+                                <input id="addFunction3" type="text" class="form-control full_width"
+                                       data-bind="value:model.addFunction3"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#addFunction3").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: addFunctionData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="filler1"><@spring.message '填充物1'/></label>
+                            <div class="col-sm-8">
+                                <input id="filler1" type="text" class="form-control full_width"
+                                       data-bind="value:model.filler1"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#filler1").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: fillerData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="sofaCombiningForm"><@spring.message '沙发组合形式'/></label>
+                            <div class="col-sm-8">
+                                <input id="sofaCombiningForm" type="text" class="form-control full_width"
+                                       data-bind="value:model.sofaCombiningForm"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#sofaCombiningForm").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: sofaCombiningFormData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="isWashable"><@spring.message '是否可拆洗'/></label>
+                            <div class="col-sm-8">
+                                <div id="isWashable" class=" full_width"
+                                     data-bind="enabled:true,value:model.isWashable"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#isWashable").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="filler2"><@spring.message '填充物2'/></label>
+                            <div class="col-sm-8">
+                                <input id="filler2" type="text" class="form-control full_width"
+                                       data-bind="value:model.filler2"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#filler2").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: fillerData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="filler3"><@spring.message '填充物3'/></label>
+                            <div class="col-sm-8">
+                                <input id="filler3" type="text" class="form-control full_width"
+                                       data-bind="value:model.filler3"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#filler3").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: fillerData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="woodenCrafts1"><@spring.message '木质工艺1'/></label>
+                            <div class="col-sm-8">
+                                <input id="woodenCrafts1" type="text" class="form-control full_width"
+                                       data-bind="value:model.woodenCrafts1"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#woodenCrafts1").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: woodenCraftsData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="woodenCrafts2"><@spring.message '木质工艺2'/></label>
+                            <div class="col-sm-8">
+                                <input id="woodenCrafts2" type="text" class="form-control full_width"
+                                       data-bind="value:model.woodenCrafts2"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#woodenCrafts2").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: woodenCraftsData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="suitableUsers"><@spring.message '适用对象'/></label>
+                            <div class="col-sm-8">
+                                <input id="suitableUsers" type="text" class="form-control full_width"
+                                       data-bind="value:model.suitableUsers"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#suitableUsers").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: suitableUsersData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="material"><@spring.message '材质'/></label>
+                            <div class="col-sm-8">
+                                <input id="material" type="text" class="form-control full_width"
+                                       data-bind="value:model.material"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#material").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: materialData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="woodenCrafts3"><@spring.message '木质工艺3'/></label>
+                            <div class="col-sm-8">
+                                <input id="woodenCrafts3" type="text" class="form-control full_width"
+                                       data-bind="value:model.woodenCrafts3"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#woodenCrafts3").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: woodenCraftsData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="designElement1"><@spring.message '设计元素1'/></label>
+                            <div class="col-sm-8">
+                                <input id="designElement1" type="text" class="form-control full_width"
+                                       data-bind="value:model.designElement1"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#designElement1").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: designElementData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="leatherRange1"><@spring.message '皮革饰面范围1'/></label>
+                            <div class="col-sm-8">
+                                <input id="leatherRange1" type="text" class="form-control full_width"
+                                       data-bind="value:model.leatherRange1"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#leatherRange1").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: leatherRangeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="leatherCraft1"><@spring.message '皮革饰面工艺1'/></label>
+                            <div class="col-sm-8">
+                                <input id="leatherCraft1" type="text" class="form-control full_width"
+                                       data-bind="value:model.leatherCraft1"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#leatherCraft1").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: leatherCraftData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="designElement2"><@spring.message '设计元素2'/></label>
+                            <div class="col-sm-8">
+                                <input id="designElement2" type="text" class="form-control full_width"
+                                       data-bind="value:model.designElement2"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#designElement2").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: designElementData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="designElement3"><@spring.message '设计元素3'/></label>
+                            <div class="col-sm-8">
+                                <input id="designElement3" type="text" class="form-control full_width"
+                                       data-bind="value:model.designElement3"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#designElement3").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: designElementData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="leatherRange2"><@spring.message '皮革饰面范围2'/></label>
+                            <div class="col-sm-8">
+                                <input id="leatherRange2" type="text" class="form-control full_width"
+                                       data-bind="value:model.leatherRange2"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#leatherRange2").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: leatherRangeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="leatherRange3"><@spring.message '皮革饰面范围3'/></label>
+                            <div class="col-sm-8">
+                                <input id="leatherRange3" type="text" class="form-control full_width"
+                                       data-bind="value:model.leatherRange3"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#leatherRange3").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: leatherRangeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="leatherCraft2"><@spring.message '皮革饰面工艺2'/></label>
+                            <div class="col-sm-8">
+                                <input id="leatherCraft2" type="text" class="form-control full_width"
+                                       data-bind="value:model.leatherCraft2"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#leatherCraft2").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: leatherCraftData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="leatherCraft3"><@spring.message '皮革饰面工艺3'/></label>
+                            <div class="col-sm-8">
+                                <input id="leatherCraft3" type="text" class="form-control full_width"
+                                       data-bind="value:model.leatherCraft3"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#leatherCraft3").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: leatherCraftData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="isSoftCushion"><@spring.message '是否带软靠'/></label>
+                            <div class="col-sm-8">
+                                <div id="isSoftCushion" class=" full_width"
+                                     data-bind="enabled:true,value:model.isSoftCushion"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#isSoftCushion").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="isWheel"><@spring.message '是否带滑轮'/></label>
+                            <div class="col-sm-8">
+                                <div id="isWheel" class=" full_width"
+                                     data-bind="enabled:true,value:model.isWheel"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#isWheel").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="drawerRailNum"><@spring.message '抽屉导轨节数'/></label>
+                            <div class="col-sm-8">
+                                <input id="drawerRailNum" type="text" class="form-control full_width"
+                                       data-bind="value:model.drawerRailNum"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#drawerRailNum").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: drawerRailNumData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="isDamping"><@spring.message '是否带阻尼'/></label>
+                            <div class="col-sm-8">
+                                <div id="isDamping" class=" full_width"
+                                     data-bind="enabled:true,value:model.isDamping"></div>
+                            </div>
+                            <script type="text/javascript">
+                                $("#isDamping").kendoRadio({
+                                    layout: '',//vertical
+                                    readonly: false,
+                                    items: [{
+                                        label: "是",
+                                        value: "Y"
+                                    }, {
+                                        label: "否",
+                                        value: "N"
+                                    }],
+                                    change: function (e) {
+
+                                    }
+                                }).data("kendoRadio");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="paintCraft"><@spring.message '饰面油漆工艺'/></label>
+                            <div class="col-sm-8">
+                                <input id="paintCraft" type="text" class="form-control full_width"
+                                       data-bind="value:model.paintCraft"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#paintCraft").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: paintCraftData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="drawerNumber"><@spring.message '抽屉数量'/></label>
+                            <div class="col-sm-8">
+                                <input id="drawerNumber" type="text" class="form-control full_width"
+                                       data-bind="value:model.drawerNumber"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#drawerNumber").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: drawerNumberData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="seriesName"><@spring.message '系列名称'/></label>
+                            <div class="col-sm-8">
+                                <input id="seriesName" type="text" class="form-control full_width"
+                                       data-bind="value:model.seriesName"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#seriesName").kendoDropDownList({
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: seriesNameData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:5px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="introduction"><@spring.message '产品简介'/></label>
+                            <div class="col-sm-8">
+                                    <textarea id="introduction" rows="2" style="width:200px; height:250px;" class="form-control"
+                                              data-bind="value:model.introduction"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4"
+                                   for="salepoint"><@spring.message '产品卖点'/></label>
+                            <div class="col-sm-8">
+                                    <textarea id="salepoint" rows="2" style="width:200px; height:250px;" class="form-control"
+                                              data-bind="value:model.salepoint"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <script type="text/javascript">
+                kendo.bind($("#otherInfo"), viewModel);
+            </script>
+
+        </div>
+
+    </div>
+
+    <div id="batch_add_lable" style="clear:both;margin:20px 0px 20px 30px;">
+        <form>
+            <select class="form-control" id="form-field-select-2" name="rolesId"
+                    style="height:200px; width:280px; padding:0px;" multiple="multiple">
+            </select>
+            <br/><br/>
+            <span onclick="addlableConfirm()" class="btn btn-info"
+                  style="float:left;margin-right:5px;">确定</span>
+            <span onclick="addlableOff()" class="btn btn-info" style="float:left;margin-right:5px;">取消</span>
+        </form>
+    </div>
+    <script>
+        function syncAjax(catalogTo, versionTo) {
+            if (catalogTo == null || versionTo == null) {
+                kendo.ui.showInfoDialog({
+                    message: "<@spring.message '目录版本不正确!'/>"
+                })
+                return;
+            }
+            var items = new Array();
+            items.push({
+                list: viewModel.model
+            })
+            var list = [];
+            list.push({
+                list: [viewModel.model],
+                catalogTo: catalogTo,
+                versionTo: versionTo
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/hmall/mst/product/sync',
+                dataType: "json",
+                contentType: "application/json",
+                data: kendo.stringify(list),
+                success: function (data) {
+                    if (data.success == false) {
+                        kendo.ui.showErrorDialog({
+                            message: data.message
+                        });
+                        return;
+                    } else {
+                        kendo.ui.showInfoDialog({
+                            message: "<@spring.message '成功!'/>"
+                        })
+                    }
+                }
+            });
+        }
+
+        function batchLabel(version) {
+            var statuList = version;
+            $("#form-field-select-2").html("");
+            for (var i in statuList) {
+                $("#form-field-select-2").append("<option>" + statuList[i].versionNameTo + "</option>");
+            }
+
+            $("#batch_add_lable").data("kendoWindow").open();
+            $("#form-field-select-2").val("");
+        }
+        $("#batch_add_lable").kendoWindow({
+            position: {
+                top: "20%",
+                left: "30%"
+            },
+            width: "400px",
+            title: "目录版本",
+            actions: [
+                "Close"
+            ],
+            visible: false          //设置窗口不可见
+        });
+    </script>
+
+</div>
+
+<script>
+    //验证
+    $("#productDetails").kendoValidator({
+        messages: {
+            required: "<@spring.message 'hmall.required'/>"
+        }
+    });
+
+    var tabToActivate = $("#base");
+    var tabStrip = $("#tabStrip").kendoTabStrip({
+            animation: {
+                close: {
+                    duration: 200,
+                    effects: "fadeOut"
+                },
+                open: {
+                    duration: 200,
+                    effects: "fadeIn"
+                }
+            },
+        }
+    ).data("kendoTabStrip");
+    tabStrip.activateTab(tabToActivate);
+
+    var pricerowTab = $("#pricerow");
+    var tabStrip1 = $("#tabStrip1").kendoTabStrip({
+            animation: {
+                close: {
+                    duration: 200,
+                    effects: "fadeOut"
+                },
+                open: {
+                    duration: 200,
+                    effects: "fadeIn"
+                }
+            },
+        }
+    ).data("kendoTabStrip");
+    tabStrip1.activateTab(pricerowTab);
+
+    var suitProductTab = $("#suitProductTab");
+    var tabStrip2 = $("#tabStrip2").kendoTabStrip({
+            animation: {
+                close: {
+                    duration: 200,
+                    effects: "fadeOut"
+                },
+                open: {
+                    duration: 200,
+                    effects: "fadeIn"
+                }
+            },
+        }
+    ).data("kendoTabStrip");
+    tabStrip2.activateTab(suitProductTab);
+
+    var longImageTab = $("#longImageTab");
+    var tabStrip3 = $("#tabStrip3").kendoTabStrip({
+            animation: {
+                close: {
+                    duration: 200,
+                    effects: "fadeOut"
+                },
+                open: {
+                    duration: 200,
+                    effects: "fadeIn"
+                }
+            },
+        }
+    ).data("kendoTabStrip");
+    tabStrip3.activateTab(longImageTab);
+
+    var BaseUrl = _basePath;
+
+    priceRowDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/pricerow/queryInfo?productId=" + productId,
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/pricerow/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/pricerow/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/pricerow/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return null;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "pricerowId",
+                fields: {
+                    startTime: {
+                        type: "date",
+                    },
+                    endTime: {
+                        type: "date",
+                    },
+                }
+            }
+        }
+    });
+
+    //价格行grid
+    var pricerowGrid = $("#pricerowGrid");
+    $("#pricerowGrid").kendoGrid({
+        dataSource: priceRowDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "createPricerow",
+                template: '<span id="createPricerow" onclick="createPricerowFunction()" class="btn btn-primary"><@spring.message "hap.new" /></span>'
+            },
+            {
+                name: "addPricerow",
+                template: '<span id="addPricerow" onclick="addPricerowFunction()" class="btn btn-success k-grid-save-changes"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deletePricerow",
+                template: '<span id="deletePricerow" onclick="deletePricerow()"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "hmall.pricerow.productCode"/>',
+                width: 120
+            },
+            {
+                field: "userName",
+                title: '<@spring.message "hmall.pricerow.userName"/>',
+                width: 120
+            },
+            {
+                field: "name",
+                title: '<@spring.message "hmall.pricerow.userGroupName"/>',
+                width: 120,
+                format: "{0:yyyy-MM-dd}",
+            },
+            {
+                field: "startTime",
+                title: '<@spring.message "hmall.pricerow.startTime"/>',
+                width: 120,
+                format: "{0:yyyy-MM-dd}",
+            },
+            {
+                field: "endTime",
+                title: '<@spring.message "hmall.pricerow.endTime"/>',
+                width: 120,
+                format: "{0:yyyy-MM-dd}",
+            },
+            {
+                field: "priceType",
+                title: '<@spring.message "hmall.pricerow.priceType"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var priceType = dataItem.priceType;
+                    if (priceType == null) {
+                        return '';
+                    }
+                    $.each(priceTypeData, function (i, n) {
+                        if (n.value == priceType) {
+                            priceType = n.meaning;
+                            return priceType;
+                        } else {
+                            return '';
+                        }
+                    })
+                    return priceType;
+                }
+            },
+            {
+                field: "priceGroup",
+                title: '<@spring.message "hmall.pricerow.priceGroup"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var priceGroup = dataItem.priceGroup;
+                    if (priceGroup == null) {
+                        return '';
+                    }
+                    $.each(priceGroupData, function (i, n) {
+                        if (n.value == priceGroup) {
+                            priceGroup = n.meaning;
+                            return priceGroup;
+                        } else {
+                            return '';
+                        }
+                    })
+                    return priceGroup;
+                },
+            },
+            {
+                field: "isBottom",
+                title: '<@spring.message "hmall.pricerow.isBottom"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var isBottom = dataItem.isBottom;
+                    if (isBottom == null) {
+                        return '';
+                    }
+                    $.each(yesOrNo, function (i, n) {
+                        if (n.value == isBottom) {
+                            isBottom = n.meaning;
+                            return isBottom;
+                        } else {
+                            return '';
+                        }
+                    })
+                    return isBottom;
+                },
+            },
+            {
+                field: "basePrice",
+                title: '<@spring.message "hmall.pricerow.basePrice"/>',
+                width: 120
+            },
+            {
+                field: "bottomPrice",
+                title: '<@spring.message "hmall.pricerow.bottomPrice"/>',
+                width: 120
+            },
+            {
+                field: "saleUnit",
+                title: '<@spring.message "hmall.pricerow.saleUnit"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var saleUnit = dataItem.saleUnit;
+                    if (saleUnit == null) {
+                        return '';
+                    }
+                    $.each(unitData, function (i, n) {
+                        if (n.value == saleUnit) {
+                            saleUnit = n.meaning;
+                            return saleUnit;
+                        } else {
+                            return '';
+                        }
+                    })
+                    return saleUnit;
+                },
+            },
+            {
+                field: "rate",
+                title: '<@spring.message "hmall.pricerow.rate"/>',
+                width: 120
+            },
+            {
+                field: "creationsDate",
+                title: '<@spring.message "hmall.pricerow.creationDate"/>',
+                width: 160
+            }
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    function deletePricerow() {
+
+        var checkedItems = $('#pricerowGrid').data("kendoGrid").selectedDataItems();
+        $.each(checkedItems, function (i, n) {
+            n.productId = null;
+        });
+        if (checkedItems.length) {
+            kendo.ui.showConfirmDialog({
+                title: $l('hap.tip.info'),
+                message: $l('hap.tip.delete_confirm')
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        url: '${base.contextPath}/hmall/mst/pricerow/deleteRelation',
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(checkedItems),
+                        success: function (json) {
+                            if (json.success) {
+                                kendo.ui.showInfoDialog({
+                                    title: $l('hap.tip.info'),
+                                    message: $l('hap.tip.success')
+                                });
+                                $.each(checkedItems, function (i, v) {
+                                    $('#pricerowGrid').data("kendoGrid").dataSource.remove(v)
+                                });
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    title: $l('hap.error'),
+                                    message: json.message
+                                });
+                            }
+                        }
+                    });
+
+
+                }
+            })
+        }
+    }
+    ;
+
+    function createPricerowFunction() {
+
+        window.top.openTab("NEWPRICEROW_" + productId, "新建价格行", "${base.contextPath}/mst/productDetail/priceRowDetail.html?productId=" + productId + "&code=" + code);
+    }
+    ;
+
+    function addPricerowFunction() {
+        var url = "productDetail/priceRow.html?productId=" + productId;
+        var title = '<@spring.message "详情"/>';
+        editWin(url, title);
+    }
+    ;
+
+    //双击弹框
+    pricerowGrid.on('dblclick', '.k-grid-content tr', function (event) {
+        var data = $('#pricerowGrid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+        window.top.openTab(data.pricerowId, "价格行" + data.pricerowId, "${base.contextPath}/mst/productDetail/priceRowDetail.html?pricerowId=" + data.pricerowId + "&productId=" + data.productId + "&code=" + data.code);
+    });
+
+    odtypeDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/odtype/query?productId=" + productId,
+                type: "POST",
+                dataType: "json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return null;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "odtypeId",
+                fields: {}
+            }
+        }
+    });
+
+    var odtypeGrid = $("#odtypeGrid").kendoGrid({
+        dataSource: odtypeDataSource,
+        height: '250px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "custChanSrc",
+                title: '<@spring.message "定制来源频道"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var custChanSrc = dataItem.custChanSrc;
+                    if (custChanSrc == null) {
+                        return '';
+                    }
+                    $.each(customChannelSourceData, function (i, n) {
+                        if (n.value == custChanSrc) {
+                            custChanSrc = n.meaning;
+                            return custChanSrc;
+                        } else {
+                            return '';
+                        }
+                    })
+                    return custChanSrc;
+                },
+            },
+            {
+                field: "approvalStatus",
+                title: '<@spring.message "上架状态"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var approvalStatus2 = dataItem.approvalStatus;
+                    if (approvalStatus2 == null) {
+                        return '';
+                    }
+                    $.each(approvalStatus, function (i, n) {
+                        if (n.value == approvalStatus2) {
+                            approvalStatus2 = n.meaning;
+                            return approvalStatus2;
+                        } else {
+                            return '';
+                        }
+                    })
+                    return approvalStatus2;
+                },
+            },
+            {
+                field: "isUsed",
+                title: '<@spring.message "是否使用"/>',
+                width: 120
+            },
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    //商品类别dataSource
+    productStructureDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/product/queryProduct?baseProductId=" + productId,
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/product/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/product/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/product/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return null;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "productId",
+                fields: {}
+            }
+        }
+    });
+
+    //商品结构grid
+    var productStructureGrid = $("#productStructureGrid")
+    var productStructure_grid = $("#productStructureGrid").kendoGrid({
+        dataSource: productStructureDataSource,
+        height: '250px',
+        rownumber: true,
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "varintProduct",
+                template: '<span id="variantProduct" class="control-label" style=""><@spring.message "hmall.varintProduct" /></span>'
+            },
+            {
+                name: "createProduct",
+                template: '<span id="variantProduct" onclick="createProductFunction()" class="btn btn-primary" style="margin-left:50px;"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deleteProduct",
+                template: '<span id="deleteProduct" onclick="deleteProductStructure()"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "hmall.product.code"/>',
+                width: 120,
+            },
+            {
+                field: "name",
+                title: '<@spring.message "hmall.product.name"/>',
+                width: 120
+            },
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    //删除变体商品
+    function deleteProductStructure() {
+        var checkedItems = $('#productStructureGrid').data("kendoGrid").selectedDataItems();
+        $.each(checkedItems, function (i, n) {
+            n.baseProductId = null;
+        });
+        if (checkedItems.length) {
+            kendo.ui.showConfirmDialog({
+                title: $l('hap.tip.info'),
+                message: $l('hap.tip.delete_confirm')
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        url: '${base.contextPath}/hmall/mst/product/deleteRelation',
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(checkedItems),
+                        success: function (json) {
+                            if (json.success) {
+                                kendo.ui.showInfoDialog({
+                                    title: $l('hap.tip.info'),
+                                    message: $l('hap.tip.success')
+                                });
+                                $.each(checkedItems, function (i, v) {
+                                    $('#productStructureGrid').data("kendoGrid").dataSource.remove(v)
+                                });
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    title: $l('hap.error'),
+                                    message: json.message
+                                });
+                            }
+                        }
+                    });
+
+
+                }
+            })
+        }
+    }
+    //新建变体商品
+    function createProductFunction() {
+        var url = "productDetail/product_query.html?productId=" + productId + "&catalogversion=" + viewModel.model.catalogversionId;
+        var title = '<@spring.message "hap.edit"/>';
+        editWin(url, title);
+    }
+    ;
+
+    //查询基础商品
+    function queryProductFunction() {
+        var url = "productDetail/product_query.html";
+        var title = '<@spring.message "商品列表"/>';
+        editWin(url, title);
+    }
+    ;
+
+
+    categoryStructureDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/product/category/query?productId=" + productId,
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/mst/product/category/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/mst/product/category/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/mst/product/category/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return null;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "categoryId",
+                fields: {}
+            }
+        }
+    });
+
+    //基础界面下的类别结构grid
+    var categoryStructureGrid = $("#categoryStructureGrid");
+    $("#categoryStructureGrid").kendoGrid({
+        dataSource: categoryStructureDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: true,
+        rownumber: true,
+        sortable: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 20
+        },
+        toolbar: [
+            {
+                name: "supcategory",
+                template: '<span  class="control-label" style=""><@spring.message "hmall.productcategory.supcategory" /></span>'
+            },
+            {
+                name: "createCategory",
+                template: '<span id="createCategory" onclick="createProductCategoryFunction()" class="btn btn-primary k-grid-add" style="margin-left:50px;"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deleteCategory",
+                template: '<span id="deleteCategory" onclick="deleteCategory()"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "categoryCode",
+                title: '<@spring.message "hmall.ProductCategory.categoryCode"/>',
+                width: 120
+            },
+            {
+                field: "categoryName",
+                title: '<@spring.message "hmall.ProductCategory.categoryName"/>',
+                width: 120
+            },
+        ],
+        editable: false,
+    }).data("kendoGrid");
+
+    //删除类别
+    function deleteCategory() {
+        var checkedItems = $('#categoryStructureGrid').data("kendoGrid").selectedDataItems();
+        var categoryMappingData = [];
+        $.each(checkedItems, function (i, n) {
+            categoryMappingData.push({
+                productId: productId,
+                categoryId: n.categoryId,
+            })
+        });
+        if (checkedItems.length) {
+            kendo.ui.showConfirmDialog({
+                title: $l('hap.tip.info'),
+                message: $l('hap.tip.delete_confirm')
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        url: '${base.contextPath}/hmall/mst/category/mapping/delete',
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(categoryMappingData),
+                        success: function (json) {
+                            if (json.success) {
+                                kendo.ui.showInfoDialog({
+                                    title: $l('hap.tip.info'),
+                                    message: $l('hap.tip.success')
+                                });
+                                $.each(checkedItems, function (i, v) {
+                                    $('#categoryStructureGrid').data("kendoGrid").dataSource.remove(v)
+                                });
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    title: $l('hap.error'),
+                                    message: json.message
+                                });
+                            }
+                        }
+                    });
+
+
+                }
+            })
+        }
+    }
+    //新建类别
+    function createProductCategoryFunction() {
+        var url = "productDetail/productCategory_query.html?productId=" + productId;
+        var title = '<@spring.message "hap.edit"/>';
+        editWin(url, title);
+    }
+    ;
+
+    //双击弹框
+    categoryStructureGrid.on('dblclick', '.k-grid-content tr', function (event) {
+        var data = $('#categoryStructureGrid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+        var url = "productDetail/productCategoryDetail.html?categoryId=" + data.categoryId;
+        var title = '<@spring.message "类别结构详情"/>';
+        editWin(url, title);
+    });
+
+
+    suitProductDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/suitline/mapping/queryInfo?productHeadId=" + productId,
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/suitline/mapping/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/suitline/mapping/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/suitline/mapping/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return null;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "mappingId",
+                fields: {
+                    code: {
+                        editable: false
+                    },
+                    name: {
+                        editable: false
+                    },
+                }
+            }
+        }
+    });
+
+    //销售属性下的套件商品grid
+    var suitProductGrid = $("#suitProductGrid").kendoGrid({
+        dataSource: suitProductDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "suitProduct",
+                template: '<span  class="control-label" style=""><@spring.message "hmall.suitRelationShip" /></span>'
+            },
+            {
+                name: "createSuitProduct",
+                template: '<span id="createSuitProduct" onclick="createSuitFunction()" class="btn btn-primary" style="margin-left:50px;"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "saveSuitProduct",
+                template: '<span id="saveSuitProduct" onclick="saveSuitProduct()" class="btn btn-success"><@spring.message "hap.save" /></span>'
+            },
+            {
+                name: "deleteSuitProduct",
+                template: '<span id="deleteSuitProduct" onclick="deleteSuitProduct()"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "组件编码"/>',
+                width: 120,
+            },
+            {
+                field: "name",
+                title: '<@spring.message "组件名称"/>',
+                width: 120
+            },
+            {
+                field: "quantity",
+                title: '<@spring.message "组件数量"/>',
+                width: 120,
+                editor: function (container, options) {
+                    $('<input  type="number" min="0" name="' + options.field + '"/>')
+                        .appendTo(container)
+                        .kendoNumericTextBox({
+                            decimals: 0,
+                        });
+
+                }
+            },
+        ],
+        editable: true
+    }).data("kendoGrid");
+
+
+    function deleteSuitProduct() {
+
+        Hap.deleteGridSelection({
+            grid: $('#suitProductGrid')
+        });
+
+    }
+
+    //保存套件商品的数量
+    function saveSuitProduct(e) {
+        var data = suitProductDataSource.updated();
+        if (data.length > 0) {
+            for (var i = 0; i < data.length; i++) {
+                data[i]._status = 'update';
+                data[i].syncflag = 'N';
+            }
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/hmall/mst/suitline/mapping/updateSuitMapping',
+                dataType: "json",
+                contentType: "application/json",
+                data: kendo.stringify(data),
+                success: function (data) {
+                    if (data.success) {
+                        kendo.ui.showConfirmDialog({
+                            title: $l('hap.tip.info'),
+                            message: $l('保存成功！')
+                        })
+                        $("#suitProductGrid").data("kendoGrid").dataSource.page(1);
+                    }
+                }
+            });
+        }
+
+    }
+
+    //新建套件弹框
+    function createSuitFunction() {
+        var url = "productDetail/suitlineMapping.html?productId=" + productId + "&catalogversion=" + viewModel.model.catalogversionId;
+        var title = '<@spring.message "详情"/>';
+        editWin(url, title);
+    }
+
+
+    patchProductDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/patchline/mapping/queryInfo?productId=" + productId,
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/patchline/mapping/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/patchline/mapping/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/patchline/mapping/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return null;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "mappingId",
+                fields: {}
+            }
+        }
+    });
+
+    //销售属性下的补件商品grid
+    var patchProductGrid = $("#patchProductGrid");
+    $("#patchProductGrid").kendoGrid({
+        dataSource: patchProductDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "createPatchProduct",
+                template: '<span id="createPatchProduct" onclick="createPatchFunction()" class="btn btn-primary" style="margin-left:50px;"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deleteSuitProduct",
+                template: '<span id="deleteSuitProduct" onclick="deletePatchProduct()"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "补件编码"/>',
+                width: 120,
+            },
+            {
+                field: "name",
+                title: '<@spring.message "补件名称"/>',
+                width: 120
+            },
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    //补件删除按钮
+    function deletePatchProduct() {
+        Hap.deleteGridSelection({
+            grid: $('#patchProductGrid')
+        });
+
+    }
+    ;
+
+
+    //新建弹框
+    function createPatchFunction() {
+        var url = "productDetail/patchlineMapping.html?productId=" + productId + "&catalogversion=" + viewModel.model.catalogversionId;
+        var title = '<@spring.message "详情"/>';
+        editWin(url, title);
+    }
+
+
+    longImageDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/media/selectMeidaByProduct?productId=" + productId + "&imageGroup=" + 'RM_IMAGE',
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/media/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                    ;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "mediaId",
+                fields: {}
+            }
+        }
+    });
+
+    //多媒体下的长主图grid
+    var longImageGrid = $("#longImageGrid").kendoGrid({
+        dataSource: longImageDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "createDetailImage",
+                template: '<span id="createDetailImage" onclick="createDetailImage()" class="btn btn-primary"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deleteDetailImage",
+                template: '<span id="deleteDetailImage" onclick="deleteDetailImage('+'\'longImageGrid'+'\')"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "hmall.media.code"/>',
+                width: 120,
+            },
+            {
+                field: "name",
+                title: '<@spring.message "hmall.media.name"/>',
+                width: 120
+            },
+            {
+                field: "imageDescribe",
+                title: '<@spring.message "图片描述"/>',
+                width: 120
+            },
+            {
+                field: "path",
+                title: '<@spring.message "图片显示"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var url = dataItem['path'];
+                    if (url != null && url != "") {
+                        var imageData = null;
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/mst/media/getImageIoStream?path=' + url,
+                            type: 'POST',
+                            contentType: "application/json;charset=utf-8",
+                            cache: false,
+                            dataType: 'json',
+                            async: false,
+                            success: function (data) {
+                                if (data.success == true) {
+                                    imageData = data.rows[0];
+                                }
+                            }
+                        });
+                        if (imageData != null) {
+                            return "<img src='" + imageData + "' width='60' height='60'/>";
+                        } else {
+                            return "";
+                        }
+                    } else {
+                        return "";
+                    }
+                },
+            },
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    //新建图片关联
+    function createDetailImage() {
+        var url = "productDetail/media_query.html?productId=" + productId;
+        var title = '<@spring.message "hap.new"/>';
+        editWin(url, title);
+    }
+    ;
+
+    //删除图片关联
+    function deleteDetailImage(flag) {
+        var checkedItems = $('#'+flag).data("kendoGrid").selectedDataItems();
+        var mediaData = [];
+        $.each(checkedItems, function (i, n) {
+            mediaData.push({
+                mediaId: n.mediaId,
+                productId: productId,
+            })
+        });
+        if (checkedItems.length) {
+            kendo.ui.showConfirmDialog({
+                title: $l('hap.tip.info'),
+                message: $l('hap.tip.delete_confirm')
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        url: '${base.contextPath}/hmall/mst/media/deleteRelationWithProduct',
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(mediaData),
+                        success: function (json) {
+                            if (json.success) {
+                                kendo.ui.showInfoDialog({
+                                    title: $l('hap.tip.info'),
+                                    message: $l('hap.tip.success')
+                                });
+                                $('#longImageGrid').data('kendoGrid').dataSource.page(1);
+                                $('#squareImageGrid').data('kendoGrid').dataSource.page(1);
+                                $('#longBigImageGrid').data('kendoGrid').dataSource.page(1);
+                                $('#otherImageGrid').data('kendoGrid').dataSource.page(1);
+                            } else {
+                                kendo.ui.showErrorDialog({
+                                    title: $l('hap.error'),
+                                    message: json.message
+                                });
+                            }
+                        }
+                    });
+
+                }
+            })
+        }
+    }
+
+    squareImageDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/media/selectMeidaByProduct?productId=" + productId + "&imageGroup=" + 'SM_IMAGE',
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/media/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                    ;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "mediaId",
+                fields: {}
+            }
+        }
+    });
+
+    //多媒体下的方主图grid
+    var squareImageGrid = $("#squareImageGrid").kendoGrid({
+        dataSource: squareImageDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "createDetailImage",
+                template: '<span id="createDetailImage" onclick="createDetailImage()" class="btn btn-primary"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deleteDetailImage",
+                template: '<span id="deleteDetailImage" onclick="deleteDetailImage('+'\'squareImageGrid'+'\')"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "hmall.media.code"/>',
+                width: 120,
+            },
+            {
+                field: "name",
+                title: '<@spring.message "hmall.media.name"/>',
+                width: 120
+            },
+            {
+                field: "imageDescribe",
+                title: '<@spring.message "图片描述"/>',
+                width: 120
+            },
+            {
+                field: "path",
+                title: '<@spring.message "图片显示"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var url = dataItem['path'];
+                    if (url != null && url != "") {
+                        var imageData = null;
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/mst/media/getImageIoStream?path=' + url,
+                            type: 'POST',
+                            contentType: "application/json;charset=utf-8",
+                            cache: false,
+                            dataType: 'json',
+                            async: false,
+                            success: function (data) {
+                                if (data.success == true) {
+                                    imageData = data.rows[0];
+                                }
+                            }
+                        });
+                        if (imageData != null) {
+                            return "<img src='" + imageData + "' width='60' height='60'/>";
+                        } else {
+                            return "";
+                        }
+                    } else {
+                        return "";
+                    }
+                },
+            },
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    longBigImageDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/media/selectMeidaByProduct?productId=" + productId + "&imageGroup=" + 'LP_IMAGE',
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/media/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                    ;
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "mediaId",
+                fields: {}
+            }
+        }
+    });
+
+    //多媒体下的长大主图grid
+    var longBigImageGrid = $("#longBigImageGrid").kendoGrid({
+        dataSource: longBigImageDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "createDetailImage",
+                template: '<span id="createDetailImage" onclick="createDetailImage()" class="btn btn-primary"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deleteDetailImage",
+                template: '<span id="deleteDetailImage" onclick="deleteDetailImage('+'\'longBigImageGrid'+'\')"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "hmall.media.code"/>',
+                width: 120,
+            },
+            {
+                field: "name",
+                title: '<@spring.message "hmall.media.name"/>',
+                width: 120
+            },
+            {
+                field: "imageDescribe",
+                title: '<@spring.message "图片描述"/>',
+                width: 120
+            },
+            {
+                field: "path",
+                title: '<@spring.message "图片显示"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var url = dataItem['path'];
+                    if (url != null && url != "") {
+                        var imageData = null;
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/mst/media/getImageIoStream?path=' + url,
+                            type: 'POST',
+                            contentType: "application/json;charset=utf-8",
+                            cache: false,
+                            dataType: 'json',
+                            async: false,
+                            success: function (data) {
+                                if (data.success == true) {
+                                    imageData = data.rows[0];
+                                }
+                            }
+                        });
+                        if (imageData != null) {
+                            return "<img src='" + imageData + "' width='60' height='60'/>";
+                        } else {
+                            return "";
+                        }
+                    } else {
+                        return "";
+                    }
+                },
+            },
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    otherImageDataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/media/selectMeidaByProduct?productId=" + productId,
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/media/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/media/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "mediaId",
+                fields: {}
+            }
+        }
+    });
+
+    //多媒体下的其他图grid
+    var otherImageGrid = $("#otherImageGrid").kendoGrid({
+        dataSource: otherImageDataSource,
+        height: '300px',
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        toolbar: [
+            {
+                name: "createDetailImage",
+                template: '<span id="createDetailImage" onclick="createDetailImage()" class="btn btn-primary"><@spring.message "hap.add" /></span>'
+            },
+            {
+                name: "deleteDetailImage",
+                template: '<span id="deleteDetailImage" onclick="deleteDetailImage('+'\'otherImageGrid'+'\')"  class="btn btn-danger k-grid-delete"><@spring.message "hap.delete" /></span>'
+            },
+        ],
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "hmall.media.code"/>',
+                width: 120,
+            },
+            {
+                field: "name",
+                title: '<@spring.message "hmall.media.name"/>',
+                width: 120
+            },
+            {
+                field: "imageDescribe",
+                title: '<@spring.message "图片描述"/>',
+                width: 120
+            },
+            {
+                field: "path",
+                title: '<@spring.message "图片显示"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var url = dataItem['path'];
+                    if (url != null && url != "") {
+                        var imageData = null;
+                        $.ajax({
+                            url: '${base.contextPath}/hmall/mst/media/getImageIoStream?path=' + url,
+                            type: 'POST',
+                            contentType: "application/json;charset=utf-8",
+                            cache: false,
+                            dataType: 'json',
+                            async: false,
+                            success: function (data) {
+                                if (data.success == true) {
+                                    imageData = data.rows[0];
+                                }
+                            }
+                        });
+                        if (imageData != null) {
+                            return "<img src='" + imageData + "' width='60' height='60'/>";
+                        } else {
+                            return "";
+                        }
+                    } else {
+                        return "";
+                    }
+                },
+            },
+        ],
+        editable: false
+    }).data("kendoGrid");
+
+    function editWin(url, title) {
+        var editWin = $("#editWin").kendoWindow({
+            actions: ["Close"],
+            title: title,
+            content: url,
+            iframe: true,
+            visible: false,
+            modal: true,
+            close: function () {
+                $("#editWin").empty();
+            }
+        }).data("kendoWindow");
+        editWin.center().open();
+        editWin.maximize();
+    }
+
+</script>
+</body>

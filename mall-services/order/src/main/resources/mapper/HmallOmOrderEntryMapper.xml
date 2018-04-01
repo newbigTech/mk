@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallOmOrderEntryMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallOmOrderEntry">
+    <id column="ORDER_ENTRY_ID" jdbcType="DECIMAL" property="orderEntryId" />
+    <result column="ORDER_ID" jdbcType="DECIMAL" property="orderId" />
+    <result column="CONSIGNMENT_ID" jdbcType="DECIMAL" property="consignmentId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="LINE_NUMBER" jdbcType="DECIMAL" property="lineNumber" />
+    <result column="PARENT_LINE" jdbcType="DECIMAL" property="parentLine" />
+    <result column="QUANTITY" jdbcType="DECIMAL" property="quantity" />
+    <result column="UNIT" jdbcType="VARCHAR" property="unit" />
+    <result column="BASE_PRICE" jdbcType="DECIMAL" property="basePrice" />
+    <result column="UNIT_FEE" jdbcType="DECIMAL" property="unitFee" />
+    <result column="TOTAL_FEE" jdbcType="DECIMAL" property="totalFee" />
+    <result column="IS_GIFT" jdbcType="VARCHAR" property="isGift" />
+    <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime" />
+    <result column="ESTIMATE_CON_TIME" jdbcType="TIMESTAMP" property="estimateConTime" />
+    <result column="PRODUCT_ID" jdbcType="DECIMAL" property="productId" />
+    <result column="VPRODUCT_CODE" jdbcType="VARCHAR" property="vproductCode" />
+    <result column="SUIT_CODE" jdbcType="VARCHAR" property="suitCode" />
+    <result column="ORDER_ENTRY_TYPE" jdbcType="VARCHAR" property="orderEntryType" />
+    <result column="PIN" jdbcType="VARCHAR" property="pin" />
+    <result column="SHIPPING_FEE" jdbcType="DECIMAL" property="shippingFee" />
+    <result column="INSTALLATION_FEE" jdbcType="DECIMAL" property="installationFee" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType" />
+    <result column="POINT_OF_SERVICE_ID" jdbcType="DECIMAL" property="pointOfServiceId" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="NOTE" jdbcType="VARCHAR" property="note" />
+    <result column="BOM_APPROVED" jdbcType="VARCHAR" property="bomApproved" />
+    <result column="PRE_SHIPPINGFEE" jdbcType="DECIMAL" property="preShippingFee" />
+    <result column="PRE_INSTALLATIONFEE" jdbcType="DECIMAL" property="preInstallationFee" />
+    <result column="REASON1" jdbcType="VARCHAR" property="reason1" />
+    <result column="REASON1_DES" jdbcType="VARCHAR" property="reason1Des" />
+    <result column="REASON2" jdbcType="VARCHAR" property="reason2" />
+    <result column="REASON2_DES" jdbcType="VARCHAR" property="reason2Des" />
+    <result column="SERVICE_ORDER_ID" jdbcType="DECIMAL" property="serviceOrderId" />
+    <result column="ATP_STAGE" jdbcType="VARCHAR" property="atpStage" />
+    <result column="DISCOUNT_FEE" jdbcType="DECIMAL" property="discountFee" />
+    <result column="DISCOUNT_FEEL" jdbcType="DECIMAL" property="discountFeel" />
+    <result column="COUPON_FEE" jdbcType="DECIMAL" property="couponFee" />
+    <result column="TOTAL_DISCOUNT" jdbcType="DECIMAL" property="totalDiscount" />
+    <result column="PRODUCT_SIZE" jdbcType="VARCHAR" property="productSize" />
+    <result column="PRODUCT_PACKED_SIZE" jdbcType="VARCHAR" property="productPackedSize" />
+    <result column="ORDER_ENTRY_STATUS" jdbcType="VARCHAR" property="orderEntryStatus" />
+    <result column="INTERNAL_PRICE" jdbcType="DECIMAL" property="internalPrice" />
+    <result column="INV_OCCUPY_FLAG" jdbcType="VARCHAR" property="invOccupyFlag" />
+    <result column="RETURN_FLAG" jdbcType="VARCHAR" property="returnFlag" />
+    <result column="EXCHANGE_FLAG" jdbcType="VARCHAR" property="exchangeFlag" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+    <result column="CUSTOMER_MSG" jdbcType="VARCHAR" property="customerMsg" />
+    <result column="LOGISTICS_NUMBER" jdbcType="VARCHAR" property="logisticsNumber" />
+    <result column="ODTYPE" jdbcType="VARCHAR" property="odtype" />
+    <result column="ORI_REQUIREMENT_TIME" jdbcType="TIMESTAMP" property="oriRequirementTime" />
+    <result column="ATP_CALCULATE_TIME" jdbcType="TIMESTAMP" property="atpCalculateTime" />
+    <result column="ESC_LINE_NUMBER" jdbcType="VARCHAR" property="escLineNumber" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    ORDER_ENTRY_ID, ORDER_ID, CONSIGNMENT_ID, CODE, LINE_NUMBER, PARENT_LINE, QUANTITY,
+    UNIT, BASE_PRICE, UNIT_FEE, TOTAL_FEE, IS_GIFT, ESTIMATE_DELIVERY_TIME, ESTIMATE_CON_TIME,
+    PRODUCT_ID, VPRODUCT_CODE, SUIT_CODE, ORDER_ENTRY_TYPE, PIN, SHIPPING_FEE, INSTALLATION_FEE,
+    SYNCFLAG, SHIPPING_TYPE, POINT_OF_SERVICE_ID, OBJECT_VERSION_NUMBER, NOTE, BOM_APPROVED,
+    PRE_SHIPPINGFEE, PRE_INSTALLATIONFEE, REASON1, REASON1_DES, REASON2, REASON2_DES,
+    SERVICE_ORDER_ID, ATP_STAGE, DISCOUNT_FEE, DISCOUNT_FEEL, COUPON_FEE, TOTAL_DISCOUNT,
+    PRODUCT_SIZE, PRODUCT_PACKED_SIZE, ORDER_ENTRY_STATUS, INTERNAL_PRICE,
+    INV_OCCUPY_FLAG, RETURN_FLAG, EXCHANGE_FLAG, CREATION_DATE, CREATED_BY, LAST_UPDATED_BY,
+    LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, PROGRAM_ID, PROGRAM_UPDATE_DATE,
+    REQUEST_ID, ATTRIBUTE_CATEGORY, CUSTOMER_MSG, LOGISTICS_NUMBER, ODTYPE, ORI_REQUIREMENT_TIME,
+    ATP_CALCULATE_TIME,ESC_LINE_NUMBER
+  </sql>
+
+  <select id="selectByOrderId" parameterType="Long" resultMap="BaseResultMap">
+    SELECT
+         *
+    FROM
+        HMALL_OM_ORDER_ENTRY
+    WHERE
+        ORDER_ID = #{orderId}
+
+  </select>
+
+
+  <select id="selectByLineNumber"  resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from HMALL_OM_ORDER_ENTRY
+    <where>
+      <if test="orderId != null and orderId != ''">
+        ORDER_ID = #{orderId}
+      </if>
+      <if test="lineNumber!=null and lineNumber!=''">
+        AND LINE_NUMBER = #{lineNumber}
+      </if>
+    </where>
+  </select>
+
+  <!--查询指定订单编号与平台订单行号的订单行-->
+  <select id="selectByEscLineNumber" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from HMALL_OM_ORDER_ENTRY
+    <where>
+      <if test="orderId != null and orderId != ''">
+        ORDER_ID = #{orderId}
+      </if>
+      <if test="escLineNumber!=null and escLineNumber!=''">
+        AND ESC_LINE_NUMBER = #{escLineNumber}
+      </if>
+    </where>
+  </select>
+
+  <!--查询指定订单id关联的所有订单行中最大的订单行号-->
+  <select id="selectMaxLineNumberByOrderId" parameterType="java.lang.Long"  resultType="java.lang.Long">
+      SELECT
+          MAX(OE.LINE_NUMBER)
+      FROM HMALL_OM_ORDER O , HMALL_OM_ORDER_ENTRY OE
+      <where>
+        O.ORDER_ID = OE.ORDER_ID
+        <if test="orderId != null and orderId != ''">
+          AND O.ORDER_ID  = #{orderId}
+        </if>
+      </where>
+  </select>
+</mapper>

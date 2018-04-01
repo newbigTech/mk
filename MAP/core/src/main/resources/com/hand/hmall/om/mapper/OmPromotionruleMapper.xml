@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OmPromotionruleMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OmPromotionrule">
+        <result column="PROMOTIONRULE_ID" property="promotionruleId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="ACTIVITY_ID" property="activityId" jdbcType="VARCHAR"/>
+        <result column="ACTIVITY_NAME" property="activityName" jdbcType="VARCHAR"/>
+        <result column="RELEASE_ID" property="releaseId" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="ACTIVITY_DES" property="activityDes" jdbcType="VARCHAR"/>
+        <result column="PAGE_SHOWMES" property="pageShowmes" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="promotionruleResultMap" type="com.hand.hmall.om.dto.OmPromotionruleDto">
+        <result column="ACTIVITY_ID" property="activityId" jdbcType="VARCHAR"/>
+        <result column="ACTIVITY_NAME" property="activityName" jdbcType="VARCHAR"/>
+        <result column="RELEASE_ID" property="releaseId" jdbcType="VARCHAR"/>
+        <result column="TYPE" property="type" jdbcType="VARCHAR"/>
+        <result column="ACTIVITY_DES" property="activityDes" jdbcType="VARCHAR"/>
+        <result column="PAGE_SHOWMES" property="pageShowmes" jdbcType="VARCHAR"/>
+        <result column="START_TIME" property="startTime" jdbcType="VARCHAR"/>
+        <result column="END_TIME" property="endTime" jdbcType="VARCHAR"/>
+        <result column="GIFT" property="gift" jdbcType="VARCHAR"/>
+        <result column="AMOUNT" property="amount" jdbcType="DECIMAL"/>
+        <result column="GIFT_QUANTITY" property="giftQuantity" jdbcType="DECIMAL"/>
+    </resultMap>
+
+
+    <!--根据orderId更新促销信息 -->
+    <update id="updateOmPromotionruleByOrderId" parameterType="com.hand.hmall.om.dto.OmPromotionrule">
+        update hmall_om_promotionrule
+        <set>
+            <if test="activityId !=null">
+                ACTIVITY_ID = #{activityId},
+            </if>
+            <if test="activityName !=null">
+                ACTIVITY_NAME = #{activityName},
+            </if>
+            <if test="activityDes !=null">
+                ACTIVITY_DES = #{activityDes},
+            </if>
+            <if test="amount !=null">
+                AMOUNT = #{amount},
+            </if>
+            <if test="endDate !=null">
+                END_TIME = to_date(#{endDate},'yyyy-mm-dd hh24:mi:ss'),
+            </if>
+            <if test="startDate !=null">
+                START_TIME = to_date(#{startDate},'yyyy-mm-dd hh24:mi:ss'),
+            </if>
+            <if test="giftQuantity !=null">
+                GIFT_QUANTITY = #{giftQuantity},
+            </if>
+            <if test="pageShowMes !=null">
+                PAGE_SHOWMES = #{pageShowMes},
+            </if>
+            <if test="releaseId !=null">
+                RELEASE_ID = #{releaseId}
+            </if>
+        </set>
+        where ORDER_ID = #{orderId,jdbcType=DECIMAL}
+    </update>
+
+    <!-- 订单同步商城中查询对应的促销信息 -->
+    <select id="selectOrderSyncByOrderId" parameterType="java.lang.Long" resultMap="promotionruleResultMap">
+        select op.activity_id,
+            op.activity_name,
+            op.activity_des,
+            op.release_id,
+            op.type,
+            op.page_showmes pageShowMes,
+            op.start_time,
+            op.end_time,
+            op.gift,
+            op.gift_quantity,
+            op.amount
+            from hmall_om_promotionrule op
+            where op.order_id = #{orderId}
+    </select>
+
+    <!--根据订单ID查询促销信息-->
+    <select id="selectOmPromotionruleByOrderId" parameterType="com.hand.hmall.om.dto.OmPromotionrule" resultMap="BaseResultMap">
+        SELECT *
+        FROM hmall_om_promotionrule
+        <where>
+            <if test="orderId !=null">
+                order_id = #{orderId}
+            </if>
+        </where>
+    </select>
+
+    <!--根据订单ID删除促销信息 -->
+    <delete id="deleteOmPromotionruleByOrderId" parameterType="com.hand.hmall.om.dto.OmPromotionrule">
+        DELETE FROM hmall_om_promotionrule
+        WHERE 1=1
+        <if test="orderId !=null and orderId!=''">
+            AND ORDER_ID = #{orderId}
+        </if>
+    </delete>
+
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.promotion.mapper.FndRegionBMapper">
+    <resultMap id="BaseResultMap" type="com.hand.promotion.dto.FndRegionB">
+        <id column="REGION_ID" jdbcType="DECIMAL" property="regionId"/>
+        <result column="REGION_TYPE" jdbcType="VARCHAR" property="regionType"/>
+        <result column="REGION_CODE" jdbcType="VARCHAR" property="regionCode"/>
+        <result column="PARENT_ID" jdbcType="DECIMAL" property="parentId"/>
+        <result column="ENABLED_FLAG" jdbcType="VARCHAR" property="enabledFlag"/>
+        <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber"/>
+
+    </resultMap>
+    <sql id="Base_Column_List">
+        REGION_ID, REGION_TYPE, REGION_CODE, PARENT_ID, ENABLED_FLAG
+    </sql>
+    <select id="selectCodeByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        b.REGION_ID, REGION_TYPE, REGION_CODE, PARENT_ID, ENABLED_FLAG
+        FROM Hmall_FND_REGIONS_TL tl,Hmall_FND_REGIONS_B b
+        <where>
+            tl.REGION_ID = b.REGION_ID
+            <if test="#{name}!=null">
+                AND tl.REGION_NAME = #{name}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,228 @@
+<#--
+        * description: 成品零部件在制占用
+        * author:xuxiaoxue
+        * 2017/10/26
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?sendStatusData=HMALL.SEND_STATUS" type="text/javascript"></script>
+        <script type="text/javascript">
+            var viewModel = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#Grid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#Grid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+        </script>
+        <body>
+        <div id="page-content">
+            <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+            <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+                <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='工厂'
+                       data-bind="value:model.werks" class="k-textbox">
+                <input type="text" data-role="moNumber" style="float:left;width:150px;margin-right:5px;" placeholder='生产订单号'
+                       data-bind="value:model.moNumber" class="k-textbox">
+                <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='pin码'
+                       data-bind="value:model.pinCode" class="k-textbox">
+                <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='物料编码'
+                       data-bind="value:model.itemCode" class="k-textbox">
+                <input id="sendStatus" type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;"
+                       data-bind="value:model.attribute1" class="k-textbox">
+                <script type="text/javascript">
+                    $("#sendStatus").kendoDropDownList({
+                        dataTextField: "meaning",
+                        dataValueField: "value",
+                        valuePrimitive: true,
+                        dataSource: sendStatusData,
+                        index:1
+                    }).data("kendoDropDownList");
+                </script>
+                <span class="btn btn-primary" style="float:left;width:70px" data-bind="click:queryResource" type="submit"><@spring.message "hap.query"/></span>
+                <div style="clear:both"></div>
+            </div>
+            <script>kendo.bind($('#query-form'), viewModel);</script>
+            <div style="clear:both">
+                <div id="Grid"></div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var BaseUrl = _basePath;
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hap/atp/mo/reserved/info/query",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/hap/atp/mo/reserved/info/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/hap/atp/mo/reserved/info/remove",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/hap/atp/mo/reserved/info/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "infoId",
+                        fields: {}
+                    }
+                }
+            });
+
+            $("#Grid").kendoGrid({
+                dataSource: dataSource,
+                height: '100%',
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                editable: false,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "lineNumber",
+                        title: '序号',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        width: 50,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        template: "<span class='row-number'></span>"
+                    },
+                    {
+                        field: "infoId",
+                        title: '<@spring.message "AtpMoReservedInfo.infoId"/>',
+                        width: 120,
+                        hidden: true
+                    },
+                    {
+                        field: "interfaceId",
+                        title: '<@spring.message "AtpMoReservedInfo.interfaceId"/>',
+                        width: 120,
+                        hidden: true
+                    },
+                    {
+                        field: "pinCode",
+                        title: 'pin码',
+                        width: 120
+                    },
+                    {
+                        field: "moNumber",
+                        title: '生产订单号',
+                        width: 120
+                    },
+                    {
+                        field: "werks",
+                        title: '工厂',
+                        width: 120
+                    },
+                    {
+                        field: "itemCode",
+                        title: '物料编码',
+                        width: 120
+                    },
+                    {
+                        field: "startingDate",
+                        title: '预计起始日期',
+                        width: 120
+                    },
+                    {
+                        field: "completionDate",
+                        title: '预计完工日期',
+                        width: 120
+                    },
+                    {
+                        field: "reserveQuantity",
+                        title: '占用数量',
+                        width: 120
+                    },
+                    {
+                        field: "reserveStatus",
+                        title: '占用状态',
+                        width: 120
+                    },
+                    {
+                        field: "attribute1",
+                        title: '发送ECC状态',
+                        width: 120,
+                        template: function (dataItem) {
+                            var v = dataItem.attribute1;
+                            if (v == null) {
+                                return '';
+                            }
+                            $.each(sendStatusData, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                } else {
+                                    return '';
+                                }
+                            })
+                            return v;
+                        },
+                    }
+                ],
+                dataBound: function () {
+                    var rows = this.items();
+                    var page = this.pager.page() - 1;
+                    var pagesize = this.pager.pageSize();
+                    $(rows).each(
+                            function () {
+                                var index = $(this).index() + 1 + page * pagesize;
+                                var rowLabel = $(this).find(".row-number");
+                                $(rowLabel).html(index);
+                            });
+                }
+            }).data("kendoGrid");
+
+            function deleteData() {
+
+                Hap.deleteGridSelection({
+                    grid: $('#Grid')
+                });
+
+            }
+
+            Hap.autoResizeGrid("#Grid");
+
+
+        </script>
+        </body>
+        </html>

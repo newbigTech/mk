@@ -1,0 +1,404 @@
+<#include "/include/header.html"/>
+<body>
+<script src="${base.contextPath}/common/code?saleGroupOperator=HMALL.SALE_GROUP_OPERATOR" type="text/javascript"></script>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        disabled:"true",
+        containerFlag:1,
+
+        submitResource: function(e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        returnResource        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+    viewModel.model.set("activity",{});
+    viewModel.model.activity.set('isOverlay','N');
+    viewModel.model.activity.set('isExcludeShow','N');
+    var id='${RequestParameters.id}';
+    var baseId='${RequestParameters.baseId}';
+
+    var addConditions="ADD_CONDITIONS";
+    var addActions="ADD_ACTIONS";
+    var addGroups="ADD_GROUPS";
+    var addContainers="ADD_CONTAINERS";
+
+
+</script>
+
+
+<div id="content-container">
+    <div class="panel" style="padding: 10px;">
+        <div id="tabStrip" >
+            <ul>
+                <li>字段编辑</li>
+                <li>条件与结果</li>
+            </ul>
+            <div>
+                <div class="panel" style="padding: 4px;">
+
+                    <form class="form-horizontal" id="baseInfo">
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">规则ID</label>
+                                        <div class="col-sm-8">
+                                            <input id="activityId" disabled="true" style="background: rgb(222, 222, 222);width: 100%;"   type="text" placeholder="模板ID" style="width: 100%" data-bind="value:model.activity.activityId"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">规则名称</label>
+                                        <div class="col-sm-8">
+                                            <input id="activityName" disabled="true"  style="background: rgb(222, 222, 222);width: 100%;"  type="text" placeholder="规则名称" style="width: 100%" data-bind="value:model.activity.activityName"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">规则描述</label>
+                                        <div class="col-sm-8">
+                                            <input id="activityDes" disabled="true" style="background: rgb(222, 222, 222);width: 100%;"  type="text" placeholder="规则描述" style="width: 100%" data-bind="value:model.activity.activityDes"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">优先级</label>
+                                        <div class="col-sm-8">
+                                            <input id="priority" disabled="true"  type="text" placeholder="优先级" style="width: 100%" data-bind="value:model.activity.priority">
+                                            <script>
+                                                $("#priority").kendoNumericTextBox({
+                                                    format: "n0",
+                                                    min:0
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">规则组</label>
+                                        <div class="col-sm-8">
+                                            <input id="group" disabled="true"  data-bind="value:model.activity.group" placeholder="规则组" style="width: 100%;"  data-value-primitive="true"/>
+                                            <script>
+                                                viewModel.model.activity.group='DEFAULT';
+                                                $("#group").kendoDropDownList({
+                                                    dataTextField  : "name",
+                                                    dataValueField : "id",
+                                                    dataSource     : {
+                                                        transport: {
+                                                            read: {
+                                                                url:   "${base.contextPath}/sale/range/group/queryByType?type=READ",
+                                                                type: "GET"
+                                                            }
+                                                        },
+                                                        schema: {
+                                                            data: 'resp'
+                                                        }
+                                                    }
+                                                });
+
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--<div class="col-sm-4">-->
+                                    <!--<div class="form-group">-->
+                                        <!--<label class="col-sm-4 control-label">最大规则执行数</label>-->
+                                        <!--<div class="col-sm-8">-->
+                                            <!--<input id="maxExecute" disabled="true"  type="text" placeholder="最大规则执行数" style="width: 100%" data-bind="value:model.activity.maxExecute">-->
+                                            <!--<script>-->
+                                                <!--$("#maxExecute").kendoNumericTextBox({-->
+                                                    <!--format: "n0",-->
+                                                    <!--min:0-->
+                                                <!--});-->
+                                            <!--</script>-->
+                                        <!--</div>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">前台提示消息</label>
+                                        <div class="col-sm-8">
+                                            <input id="pageShowMes" disabled="true" style="background: rgb(222, 222, 222);width: 100%;"   type="text" placeholder="前台提示消息" style="width: 100%" data-bind="value:model.activity.pageShowMes"
+                                                   class="k-textbox">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">可堆叠</label>
+                                        <div class="col-sm-8">
+                                            <input id="isOverlayYes" disabled="true" style="margin-top:5px;"  name="checkbox" type="redio" data-bind="value:model.activity.isOverlay"/>
+                                            <a></a><a></a>
+                                            <input id="isOverlayNo" disabled="true" style="margin-top:5px;" checked="checked" name="checkbox" type="redio" data-bind="value:model.activity.isOverlay"/>
+                                            <script>
+                                                $("#isOverlayYes").kendoCheckbox({
+                                                    label:"是",
+                                                    checkedValue: 'Y',
+                                                    uncheckedValue: 'N',
+                                                    enable:true
+
+                                                });
+                                                $("#isOverlayNo").kendoCheckbox({
+                                                    lable:"否",
+                                                    checkedValue: 'N',
+                                                    uncheckedValue: 'Y',
+                                                    enable:true
+                                                });
+                                                kendo.bind($('#isOverlayYes'), viewModel);
+                                                kendo.bind($('#isOverlayNo'), viewModel);
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">排除店面显示</label>
+                                        <div class="col-sm-8">
+                                            <input id="isExcludeShowYes" disabled="true" style="margin-top:5px;"   name="checkbox" type="redio" data-bind="value:model.activity.isExcludeShow"/>
+                                            <a></a><a></a>
+                                            <input id="isExcludeShowNo" disabled="true" style="margin-top:5px;" checked="checked" name="checkbox" type="redio" data-bind="value:model.activity.isExcludeShow"/>
+                                            <script>
+                                                $("#isExcludeShowYes").kendoCheckbox({
+                                                    label:"是",
+                                                    checkedValue: 'Y',
+                                                    uncheckedValue: 'N',
+                                                    enable:true
+                                                });
+                                                $("#isExcludeShowNo").kendoCheckbox({
+                                                    label:"否",
+                                                    checkedValue: 'N',
+                                                    uncheckedValue: 'Y',
+                                                    enable:true
+
+                                                });
+                                                kendo.bind($('#isExcludeShowYes'), viewModel);
+                                                kendo.bind($('#isExcludeShowNo'), viewModel);
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-8">
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">有效时间</label>
+                                        <div class="col-sm-10">
+                                            <input id="startDate"   disabled="true" type="text" placeholder="有效开始时间" style="width: 45%" data-bind="value:model.activity.startDate">
+                                            <a> 一 </a>
+                                            <input id="endDate" disabled="true" type="text" placeholder="有效结束时间" style="width: 45%" data-bind="value:model.activity.endDate">
+
+                                            <script>
+                                                $("#startDate").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss"
+                                                });
+                                                $("#endDate").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss"
+                                                });
+                                            </script>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">创建时间</label>
+                                        <div class="col-sm-8">
+                                            <input id="creationTime" disabled="true"   type="text" disabled="true" placeholder="创建时间" data-bind="value:model.activity.creationTime">
+                                            <script>
+                                                $("#creationTime").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss"
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">上次创建时间</label>
+                                        <div class="col-sm-8">
+                                            <input id="lastCreationTime" disabled="true"  type="text" disabled="true" placeholder="上次创建时间" data-bind="value:model.activity.lastCreationTime">
+                                            <script>
+                                                $("#lastCreationTime").kendoDateTimePicker({
+                                                    animation: false,
+                                                    format: "yyyy-MM-dd HH:mm:ss"
+                                                });
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <#include "/sale/record/saleRecord.html"/>
+
+            </div>
+
+
+            <div>
+                <#include "/sale/conditions/saleConditionActionInclude.html"/>
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+<div id="addTempWin"></div>
+<div id="addTempConditionDataWin"></div>
+<div id="addTempActionDataWin"></div>
+<div id="productChooseWin"></div>
+<div id="productContainerWin"></div>
+
+
+<script type="text/javascript">
+
+    kendo.bind($('#content-container'),viewModel);
+
+    $.ajax({
+        url: "${base.contextPath}/drools/sale/activity/detail?id=" + id,
+        type: "GET",
+        success: function (data) {
+            if (data.success) {
+                var resp = data.resp;
+
+                if (resp[0].activity != undefined) {
+                    var activity = resp[0].activity;
+                    viewModel.model.activity.set('activityId', activity.activityId);
+                    viewModel.model.activity.set('activityName', activity.activityName);
+                    viewModel.model.activity.set('activityDes', activity.activityDes);
+                    viewModel.model.activity.set('priority', activity.priority);
+                    viewModel.model.activity.set('pageShowMes', activity.pageShowMes);
+                    viewModel.model.activity.set('group', activity.group);
+//                    viewModel.model.activity.set('maxExecute', activity.maxExecute);
+                    viewModel.model.activity.set('isOverlay', activity.isOverlay);
+                    viewModel.model.activity.set('isExcludeShow', activity.isExcludeShow);
+                    viewModel.model.activity.set('startDate', timeToDate(activity.startDate));
+                    viewModel.model.activity.set('endDate', timeToDate(activity.endDate));
+                    console.log(timeToDate(activity.creationTime));
+                    viewModel.model.activity.set('creationTime', timeToDate(activity.creationTime));
+                    viewModel.model.activity.set('lastCreationTime', timeToDate(activity.lastCreationTime));
+                    viewModel.model.set('containerFlag', resp[0].containerFlag);
+
+                    appendConditions(resp[0].conditions || [], resp[0].actions || [], resp[0].groups || [], resp[0].containers || [])
+
+                }
+            } else {
+                kendo.ui.showErrorDialog({
+                    title: "错误",
+                    message: data.msg
+                })
+            }
+        }
+    });
+
+    $("#tabStrip").kendoTabStrip({
+        animation: {
+            close: {
+                duration: 200,
+                effects: "fadeOut"
+            }
+        }
+    });
+    var tabStrip = $("#tabStrip").kendoTabStrip().data("kendoTabStrip");
+    tabStrip.select(0);
+
+    function addTemplateRow() {
+
+        var onClose = function () {
+            $("#addTempWin").empty();
+        };
+
+        $("#addTempWin").kendoWindow({
+            actions: ["Close"],
+            title:'模板编辑' ,
+            draggable: true,
+            height: "80%",
+            width: "50%",
+            close: onClose,
+            content: "${base.contextPath}/sale/saleTemplateCondition.html",
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#addTempWin").data("kendoWindow");
+        win.center().open();
+        win.toggleMaximization();
+    }
+
+    function submitResource() {
+
+        viewModel.model.set("containerFlag",viewModel.model.containerFlag||1);
+        var validator = $("#baseInfo").data("kendoValidator");
+        if(validator.validate()) {
+            $.ajax({
+                url: "${base.contextPath}/sale/activity/submit",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(viewModel.model),
+                success: function (data) {
+                    if (data.success) {
+
+                        viewModel.model.activity.set("activityId", data.resp[0].activityId);
+                        viewModel.model.activity.set("creationTime", timeToDate(data.resp[0].creationTime));
+                        viewModel.model.activity.set("lastCreationTime", timeToDate(data.resp[0].lastCreationTime));
+                        baseId=data.resp[0].activityId;
+
+                        kendo.ui.showInfoDialog({
+                            title: "提示",
+                            message: "保存成功！"
+                        }).done(function (e) {
+                            tabStrip.select(0);
+                            $('#gridRecord').data('kendoGrid').dataSource.query();
+                        })
+                    } else {
+                        kendo.ui.showErrorDialog({
+                            title: "提示",
+                            message: data.msg
+                        })
+                    }
+                }
+            })
+        }
+    }
+</script>
+</body>
+</html>

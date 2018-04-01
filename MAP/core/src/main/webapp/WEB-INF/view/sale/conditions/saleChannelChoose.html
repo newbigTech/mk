@@ -1,0 +1,237 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{}
+    });
+    var id='${RequestParameters.id}';
+    var value=[];
+    var operator="";
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var openType='${RequestParameters.openType}';
+
+
+    if(openType=='BASE') {
+        for (var i in window.parent.viewModel.model.conditions) {
+            if (window.parent.viewModel.model.conditions[i].id == id) {
+                definitionId = window.parent.viewModel.model.conditions[i].definitionId;
+
+                if (window.parent.viewModel.model.conditions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.conditions[i].parameters.value != undefined) {
+                        value = window.parent.viewModel.model.conditions[i].parameters.value.value;
+                    }
+                    if (window.parent.viewModel.model.conditions[i].parameters.operator != undefined) {
+                        operator = window.parent.viewModel.model.conditions[i].parameters.operator.value;
+                    }
+
+                }
+
+                break;
+            }
+        }
+    }
+
+    else if(openType=='GROUP') {
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                for(var j in window.parent.groups_data[i].child)
+                {
+
+                    if(window.parent.groups_data[i].child[j].id==id)
+                    {
+                        if (window.parent.groups_data[i].child[j].parameters != undefined) {
+                            if (window.parent.groups_data[i].child[j].parameters.value != undefined) {
+                                value = window.parent.groups_data[i].child[j].parameters.value.value;
+                            }
+                            if (window.parent.groups_data[i].child[j].parameters.operator != undefined) {
+                                operator = window.parent.groups_data[i].child[j].parameters.operator.value;
+                            }
+                        }
+                        flag=true;
+                        break;
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+    }else if(openType=='GROUP_EXT') {
+
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                if(window.parent.groups_data[i].child!=undefined) {
+                    for (var j in window.parent.groups_data[i].child) {
+                        if (window.parent.groups_data[i].child[j].child != undefined) {
+                            for (var k in  window.parent.groups_data[i].child[j].child) {
+                                if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                    if (window.parent.groups_data[i].child[j].child[k].parameters != undefined) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.value != undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.value.value;
+                                        }
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.operator != undefined) {
+                                            operator = window.parent.groups_data[i].child[j].child[k].parameters.operator.value;
+                                        }
+                                    }
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if(flag){
+                    break;
+                }
+            }
+        }
+    }
+
+    if(value!=null&&value!=undefined&&value!="")
+    {
+        if(value.indexOf("MOBILE")>=0){
+            viewModel.model.isMobile='Y';
+
+        }else{
+            viewModel.model.isMobile='N';
+        }
+        if(value.indexOf("PC")>=0){
+            viewModel.model.isPc='Y';
+
+        }else{
+            viewModel.model.isPc='N';
+        }
+
+    }
+    if(operator!=null&&operator!=undefined&&operator!="")
+    {
+        viewModel.model.operator =operator;
+
+    }
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div id="appendPanel" class="panel" style="padding: 0px;">
+            <form class="form-horizontal" id="conditionForm">
+                <div class="panel-body">
+                    <div class="row">
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+
+                                <input id="isPc" checked="checked" style="margin-top:5px;" name="isPc" type="checkbox" data-bind="value:model.isPc"/>
+
+                                <script>
+                                        if(disabled!="true"){
+                                            $("#isPc").kendoCheckbox({
+                                                checkedValue: 'Y',
+                                                label: "PC端",
+                                                uncheckedValue: 'N',
+                                                enable:true
+                                            });
+                                        }else{
+                                            $("#isPc").kendoCheckbox({
+                                                checkedValue: 'Y',
+                                                uncheckedValue: 'N',
+                                                label: "PC端",
+                                                enable:false
+                                            });
+                                        }
+                                        kendo.bind($('#isPc'), viewModel);
+
+
+                                </script>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+
+                                    <input id="isMobile" checked="checked" style="margin-top:5px;" name="isMobile" type="checkbox" data-bind="value:model.isMobile"/>
+                                    <script>
+
+                                        if(disabled!='true') {
+                                            $("#isMobile").kendoCheckbox({
+                                                label: "手机端",
+                                                checkedValue: 'Y',
+                                                uncheckedValue: 'N',
+                                                enable: true
+                                            });
+                                        }else{
+                                            $("#isMobile").kendoCheckbox({
+                                                label: "手机端",
+                                                checkedValue: 'Y',
+                                                uncheckedValue: 'N',
+                                                enable: false
+                                            });
+                                        }
+                                        kendo.bind($('#isMobile'), viewModel);
+
+                                    </script>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+            <div class="panel-footer text-right">
+                <span class="btn btn-success" disabled="true" id="query"  type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+                <span class="btn btn-primary" id="resetForm" onclick="rollbackWin()"  type="button"><i class="fa fa-refresh"></i> 返回</span>
+                <script>
+                    if(disabled!='true'){
+                        $('#query').removeAttr("disabled");
+                        $('#query').attr("onclick","saveNumberCondition()");
+                    }
+                </script>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    kendo.bind($('#content-container'),viewModel);
+    kendo.bind($('#page-content'),viewModel);
+
+
+    function saveNumberCondition()
+    {
+        var map={};
+        var data=[];
+        if(viewModel.model.isMobile!=undefined&&viewModel.model.isMobile=='Y')
+        {
+
+            data.push("MOBILE");
+        }
+        if(viewModel.model.isPc!=undefined&&viewModel.model.isPc=='Y')
+        {
+
+            data.push("PC");
+        }
+        map.value=data;
+        map.operator='EXIST';
+
+        window.parent.saveNumberCondition(map,id,openType);
+        rollbackWin();
+    }
+
+    function rollbackWin() {
+        window.parent.$("#addTempConditionDataWin").data("kendoWindow").close();
+
+    }
+
+
+</script>
+</body>
+</html>

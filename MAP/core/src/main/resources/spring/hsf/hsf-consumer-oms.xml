@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+    <!-- 订单服务对外接口 -->
+    <dubbo:reference id="iSalesOrderServiceProvider"
+                     interface="com.markor.map.oms.base.salesorder.service.ISalesOrderServiceProvider" group="oms-service-api" version="1.0.0"/>
+
+    <dubbo:reference id="iProcessEngineServiceProvider"
+                     interface="com.markor.map.oms.base.process.service.IProcessEngineServiceProvider" group="oms-service-api" version="1.0.0"/>
+
+    <dubbo:reference id="iARTOrderServiceProvider"
+                     interface="com.markor.map.oms.art241.order.service.IARTOrderServiceProvider" group="oms-service-api" version="1.0.0" />
+
+    <dubbo:reference id="iSalesOrderEntryServiceProvider"
+                     interface="com.markor.map.oms.base.salesorder.service.ISalesOrderEntryServiceProvider" group="oms-service-api" version="1.0.0"/>
+</beans>

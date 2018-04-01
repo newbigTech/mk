@@ -1,0 +1,146 @@
+<#--
+        * description: 退款单详情界面
+        * author:shoupeng.wei
+        * 2017/7/16
+        * version: 0.1
+        *
+        -->
+    <#include "/include/header.html" >
+        <body>
+        <script type="text/javascript">
+
+            // 获得退款单ID
+            var asRefundOrderId;
+            // 查询退款单信息rest url
+            var url_;
+
+            if (parent.currentTaskInfo && parent.currentTaskInfo.executionVariables) {
+                for (var i in parent.currentTaskInfo.executionVariables) {
+                    if (parent.currentTaskInfo.executionVariables[i].name == 'asRefundOrderId') {
+                        asRefundOrderId = parent.currentTaskInfo.executionVariables[i].value;
+                        // 根据退款单ID直接查询退款单信息
+                        url_ = "${base.contextPath}/workflow/asRefundInfo?asRefundOrderId=" + asRefundOrderId;
+                        break;
+                    }
+                }
+            } else {
+                // 根据流程实例ID查询相关退款单信息
+                url_ = "${base.contextPath}/workflow/asRefundInfo?procinstId=" + parent.currentProcessInstanceId;
+            }
+
+            $(function () {
+                $.ajax({
+                    url: url_,
+                    type: "GET",
+                    success: function (response) {
+
+                        console.log(response);
+
+//                        // 退款单号
+//                        var asRefundCode = response.rows[0].RF_CODE;
+//                        // 原销售订单号
+//                        var orderCode = response.rows[0].ORDER_CODE;
+//                        // 退款场景
+//                        var scenario = response.rows[0].REFUND_SCENARIO;
+//                        // 退款原因
+//                        var reason = response.rows[0].RETURN_REASON;
+//                        // 备注
+//                        var note = response.rows[0].NOTE;
+//                        // 退款总金额
+//                        var refundSum = response.rows[0].REFOUND_SUM;
+
+                        var dataSource = new kendo.data.DataSource({
+                            data: response.resp
+                        });
+
+                        var grid_ = $("#grid").kendoGrid({
+                            dataSource: dataSource,
+                            height: "200px",
+                            resizable: true,
+                            editable: false,
+                            navigatable: true,
+                            scrollable: true,
+                            sortable: true,
+                            columns: [{
+                                field: "RF_CODE",
+                                title: '退款单号',
+                                attributes: {
+                                    style: "text-align:center"
+                                },
+                                width: 50,
+                                headerAttributes: {
+                                    "class": "table-header-cell",
+                                    style: "text-align: center"
+                                }
+                            }, {
+                                field: "ORDER_CODE",
+                                title: '原销售订单号',
+                                attributes: {
+                                    style: "text-align:center"
+                                },
+                                width: 130,
+                                headerAttributes: {
+                                    "class": "table-header-cell",
+                                    style: "text-align: center"
+                                }
+                            }, {
+                                field: "REFUND_SCENARIO",
+                                title: '退款场景',
+                                attributes: {
+                                    style: "text-align:center"
+                                },
+                                width: 130,
+                                headerAttributes: {
+                                    "class": "table-header-cell",
+                                    style: "text-align: center"
+                                }
+                            }, {
+                                field: "RETURN_REASON",
+                                title: '退款原因',
+                                attributes: {
+                                    style: "text-align:center"
+                                },
+                                width: 130,
+                                headerAttributes: {
+                                    "class": "table-header-cell",
+                                    style: "text-align: center"
+                                }
+                            }, {
+                                field: "NOTE",
+                                title: '备注',
+                                attributes: {
+                                    style: "text-align:center"
+                                },
+                                width: 130,
+                                headerAttributes: {
+                                    "class": "table-header-cell",
+                                    style: "text-align: center"
+                                }
+                            }, {
+                                field: "REFOUND_SUM",
+                                title: '退款总金额',
+                                attributes: {
+                                    style: "text-align:center"
+                                },
+                                width: 130,
+                                headerAttributes: {
+                                    "class": "table-header-cell",
+                                    style: "text-align: center"
+                                }
+                            }]
+                        }).data("kendoGrid");
+
+                    }
+                });
+            });
+
+        </script>
+
+        <h4>退款单信息</h4>
+
+        <div style="height: 230px;">
+            <div id="grid"></div>
+        </div>
+
+        </body>
+        </html>

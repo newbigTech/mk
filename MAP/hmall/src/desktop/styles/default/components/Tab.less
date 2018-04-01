@@ -1,0 +1,33 @@
+.h-tab-panel {
+  .h-tab-head {
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #dadada;
+    >div {
+      float: left;
+      height: 40px;
+      width: 120px;
+      line-height: 40px;
+      text-align: center;
+      cursor: default;
+      h2 {
+        margin-top: auto;
+        margin-bottom: auto;
+        font-size: @big-font-size;
+        font-weight: normal;
+      }
+    }
+  }
+  .h-tab-body {
+    >div {
+      position: absolute;
+      left: -1000px;
+      top: -1000px;
+      visibility: hidden;
+      &.active {
+        position: static;
+        visibility: visible;
+      }
+    }
+  }
+}

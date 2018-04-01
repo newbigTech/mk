@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.CategoryMappingMapper">
+    <resultMap id="SubcategoryMap" type="com.hand.hmall.mst.dto.CategoryMapping">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL" />
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL" />
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+    </resultMap>
+    <resultMap id="SubMap" type="com.hand.hmall.mst.dto.CategoryMappingDto">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL" />
+    </resultMap>
+    <select id="querySyncData" parameterType="java.util.List" resultMap="SubMap">
+        select ms.mapping_id, ms.category_id, mp.code
+          from HMALL_MST_CATEGORY_MAPPING ms
+          LEFT JOIN HMALL_MST_PRODUCT mp
+            ON ms.product_id = mp.product_id
+          left join hmall_mst_catalogversion cv
+            on mp.catalogversion_id = cv.catalogversion_id
+          left join hmall_mst_catalogs c
+            on cv.catalog = c.catalogs_id
+         where c.code = 'markor'
+           and cv.catalogversion = 'online'
+           and mp.product_id in
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.productId}
+            </foreach>
+    </select>
+
+    <select id="getMappingInfoByProductId" parameterType="java.lang.Long" resultMap="SubcategoryMap">
+        SELECT mcm.MAPPING_ID, mcm.PRODUCT_ID, mcm.CATEGORY_ID, mcm.syncflag
+        FROM HMALL_MST_CATEGORY_MAPPING mcm
+        WHERE 1 = 1
+        AND mcm.PRODUCT_ID = #{productId}
+    </select>
+
+    <select id="selectByCategoryAndProductId" parameterType="com.hand.hmall.mst.dto.CategoryMapping" resultType="com.hand.hmall.mst.dto.CategoryMapping">
+        SELECT mcm.MAPPING_ID, mcm.PRODUCT_ID, mcm.CATEGORY_ID, mcm.syncflag
+        FROM HMALL_MST_CATEGORY_MAPPING mcm
+        WHERE mcm.PRODUCT_ID = #{productId}
+        AND mcm.CATEGORY_ID = #{categoryId}
+    </select>
+
+    <!-- 更新接口同步标识 -->
+    <update id="updateFlagBymappingId" parameterType="java.util.List">
+        UPDATE HMALL_MST_CATEGORY_MAPPING
+        <set>
+            syncflag ='Y'
+        </set>
+        <where>
+            MAPPING_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.mappingId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+     <!--根据商品ID 当前类别ID查询所有商品对应关系-->
+    <select id="queryListByProductIdAndCategoryId" resultMap="SubcategoryMap">
+        SELECT
+        mapping.CATEGORY_ID,
+        mapping.PRODUCT_ID,
+        mapping.MAPPING_ID
+        FROM HMALL_MST_CATEGORY_MAPPING mapping
+        <where>
+            <if test="categoryId !=null and categoryId!=''and categoryId!='undefined'">
+                mapping.CATEGORY_ID = #{categoryId}
+            </if>
+            <if test="productIdArray != null and productIdArray.length != 0">
+                and(
+                <foreach collection="productIdArray" item="id" index="index" open="" separator="or" close="">
+                    mapping.PRODUCT_ID = #{id}
+                </foreach>
+                )
+            </if>
+        </where>
+    </select>
+
+    <!--商品详情页面中删除类别结构映射信息 -->
+    <delete id="deleteCategoryMapping" parameterType="com.hand.hmall.mst.dto.CategoryMapping">
+        DELETE FROM hmall_mst_category_mapping mapping
+        WHERE 1=1
+        <if test="categoryId !=null and categoryId!=''">
+           AND mapping.CATEGORY_ID = #{categoryId}
+        </if>
+        <if test="productId !=null and productId!=''">
+            AND mapping.PRODUCT_ID = #{productId}
+        </if>
+
+    </delete>
+
+    <!-- 导入商品模板更新商品和类别映射关系时删掉不要的映射关系-->
+    <delete id="deleteCategoryMappingRelationShip" parameterType="java.util.Map" >
+        DELETE FROM hmall_mst_category_mapping mapping
+        WHERE 1=1
+        <if test="productId != null">
+            AND mapping.product_id =#{productId}
+        </if>
+        <if test="categoryIdList != null">
+            and mapping.CATEGORY_ID not in
+            <foreach collection="categoryIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+    </delete>
+
+</mapper>

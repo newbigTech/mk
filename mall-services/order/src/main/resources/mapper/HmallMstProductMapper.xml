@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallMstProductMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallMstProduct">
+    <id column="PRODUCT_ID" jdbcType="DECIMAL" property="productId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="CATALOGVERSION_ID" jdbcType="DECIMAL" property="catalogversionId" />
+    <result column="APPROVAL_STATUS" jdbcType="VARCHAR" property="approvalStatus" />
+    <result column="UNIT" jdbcType="VARCHAR" property="unit" />
+    <result column="IMAGE_URL_ID" jdbcType="DECIMAL" property="imageUrlId" />
+    <result column="THUMBNIL_URL_ID" jdbcType="DECIMAL" property="thumbnilUrlId" />
+    <result column="BASE_PRODUCT_ID" jdbcType="DECIMAL" property="baseProductId" />
+    <result column="VARIANT_PRODUCT_ID" jdbcType="DECIMAL" property="variantProductId" />
+    <result column="PRODUCT_TYPE" jdbcType="VARCHAR" property="productType" />
+    <result column="CUSTOM_TYPE" jdbcType="VARCHAR" property="customType" />
+    <result column="IS_SUIT" jdbcType="VARCHAR" property="isSuit" />
+    <result column="IS_SIN_SALE" jdbcType="VARCHAR" property="isSinSale" />
+    <result column="BRAND_ID" jdbcType="DECIMAL" property="brandId" />
+    <result column="SALE_STATUS" jdbcType="VARCHAR" property="saleStatus" />
+    <result column="PRODUCT_STATUS" jdbcType="VARCHAR" property="productStatus" />
+    <result column="LISTING_TIME" jdbcType="TIMESTAMP" property="listingTime" />
+    <result column="DELISTING_TIME" jdbcType="TIMESTAMP" property="delistingTime" />
+    <result column="IS_SPE_SALE" jdbcType="VARCHAR" property="isSpeSale" />
+    <result column="ORIGIN_COUNTRY" jdbcType="VARCHAR" property="originCountry" />
+    <result column="SOURCE_PLACE" jdbcType="VARCHAR" property="sourcePlace" />
+    <result column="MINI_ORDER_QUANTITY" jdbcType="DECIMAL" property="miniOrderQuantity" />
+    <result column="RATE" jdbcType="DECIMAL" property="rate" />
+    <result column="STYPE" jdbcType="VARCHAR" property="stype" />
+    <result column="DESIGN_TYPE" jdbcType="VARCHAR" property="designType" />
+    <result column="P_LONG" jdbcType="DECIMAL" property="pLong" />
+    <result column="P_WIDE" jdbcType="DECIMAL" property="pWide" />
+    <result column="P_HIGH" jdbcType="DECIMAL" property="pHigh" />
+    <result column="SIZE_SPECIFICATION" jdbcType="VARCHAR" property="sizeSpecification" />
+    <result column="SIZE_UNIT" jdbcType="VARCHAR" property="sizeUnit" />
+    <result column="PACKING_LONG" jdbcType="DECIMAL" property="packingLong" />
+    <result column="PACKING_WIDE" jdbcType="DECIMAL" property="packingWide" />
+    <result column="PACKING_HIGH" jdbcType="DECIMAL" property="packingHigh" />
+    <result column="PACKING_UNIT" jdbcType="VARCHAR" property="packingUnit" />
+    <result column="PACKING_VOLUME" jdbcType="DECIMAL" property="packingVolume" />
+    <result column="PACKING_VOL_UNIT" jdbcType="VARCHAR" property="packingVolUnit" />
+    <result column="GROSS_WEIGHT" jdbcType="DECIMAL" property="grossWeight" />
+    <result column="NET_WEIGHT" jdbcType="DECIMAL" property="netWeight" />
+    <result column="WEIGHT_UNIT" jdbcType="VARCHAR" property="weightUnit" />
+    <result column="SHAPE" jdbcType="VARCHAR" property="shape" />
+    <result column="TEXTURE" jdbcType="VARCHAR" property="texture" />
+    <result column="TEXTURE_SPECIFICATION" jdbcType="VARCHAR" property="textureSpecification" />
+    <result column="MAINTAIN_SPECIFICATION" jdbcType="VARCHAR" property="maintainSpecification" />
+    <result column="IS_RESIN" jdbcType="VARCHAR" property="isResin" />
+    <result column="NET_CAPACITY" jdbcType="DECIMAL" property="netCapacity" />
+    <result column="NET_CAPACITY_UNIT" jdbcType="VARCHAR" property="netCapacityUnit" />
+    <result column="QGP" jdbcType="VARCHAR" property="qgp" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+    <result column="NAME_EN" jdbcType="VARCHAR" property="nameEn" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    p.PRODUCT_ID, p.CODE, p.NAME, p.CATALOGVERSION_ID, p.APPROVAL_STATUS, p.UNIT, p.IMAGE_URL_ID, p.THUMBNIL_URL_ID, p.BASE_PRODUCT_ID,
+    p.VARIANT_PRODUCT_ID, p.PRODUCT_TYPE, p.CUSTOM_TYPE, p.IS_SUIT, p.IS_SIN_SALE, p.BRAND_ID, p.SALE_STATUS, p.PRODUCT_STATUS, p.LISTING_TIME,
+    p.DELISTING_TIME, p.IS_SPE_SALE, p.ORIGIN_COUNTRY, p.SOURCE_PLACE, p.MINI_ORDER_QUANTITY, p.RATE, p.STYPE, p.DESIGN_TYPE, p.P_LONG,
+    p.P_WIDE, p.P_HIGH, p.SIZE_SPECIFICATION, p.SIZE_UNIT, p.PACKING_LONG, p.PACKING_WIDE, p.PACKING_HIGH, p.PACKING_UNIT, p.PACKING_VOLUME,
+    p.PACKING_VOL_UNIT, p.GROSS_WEIGHT, p.NET_WEIGHT, p.WEIGHT_UNIT, p.SHAPE, p.TEXTURE, p.TEXTURE_SPECIFICATION, p.MAINTAIN_SPECIFICATION,
+    p.IS_RESIN, p.NET_CAPACITY, p.NET_CAPACITY_UNIT, p.QGP, p.SYNCFLAG, p.OBJECT_VERSION_NUMBER, p.CREATION_DATE, p.CREATED_BY, p.LAST_UPDATED_BY,
+    p.LAST_UPDATE_DATE, p.LAST_UPDATE_LOGIN, p.PROGRAM_APPLICATION_ID, p.PROGRAM_ID, p.PROGRAM_UPDATE_DATE, p.REQUEST_ID, p.ATTRIBUTE_CATEGORY,
+    p.NAME_EN
+  </sql>
+
+  <select id="selectByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select PRODUCT_ID from HMALL_MST_PRODUCT WHERE CODE = #{code}
+  </select>
+
+  <select id="selectMarkorOnlineProductByCode" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/> from
+    hmall_mst_product p
+    join hmall_mst_catalogversion cv on p.catalogversion_id = cv.catalogversion_id
+    join hmall_mst_catalogs c on cv.catalog = c.catalogs_id
+    where c.code = 'markor' and cv.catalogversion = 'online' and p.code = #{code, jdbcType=VARCHAR}
+  </select>
+</mapper>

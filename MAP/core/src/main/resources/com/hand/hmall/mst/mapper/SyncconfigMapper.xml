@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.SyncconfigMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Syncconfig">
+        <result column="SYNCCONFIG_ID" property="syncconfigId" jdbcType="DECIMAL"/>
+        <result column="CATALOGFROM" property="catalogfrom" jdbcType="VARCHAR"/>
+        <result column="VERSIONFROM" property="versionfrom" jdbcType="VARCHAR"/>
+        <result column="CATALOGTO" property="catalogto" jdbcType="VARCHAR"/>
+        <result column="VERSIONTO" property="versionto" jdbcType="VARCHAR"/>
+        <result column="VERSIONNAMEFROM" property="versionNameFrom" jdbcType="VARCHAR"/>
+        <result column="VERSIONNAMETO" property="versionNameTo" jdbcType="VARCHAR"/>
+        <result column="VERSIONNAME" property="versionName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 查询lov数据 -->
+    <select id="selectLovData" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Syncconfig">
+        SELECT ms.syncconfig_id,
+        ms.catalogfrom,
+        ms.versionfrom,
+        ms.catalogto,
+        ms.versionto,
+        mc.name_zh||'-'||ms.versionfrom VERSIONNAMEFROM,
+        mcl.name_zh||'-'||ms.versionto VERSIONNAMETO,
+        mc.name_zh||'-'||ms.versionfrom||' -> '||mcl.name_zh||'-'||ms.versionto versionName
+        FROM hmall_mst_syncconfig ms,
+        hmall_mst_catalogs mc,
+        hmall_mst_catalogs mcl
+        where mc.code = ms.catalogfrom
+        and mcl.code = ms.catalogto
+        <if test="syncconfigId != null and syncconfigId != ''">
+            ms.SYNCCONFIG_ID = #{syncconfigId}
+        </if>
+        <if test="catalogfrom != null and catalogfrom != ''">
+            ms.CATALOGFROM = #{catalogfrom}
+        </if>
+        <if test="versionfrom != null and versionfrom != ''">
+            ms.VERSIONFROM = #{versionfrom}
+        </if>
+    </select>
+    <!-- 通过catalogVersionId查询数据 -->
+    <select id="selectByCatalogVersionId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+         select ms.catalogto,ms.versionto,mcl.name_zh||'-'||ms.versionto VERSIONNAMETO from
+        hmall_mst_syncconfig ms,
+        hmall_mst_catalogs mcl,
+        (select mcv.catalogversion_id,ca.code,mcv.catalogversion from
+        hmall_mst_catalogs ca,
+        hmall_mst_catalogversion mcv
+        where ca.catalogs_id = mcv.catalog
+        and mcv.catalogversion_id = #{catalogVersionId}) mv
+        where ms.catalogfrom = mv.code
+        and ms.versionfrom = mv.catalogversion
+        and ms.catalogto = mcl.code
+    </select>
+
+</mapper>

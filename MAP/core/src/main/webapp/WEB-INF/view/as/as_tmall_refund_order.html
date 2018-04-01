@@ -1,0 +1,704 @@
+<#--
+        * description: Hmall售后管理 服务单列表页面
+        * author:xuxiaoxue
+        * 2017/7/14
+        * version: 0.1
+        -->
+    <#include "/include/header.html">
+
+        <style type="text/css">
+            #forms .condition_forms {
+                float: left;
+                width: auto;
+                height: 36px;
+                margin-left: 10px;
+                padding-bottom: 10px;
+            }
+
+            #forms .condition_forms label {
+                width: 7em;
+                text-align: right;
+                font-size: auto;
+            }
+
+            #forms .condition_forms input {
+                width: 200px;
+            }
+        </style>
+        <body>
+        <script type="text/javascript">
+            var BaseUrl = _basePath;
+            //退款完结时间从默认为上个月的0小时0分0秒
+            var finishStartTime = new Date();
+            finishStartTime.setHours(0);
+            finishStartTime.setMinutes(0);
+            finishStartTime.setSeconds(0);
+            finishStartTime.setMonth(finishStartTime.getMonth() - 1);
+            //退款完结时间至默认为当前日期次日0点0分0秒
+            var finishEndTime = new Date();
+            finishEndTime.setHours(0);
+            finishEndTime.setMinutes(0);
+            finishEndTime.setSeconds(0);
+            finishEndTime.setDate(finishStartTime.getDate() + 1);
+            var viewModel = kendo.observable({
+                model: {
+                    finishStartTime: finishStartTime,
+                    finishEndTime: finishEndTime
+                },
+                resetForm: function (e) {
+                    var formData = viewModel.model.toJSON();
+                    for (var k in formData) {
+                        if (k == "finishStartTime") {
+                            viewModel.model.set(k, finishStartTime);
+                        } else if (k == "finishEndTime") {
+                            viewModel.model.set(k, finishEndTime);
+                        } else {
+                            viewModel.model.set(k, null);
+                        }
+                    }
+                }
+            });
+        </script>
+
+        <script type="text/javascript">
+            function doSubmit() {
+                if ($('#grid').data('kendoGrid').dataSource.options.data != null) {
+                    $('#grid').data('kendoGrid').setDataSource(dataSource);
+                } else {
+                    $('#grid').data('kendoGrid').dataSource.page(1);
+                }
+                return true;
+            }
+        </script>
+
+
+        <!-- 查询条件 -->
+        <div id="page-content">
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="tmRefundOrderImport()">导入</span>
+            </div>
+            <!-- 导入导出的execl Window -->
+            <div id="excelWindow"></div>
+            <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+                <div id="forms" style="padding-bottom: 20px">
+                    <div class="row">
+                        <div class="condition_forms">
+                            <label style="width:150px"> 平台订单号:</label>
+                            <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" data-bind="value:model.escOrderCode" class="k-textbox" style="width:250px">
+                        </div>
+                        <div class="condition_forms">
+                            <label style="width:150px"> 退款申请时间从:</label>
+                            <input id="creationStartTime" class="rangeChild" data-bind="value:model.creationStartTime" style="width:250px"/>
+                        </div>
+                        <div class="condition_forms">
+                            <label style="width:150px"> 至:</label>
+                            <input id="creationEndTime" class="rangeChild" data-bind="value:model.creationEndTime" style="width:250px"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="condition_forms">
+                            <label style="width:150px"> 退款编号:</label>
+                            <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" data-bind="value:model.code" class="k-textbox" style="width:250px">
+                        </div>
+                        <div class="condition_forms">
+                            <label style="width:150px"> 退款完结时间从:</label>
+                            <input id="finishStartTime" class="rangeChild" data-bind="value:model.finishStartTime" style="width:250px"/>
+                        </div>
+                        <div class="condition_forms">
+                            <label style="width:150px"> 至:</label>
+                            <input id="finishEndTime" class="rangeChild" data-bind="value:model.finishEndTime" style="width:250px"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="clear:both;margin-top: -20px;height:50px;">
+                <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" onclick="doSubmit();" type="submit"><@spring.message "hap.query"/></span>
+                <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" data-bind="click:resetForm" type="reset"><@spring.message "hap.reset"/></span>
+            </div>
+
+            <div>
+                <div id="grid"></div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            kendo.bind($('#page-content'), viewModel);
+
+
+            $('#query-form input').keydown(function (e) {
+                if (e.keyCode == 13) {
+                    e.target.blur();
+                    viewModel.queryFunction(e);
+                }
+            });
+
+            //初始化起始时间从
+            initDateTimePicker("creationStartTime", function () {
+                var creationStartTime = $("#creationStartTime").val();
+                var creationEndTime = $("#creationEndTime").data("kendoDateTimePicker");
+                creationEndTime.min(creationStartTime || new Date(1800, 0, 1));
+            });
+
+            //初始化起始时间至
+            initDateTimePicker("creationEndTime", function () {
+                var creationEndTime = $("#creationEndTime").val();
+                var creationStartTime = $("#creationStartTime").data("kendoDateTimePicker");
+                creationStartTime.max(creationEndTime || new Date(2099, 11, 31));
+            });
+
+            //初始化完结日期从
+            initDateTimePicker("finishStartTime", function () {
+                var finishStartTime = $("#finishStartTime").val();
+                var finishEndTime = $("#finishEndTime").data("kendoDateTimePicker");
+                finishEndTime.min(finishStartTime || new Date(1800, 0, 1));
+            });
+
+            //初始化完结日期至
+            initDateTimePicker("finishEndTime", function () {
+                var finishEndTime = $("#finishEndTime").val();
+                var finishStartTime = $("#finishStartTime").data("kendoDateTimePicker");
+                finishStartTime.max(finishEndTime || new Date(2099, 11, 31));
+            });
+
+
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: crudServiceBaseUrl + "/hmall/as/tmrefund/query",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                serverSorting: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "orderId",
+                        fields: {}
+                    }
+                }
+            });
+
+            var grid = $("#grid");
+
+            var grid__ = $("#grid").kendoGrid({
+                dataSource: dataSource,
+                height: "500px",
+                autoBind: false,
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "serviceOrderId",
+                        title: '序号',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        width: 50,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        template: "<span class='row-number'></span>"
+                    },
+                    {
+                        field: "escOrderCode",
+                        title: '平台订单号',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }
+                    , {
+                        field: "code",
+                        title: '退款编号',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                    }, {
+                        field: "alipayNo",
+                        title: '支付宝交易号',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "orderPaymentTime",
+                        title: '订单付款时间',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "productCode",
+                        title: '商家编码',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "productName",
+                        title: '商品名称',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "refundFinishTime",
+                        title: '退款完结时间',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }
+                    , {
+                        field: "buyerNick",
+                        title: '买家会员名称',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "actualPaidAmount",
+                        title: '买家实际支付金额',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "title",
+                        title: '宝贝标题',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "refundFee",
+                        title: '买家退款金额',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                    }, {
+                        field: "manualOrAuto",
+                        title: '手工退款/系统退款',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "hasGoodReturn",
+                        title: '是否需要退货',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "created",
+                        title: '退款申请时间',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }
+
+
+                    , {
+                        field: "timeout",
+                        title: '超时时间',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "status",
+                        title: '退款状态',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "goodStatus",
+                        title: '货物状态',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "returnLogistics",
+                        title: '退货物流信息',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "consignmentLogistics",
+                        title: '发货物流信息',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "csStatus",
+                        title: '客服介入状态',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                    }
+                    , {
+                        field: "sellerName",
+                        title: '卖家真实姓名',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "sellerAddress",
+                        title: '卖家退货地址',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "sellerZip",
+                        title: '卖家邮编',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "sellerPhone",
+                        title: '卖家电话',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "sellerMobile",
+                        title: '卖家手机',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "sid",
+                        title: '退货物流单号',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "companyName",
+                        title: '退货物流公司',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "reason",
+                        title: '买家退款原因',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "refundDesc",
+                        title: '买家退款说明',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                    }, {
+                        field: "goodReturnTime",
+                        title: '买家退货时间',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "responsibilitySide",
+                        title: '责任方',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "refundPhase",
+                        title: '售中或售后',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "sellerNote",
+                        title: '商家备注',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "finishTime",
+                        title: '完结时间',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }
+                    , {
+                        field: "refundScope",
+                        title: '部分退款/全部退款',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "auditPerson",
+                        title: '审核操作人',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "burdenTimeout",
+                        title: '举证超时',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "auditAuto",
+                        title: '是否零秒响应',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "refundPerson",
+                        title: '退款操作人',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "creatreturn",
+                        title: '是否生成退货',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "returnId",
+                        title: '关联退货',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        template: function (dataItem) {
+                            if (dataItem.returnId == null) {
+                                return '';
+                            }
+                            if (dataItem.returnId != null && dataItem.returnId != '') {
+                                return '<a style="margin-right:10px;" href="javascript:void(0);" onclick="entryFunction(\'' + dataItem.returnId + '\',\'' + dataItem.escOrderCode + '\')">' + dataItem.returnId + '</a>'
+                            }
+                        },
+                    }
+                ],
+                dataBound: function () {
+                    var rows = this.items();
+                    var page = this.pager.page() - 1;
+                    var pagesize = this.pager.pageSize();
+                    $(rows).each(
+                            function () {
+                                var index = $(this).index() + 1 + page * pagesize;
+                                var rowLabel = $(this).find(".row-number");
+                                $(rowLabel).html(index);
+                            });
+                }
+            }).data("kendoGrid");
+
+
+            //单击退货单ID,跳转到详情界面
+            function entryFunction(returnId, escOrderCode) {
+                var orderCode;
+                var orderId;
+                var serviceOrderId;
+                var serviceOrderCode;
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/returnOrder/selectOrderAndServiceOrderInfoByReturnId?asReturnId=' + returnId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            orderCode = data.resp[0].orderCode;
+                            orderId = data.resp[0].orderId;
+                            serviceOrderId = data.resp[0].serviceOrderId;
+                            serviceOrderCode = data.resp[0].serviceOrderCode;
+                            window.top.openTab(returnId, "退货单详情", BaseUrl + "/as/as_return_order_detail.html?linksCode=" + serviceOrderCode + "&orderId=" + orderId + "&orderCode=" + orderCode + "&receiptOrderId="
+                                    + returnId + "&serviceOrderId=" + serviceOrderId + "&escOrderCode=" + escOrderCode)
+                        }
+
+                    }
+                });
+
+            }
+
+            /**
+             * 初始化时间选择控件
+             * @param elementId -被初始化的控件ID
+             * @param onChange - value值变化时的时间处理函数
+             */
+            function initDateTimePicker(elementId, onChange) {
+                $("#" + elementId).kendoDateTimePicker({
+                    animation: {
+                        close: {
+                            effects: "fadeOut zoom:out",
+                            duration: 300
+                        },
+                        open: {
+                            effects: "fadeIn zoom:in",
+                            duration: 300
+                        }
+                    },
+                    format: "yyyy-MM-dd HH:mm:ss",
+                    change: onChange
+                });
+            }
+
+            /**
+             * 虚拟订单导入
+             */
+            function tmRefundOrderImport() {
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '天猫退款单导入',
+                    content: "${base.contextPath}/as/tmall_refund_order_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+            }
+        </script>
+        <div id="dialogEdit" style="display:none;"></div>
+        </body>
+        </html>

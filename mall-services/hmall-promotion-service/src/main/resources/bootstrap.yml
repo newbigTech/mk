@@ -1,0 +1,70 @@
+spring:
+    application:
+      name: hmall-promotion-service
+    active: native
+    data:
+      mongodb:
+        uri: mongodb://10.5.72.41:27017/test
+    datasource:
+      driver: oracle.jdbc.driver.OracleDriver
+      url: jdbc:oracle:thin:@10.5.30.101:1521:mkoracle
+      username: hap_dev
+      password: hap_dev
+server:
+  port: 7071
+
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+# mybatis 配置
+mybatis:
+  type-aliases-package: com.hand.hmall.dto
+  mapper-locations: classpath:mapper/*.xml
+  config-location: classpath:mapper/config/mybatis-configuration.xml
+
+mapper:
+  mappers:
+      - tk.mybatis.mapper.common.Mapper
+  not-empty: false
+  before: true
+
+#rocketMq 配置
+application:
+    rocketMq:
+      nameSrvAddress: 10.5.72.33:9876
+      producer:
+        instanceName: promotionProducer
+      consumer:
+        instanceName: promotionConsumer
+      vipChannelEnable: false
+      promotion:
+        topic: PROMOTION_TOPIC
+        tags: ORDER_ACTIVITY || ENTRY_ACTIVITY ||COUPON||
+        orderTag: ORDER_ACTIVITY
+        entrytag: ENTRY_ACTIVITY
+        coupontag: COUPON
+    job:
+      initSelectConditionAction: false
+
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+  protocol:
+    dubbo:
+      port: 20882
+---
+spring:
+  profiles: dev_idc
+server:
+    port: 7003

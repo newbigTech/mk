@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.om.mapper.AbnormalTypeMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.AbnormalType">
+    <id column="ABNORMALTYPE_ID" jdbcType="DECIMAL" property="abnormaltypeId" />
+    <result column="ABNORMAL_TYPE" jdbcType="VARCHAR" property="abnormalType" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="APPROVEDTIMES" jdbcType="DECIMAL" property="approvedtimes" />
+    <result column="ABNORMALREASON" jdbcType="VARCHAR" property="abnormalreason" />
+    <result column="PARAMETER" jdbcType="VARCHAR" property="parameter" />
+    <result column="ACTIVE" jdbcType="VARCHAR" property="active" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    ABNORMALTYPE_ID, ABNORMAL_TYPE, DESCRIPTION, APPROVEDTIMES, ABNORMALREASON, ACTIVE
+  </sql>
+</mapper>

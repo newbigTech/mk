@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.LogisticscoMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Logisticsco">
+        <result column="LOGISTICSCO_ID" property="logisticscoId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--承运商LOV -->
+    <select id="logisticsoLov" parameterType="com.hand.hmall.mst.dto.Logisticsco" resultMap="BaseResultMap">
+        select LOGISTICSCO_ID,CODE,NAME
+        from HMALL_MST_LOGISTICSCO
+        where 1=1
+        <if test="name != null and name !=''">
+            and NAME  LIKE '%'||#{name}||'%'
+        </if>
+        <if test="code != null and code!=''">
+            and upper(CODE) LIKE  upper('%'||#{code}||'%')
+        </if>
+    </select>
+
+
+</mapper>

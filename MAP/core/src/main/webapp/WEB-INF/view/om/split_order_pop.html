@@ -1,0 +1,273 @@
+<#--
+    * description: 拆分订单弹出框
+    * author:shoupeng.wei
+    * 2017/8/3
+    * version: 0.1
+    *
+    -->
+<#include "/include/header.html">
+    <body>
+    <script>
+        var orderId = '${RequestParameters.orderId!0}';
+
+        var viewModel = kendo.observable({
+            model:{}
+        });
+
+        $(function () {
+            var rownumList = $('[data-index="0"]');
+            for (var i = 0; i < rownumList.length; i++) {
+                var rownumText = $(rownumList[i]).html();
+                if ("#" == rownumText) {
+                    $(rownumList[i]).html("序号");
+                    $(rownumList[i]).eq(0).parent().parent().prev().children().eq(0).css("width", "50px");
+                    $(rownumList[i]).eq(0).parent().parent().parent().parent().parent().next().children("table").children("colgroup").children().eq(0).css("width", "50px");
+                }
+            }
+        });
+
+        var splitQuantity = 0;
+        var oriQuantity = 0;
+
+        function bachSpiltOrder(){
+            var grid_data = [];
+//            console.log("dataSource._data",dataSource._data);
+            $.each(dataSource._data, function (i, n) {
+                if(n.spiltQuantity != null){
+                    if(n.spiltQuantity > 0 && n.spiltQuantity < n.quantity){
+                        grid_data.push(n);
+                    }else{
+                        kendo.ui.showWarningDialog({
+                            message:"第"+(i+1)+"行的拆单数量要大于0小于原订单行数"
+                        })
+                        return false;
+                    }
+                }
+            })
+//            console.log("grid_data",grid_data);
+            if(grid_data.length > 0){
+                $.ajax({
+                    type: "POST",
+                    url: "${base.contextPath}/hmall/om/order/entry/splitOrderEntry",
+                    dataType:"json",
+                    contentType:"application/json",
+                    data: kendo.stringify(grid_data),
+                    success:function (data) {
+                        if(data.success){
+                            kendo.ui.showInfoDialog({
+                                message: data.message
+                            }).done(function (e) {
+                                if(e.button == 'OK'){
+                                    refushGrid();
+                                }
+                            })
+
+                        }else{
+                            kendo.ui.showErrorDialog({
+                                message: data.message
+                            }).done(function (e) {
+                                if(e.button == 'OK'){
+                                    refushGrid();
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+        }
+
+        function splitOrder(orderEntryId ) {
+            var grid_spilt = null;
+            $.each(dataSource._data, function (i, n) {
+                if(n.orderEntryId == orderEntryId){
+                    grid_spilt = n;
+                    return true;
+                }
+            })
+            if(grid_spilt.spiltQuantity > 0 && grid_spilt.quantity > grid_spilt.spiltQuantity ){
+                $.ajax({
+                    type: "POST",
+                    url: "${base.contextPath}/hmall/om/order/entry/splitOrderEntry",
+                    dataType:"json",
+                    contentType:"application/json",
+                    data: kendo.stringify([grid_spilt.toJSON()]),
+                    success:function (data) {
+                        if(data.success){
+                            kendo.ui.showInfoDialog({
+                                message:data.message
+                            }).done(function (e) {
+                                if(e.button == 'OK'){
+                                    refushGrid();
+                                }
+                            })
+
+                        }else{
+                            kendo.ui.showErrorDialog({
+                                message:data.message
+                            }).done(function (e) {
+                                if(e.button == 'OK'){
+                                    refushGrid();
+                                }
+                            })
+                        }
+                    }
+                })
+            }else{
+                kendo.ui.showWarningDialog({
+                    message:"拆单数量要大于0小于原订单行数"
+                })
+            }
+
+        }
+
+        function refushGrid() {
+            //获取当前页面编号
+            var pageNo = $('#grid').data('kendoGrid').dataSource._page;
+            //刷新页面
+            $('#grid').data('kendoGrid').dataSource.read(pageNo);
+        }
+
+        function cancel() {
+            window.parent.$("#editWin").data("kendoWindow").close();
+        }
+    </script>
+    <div id="content-container">
+        <div id="page-content" class="">
+            <div id="btn-group-div" class="pull left">
+                <span class="btn btn-primary k-grid-add" style="float:left;margin-left:10px;"
+                      onclick="bachSpiltOrder()"><@spring.message "批量拆分"/></span>
+            </div>
+            <div style="clear:both;"></div>
+            <div class="" style="padding:0px;">
+               <div class="" style="margin:10px">
+                   <div id="grid"></div>
+               </div>
+            </div>
+        </div>
+        <script>
+            kendo.bind($('#page-content'), viewModel);
+        </script>
+    </div>
+    <script>
+        BaseUrl = '${base.contextPath}';
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "/hmall/om/order/entry/splitOrderInfo?orderId=" + orderId,
+                    type: "POST",
+                    dataType: "json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type)
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "orderEntryId",
+                    fields: {
+                        vproductCode: {type: "string", editable: false},
+                        suitCode: {type: "string", editable: false},
+                        productCode: {type: "string", editable: false},
+                        name: {type: "string", editable: false},
+                        quantity: {type: "long", editable: false},
+                        spiltQuantity: {type: "number"},
+                    }
+                }
+            }
+        });
+
+        var grid = $('#grid');
+        $('#grid').kendoGrid({
+            dataSource: dataSource,
+            height: "360px",
+            resizable: true,
+            navigatable: true,
+            scrollable: true,
+            selectable: true,
+            rownumber: true,
+            sortable: true,
+            pageable: {
+                pageSizes: [5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                {
+                    field: "orderEntryId",
+                    hidden: true
+                },{
+                    field: "productId",
+                    hidden: true
+                }, {
+                    field: "vproductCode",
+                    title: '<@spring.message "hmall.OrderEntry.vproduct"/>',
+                    width: 120
+                }, {
+                    field: "suitCode",
+                    title: '<@spring.message "hmall.OrderEntry.suitCode"/>',
+                    width: 120
+                }, {
+                    field: "productCode",
+                    title: '<@spring.message "hmall.OrderEntry.productCode"/>',
+                    width: 120
+                }, {
+                    field: "name",
+                    title: '<@spring.message "hmall.OrderEntry.productName"/>',
+                    width: 120
+                }, {
+                    field: "quantity",
+                    title: '原数量',
+                    width: 80,
+                    editable: false
+                }, {
+                    field: "spiltQuantity",
+                    title: '拆分数量',
+                    width: 80,
+                    editor: function (container, options) {
+                        oriQuantity = options.model.quantity;
+//                        console.log("oriQuantity",oriQuantity);
+                        $('<input name="' + options.field + '"/>')
+                            .appendTo(container)
+                            .kendoNumericTextBox({
+//                                decimals: 0,
+//                                min: 1
+                            });
+                    }
+
+                } ,
+                {
+                    title: '<@spring.message "拆分"/>',
+                    width: 50,
+                    template: function (rowdata) {
+                        if (!!rowdata.orderEntryId) {
+//                            console.log("rowdata",rowdata);
+                            return '<a href="javascript:void(0);" onclick="splitOrder(' + rowdata.orderEntryId +' )"><@spring.message "拆分"/></a>'
+                        }
+                        return '';
+                    },
+                    attributes: {style: "text-align:center"},
+                    headerAttributes: {style: "text-align:center"}
+                }
+
+            ],
+            editable:true
+        }).data("kendoGrid")
+
+        //点击表格中的一行，获取该行的数据
+        grid.on('click', '.k-grid-content tr', function (event) {
+            var data_tr =  $('#grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+        });
+
+    </script>
+    </body>
+</html>

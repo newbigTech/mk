@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.hmall.mapper.ServiceOrderEntryMapper">
+
+    <resultMap id="ServiceOrderEntryMap" type="com.hand.hmall.dto.ServiceOrderEntry">
+        <result column="SERVICE_ORDER_ENTRY_ID" property="serviceOrderEntryId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="DECIMAL"/>
+        <result column="PARENT_LINE" property="parentLine" jdbcType="DECIMAL"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT_FEE" property="discountFee" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT_FEEL" property="discountFeel" jdbcType="DECIMAL"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="TOTAL_FEE" property="totalFee" jdbcType="DECIMAL"/>
+        <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="TIMESTAMP"/>
+        <result column="ESTIMATE_CON_TIME" property="estimateConTime" jdbcType="TIMESTAMP"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="VPRODUCT_CODE" property="vproductCode" jdbcType="VARCHAR"/>
+        <result column="SUTI_CODE" property="sutiCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_ENTRY_TYPE" property="orderEntryType" jdbcType="VARCHAR"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_FEE" property="shippingFee" jdbcType="DECIMAL"/>
+        <result column="INSTALLATION_FEE" property="installationFee" jdbcType="DECIMAL"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="POINT_OF_SERVICE_ID" property="pointOfServiceId" jdbcType="DECIMAL"/>
+        <result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="BOM_APPROVED" property="bomApproved" jdbcType="VARCHAR"/>
+        <result column="PRE_SHIPPINGFEE" property="preShippingfee" jdbcType="DECIMAL"/>
+        <result column="PRE_INSTALLATIONFEE" property="preInstallationfee" jdbcType="DECIMAL"/>
+        <result column="SVPRO_REASON1" property="svproReason1" jdbcType="VARCHAR"/>
+        <result column="SVPRO_REASON2" property="svproReason2" jdbcType="VARCHAR"/>
+        <result column="REPRO_REASON1" property="reproReason1" jdbcType="VARCHAR"/>
+        <result column="REPRO_REASON2" property="reproReason2" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATED_BY" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="LAST_UPDATE_LOGIN" property="lastUpdateLogin" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_APPLICATION_ID" property="programApplicationId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_ID" property="programId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_UPDATE_DATE" property="programUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="REQUEST_ID" property="requestId" jdbcType="DECIMAL"/>
+        <result column="ATTRIBUTE_CATEGORY" property="attributeCategory" jdbcType="VARCHAR"/>
+        <result column="REFUND_FEE" property="refundFee" jdbcType="DECIMAL"/>
+        <result column="REFUND_SUM" property="refundSum" jdbcType="DECIMAL"/>
+        <result column="RETURN_REASON1" property="returnReason1" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON2" property="returnReason2" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <sql id="target_table_columns">
+
+		tgtbl.SERVICE_ORDER_ENTRY_ID,
+		tgtbl.SERVICE_ORDER_ID,
+		tgtbl.CONSIGNMENT_ID,
+		tgtbl.CODE,
+		tgtbl.LINE_NUMBER,
+		tgtbl.PARENT_LINE,
+		tgtbl.QUANTITY,
+		tgtbl.UNIT,
+		tgtbl.BASE_PRICE,
+		tgtbl.DISCOUNT_FEE,
+		tgtbl.DISCOUNT_FEEL,
+		tgtbl.UNIT_FEE,
+		tgtbl.TOTAL_FEE,
+		tgtbl.IS_GIFT,
+		tgtbl.ESTIMATE_DELIVERY_TIME,
+		tgtbl.ESTIMATE_CON_TIME,
+		tgtbl.PRODUCT_ID,
+		tgtbl.VPRODUCT_CODE,
+		tgtbl.SUTI_CODE,
+		tgtbl.ORDER_ENTRY_TYPE,
+		tgtbl.PIN,
+		tgtbl.SHIPPING_FEE,
+		tgtbl.INSTALLATION_FEE,
+		tgtbl.SYNCFLAG,
+		tgtbl.SHIPPING_TYPE,
+		tgtbl.POINT_OF_SERVICE_ID,
+		tgtbl.OBJECT_VERSION_NUMBER,
+		tgtbl.NOTE,
+		tgtbl.BOM_APPROVED,
+		tgtbl.PRE_SHIPPINGFEE,
+		tgtbl.PRE_INSTALLATIONFEE,
+		tgtbl.SVPRO_REASON1,
+		tgtbl.SVPRO_REASON2,
+		tgtbl.REPRO_REASON1,
+		tgtbl.REPRO_REASON2,
+		tgtbl.CREATION_DATE,
+		tgtbl.CREATED_BY,
+		tgtbl.LAST_UPDATED_BY,
+		tgtbl.LAST_UPDATE_DATE,
+		tgtbl.LAST_UPDATE_LOGIN,
+		tgtbl.PROGRAM_APPLICATION_ID,
+		tgtbl.PROGRAM_ID,
+		tgtbl.PROGRAM_UPDATE_DATE,
+		tgtbl.REQUEST_ID,
+		tgtbl.ATTRIBUTE_CATEGORY,
+		tgtbl.REFUND_FEE,
+		tgtbl.REFUND_SUM,
+		tgtbl.RETURN_REASON1,
+		tgtbl.RETURN_REASON2
+    </sql>
+
+    <!--
+    /**
+     * 根据服务单查询服务单行列表
+     * @param so
+     * @return
+     */
+    List<ServiceOrderEntry> selectByServiceOrder(ServiceOrder so);
+    -->
+    <select id="selectByServiceOrder" parameterType="com.hand.hmall.dto.ServiceOrder" resultMap="ServiceOrderEntryMap">
+        SELECT
+        <include refid="target_table_columns"/>
+        from HMALL_AS_SERVICEORDER_ENTRY tgtbl WHERE tgtbl.SERVICE_ORDER_ID = #{serviceOrderId}
+    </select>
+
+    <!--
+        /**
+         * 查询订单行下一个PIN码信息
+         * @return
+         */
+        Long nextLineNumber();
+    -->
+    <select id="nextLineNumber" resultType="java.lang.Long">
+        select max(ooe.Line_Number) + 10 from hmall_om_order_entry ooe
+    </select>
+
+</mapper>

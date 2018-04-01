@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.pin.mapper.PinAlterMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.pin.dto.PinAlter">
+        <result column="PIN_ALTER_ID" property="pinAlterId" jdbcType="DECIMAL" />
+        <result column="EVENT_CODE" property="eventCode" jdbcType="VARCHAR" />
+        <result column="EVENT_DES" property="eventDes" jdbcType="VARCHAR" />
+        <result column="ALTER_LEVEL1" property="alterLevel1" jdbcType="VARCHAR" />
+        <result column="ALTER_LEVEL2" property="alterLevel2" jdbcType="VARCHAR" />
+        <result column="ALTER_LEVEL3" property="alterLevel3" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+</mapper>

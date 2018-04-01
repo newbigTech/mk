@@ -1,0 +1,15 @@
+.h-picture {
+  display: inline-block;
+  img {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    -webkit-transition: opacity .3s linear;
+       -moz-transition: opacity .3s linear;
+         -o-transition: opacity .3s linear;
+            transition: opacity .3s linear;
+  }
+  &.pic-loading img {
+    opacity: 0;
+  }
+}

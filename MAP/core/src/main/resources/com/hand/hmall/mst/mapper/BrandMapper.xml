@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.BrandMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Brand">
+        <result column="BRAND_ID" property="brandId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="MEDIA_ID" property="mediaId" jdbcType="VARCHAR" />
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+        <result column="order_receive_system" property="orderReceiveSystem" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <resultMap id="brandMap" type="com.hand.hmall.mst.dto.BrandDto">
+        <result column="BRAND_ID" property="brandId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="MEDIA_ID" property="mediaId" jdbcType="VARCHAR" />
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <!-- 推送syncFlag为N的品牌至商城中 -->
+    <select id="selectPushingBrand" resultMap="brandMap">
+    	select BRAND_ID,CODE,NAME,MEDIA_ID,DESCRIPTION 
+    	from HMALL_MST_BRAND
+    	where SYNCFLAG='N'
+    </select>
+
+    <!--更新品牌接口推送标志-->
+    <update id="updateBrandSyncflag" parameterType="java.util.List">
+        UPDATE HMALL_MST_BRAND
+        <set>
+            SYNCFLAG ='Y'
+        </set>
+        <where>
+            BRAND_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.brandId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+
+    <!-- 品牌lov-->
+    <select id="selectBrandLov" resultMap="BaseResultMap">
+        SELECT BRAND_ID,
+                NAME,
+                CODE
+        FROM hmall_mst_brand
+        WHERE 1=1
+        <if test="brandId !=null and brandId !=''">
+            and BRAND_ID=#{brandId}
+        </if>
+        <if test="name !=null and name!=''">
+            and NAME LIKE '%'||#{name}||'%'
+        </if>
+        <if test="code !=null and code!=''">
+            and CODE LIKE '%'||#{code}||'%'
+        </if>
+    </select>
+</mapper>

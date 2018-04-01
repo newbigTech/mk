@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.MediaMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Media">
+        <result column="MEDIA_ID" property="mediaId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="IMAGE_DESCRIBE" property="imageDescribe" jdbcType="VARCHAR" />
+        <result column="URL" property="url" jdbcType="VARCHAR" />
+        <result column="MEDIA_SIZE" property="mediaSize" jdbcType="VARCHAR" />
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+        <result column="CATALOG" property="catalog" jdbcType="VARCHAR" />
+        <result column="SORT" property="sort" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="IMAGE_GROUP" property="imageGroup" jdbcType="VARCHAR"/>
+        <result column="PATH" property="path" jdbcType="VARCHAR"/>
+        <result column="IMAGE_LAST_UPDATE" property="imageLastUpdate" jdbcType="DATE"/>
+        <result column="UPDATE_FLAG" property="updateFlag" jdbcType="VARCHAR"/>
+        <result column="MD5_CONTENT" property="md5Content" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Result_List">
+        MEDIA_ID,CODE,NAME,IMAGE_DESCRIBE,URL,MEDIA_SIZE,CATALOGVERSION_ID,SYNCFLAG,SORT,PRODUCT_ID,IMAGE_GROUP,PATH,IMAGE_LAST_UPDATE,UPDATE_FLAG,MD5_CONTENT
+    </sql>
+
+    <resultMap id="mediaMap" type="com.hand.hmall.mst.dto.MediaDto">
+        <result column="MEDIA_ID" property="mediaId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="IMAGE_DESCRIBE" property="imageDescribe" jdbcType="VARCHAR" />
+        <result column="URL" property="url" jdbcType="VARCHAR" />
+        <result column="MEDIA_SIZE" property="mediaSize" jdbcType="VARCHAR" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <!-- 推送sync为N的online多媒体信息到商城当中 -->
+    <select id="selectPushingMedia" resultMap="mediaMap">
+    	select MEDIA_ID, m.CODE, NAME, IMAGE_DESCRIBE, URL, MEDIA_SIZE
+          FROM HMALL_MST_MEDIA m, hmall_mst_catalogversion c,HMALL_MST_CATALOGS  catalogs
+         WHERE m.catalogversion_id = c.catalogversion_id
+           AND c.CATALOG = catalogs.catalogs_id
+           and m.SYNCFLAG = 'N'
+           and m.IS_HANDLE = 'Y'
+           and c.catalogversion = 'online'
+            AND catalogs.code = 'markor'
+    </select>
+
+    <!--更新多媒体接口推送标志-->
+    <update id="updateMediaSyncflag" parameterType="java.util.List">
+        UPDATE HMALL_MST_MEDIA
+        <set>
+            SYNCFLAG ='Y'
+        </set>
+        <where>
+            MEDIA_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.mediaId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+
+    <!-- 商品详情页中查询主图和缩略图的LOV-->
+    <select id="selectMediaLov" resultMap="BaseResultMap">
+        SELECT media.MEDIA_ID,
+        media.CODE,
+        media.NAME,
+        media.URL,
+        catalog.code || '-' || version.catalogversion CATALOG
+        FROM hmall_mst_media          media,
+        hmall_mst_catalogversion version,
+        hmall_mst_catalogs       catalog
+        where media.catalogversion_id = version.catalogversion_id
+        and media.IS_HANDLE = 'Y'
+        and catalog.catalogs_id = version.catalog
+        <if test="mediaId !=null">
+            and MEDIA_ID=#{mediaId}
+        </if>
+        <if test="code !=null and code!=''">
+            and CODE=#{code}
+        </if>
+        <if test="name !=null and name!=''">
+            and NAME=#{name}
+        </if>
+        <if test="url !=null and url!=''">
+            and URL=#{url}
+        </if>
+
+    </select>
+
+    <!-- 对应目录版本多媒体信息查询 -->
+    <select id="selectByCodeAndVersion" parameterType="com.hand.hmall.mst.dto.Media" resultType="java.lang.Long">
+        select mm.media_id
+        from hmall_mst_media mm
+        where 1 = 1
+        and mm.IS_HANDLE = 'Y'
+        AND mm.code = #{code}
+        AND mm.CATALOGVERSION_ID = #{catalogversionId}
+    </select>
+
+
+    <select id="selectUpdatedImageGroup" resultType="java.lang.String">
+        select distinct m.image_group
+          from hmall_mst_media m
+         where m.update_flag != 'N'
+           and (m.syncflag = 'N' or m.syncflag is null)
+           and m.IS_HANDLE = 'Y'
+           and m.product_id = #{productId, jdbcType=DECIMAL}
+           and m.catalogversion_id = #{catalogversionId, jdbcType=DECIMAL}
+    </select>
+
+    <!-- updated by majun @2017/10/12 图片组下全量推送，不关心syncflag的值 -->
+    <select id="selectToBePushedMedias" resultMap="BaseResultMap">
+        select <include refid="Base_Result_List"/>
+        from hmall_mst_media m
+        where m.update_flag != 'D'
+        and m.IS_HANDLE = 'Y'
+        and m.catalogversion_id = #{catalogversionId, jdbcType=DECIMAL}
+        and m.product_id = #{productId, jdbcType=DECIMAL}
+        and m.image_group = #{imageGroup, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectMediaByProduct" parameterType="com.hand.hmall.mst.dto.Media" resultMap="BaseResultMap">
+        select <include refid="Base_Result_List"/>
+        from hmall_mst_media m
+        WHERE 1=1
+        <if test="productId !=null and productId!=''">
+            and m.product_id = #{productId}
+        </if>
+        <if test="imageGroup !=null and imageGroup!=''">
+            and m.image_group in #{imageGroup}
+        </if>
+        <!-- 查询其他类别的图片-->
+        <if test="imageGroup == null">
+            and m.image_group in ('MA_IMAGE','SC_IMAGE','FM_IMAGE','DE_IMAGE','CU_IMAGE','OT_IMAGE','BP_IMAGE','TC_IMAGE','NC_IMAGE')
+        </if>
+        and m.IS_HANDLE = 'Y'
+    </select>
+
+    <!-- 商品详情页面中删除图片关联关系-->
+    <update id="deleteRelationWithProduct" parameterType="com.hand.hmall.mst.dto.Media">
+        update hmall_mst_media media
+        set media.IS_HANDLE = 'N'
+        where 1=1
+        <if test="mediaId !=null and mediaId!=''">
+            AND media.MEDIA_ID = #{mediaId}
+        </if>
+        <if test="productId !=null and productId!=''">
+            AND media.PRODUCT_ID = #{productId}
+        </if>
+    </update>
+
+    <!-- 根据商品ID获取对应的多媒体信息 -->
+    <select id="selectMediaByProductId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT mm.media_id,mm.code,mm.catalogversion_id
+        FROM HMALL_MST_MEDIA mm
+        WHERE 1 = 1
+        AND mm.product_id = #{productId}
+        and mm.IS_HANDLE = 'Y'
+    </select>
+</mapper>

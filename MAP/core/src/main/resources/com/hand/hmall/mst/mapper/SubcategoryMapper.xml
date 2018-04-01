@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.SubcategoryMapper">
+    <resultMap id="SubcategoryMap" type="com.hand.hmall.mst.dto.SubCategory">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL"/>
+        <result column="SUB_CATEGORY_ID" property="subCategoryId" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <resultMap id="SubMap" type="com.hand.hmall.mst.dto.SubCategoryDto">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL"/>
+        <result column="SUB_CATEGORY_ID" property="subCategoryId" jdbcType="DECIMAL"/>
+    </resultMap>
+
+
+    <select id="querySyncData" resultMap="SubMap">
+        select ms.mapping_id,ms.category_id,ms.sub_category_id from
+        HMALL_MST_SUBCATEGORY ms
+    </select>
+
+
+    <update id="updateFlagBymappingId" parameterType="java.util.List">
+        UPDATE HMALL_MST_SUBCATEGORY
+        <set>
+            syncflag ='Y'
+        </set>
+        <where>
+            MAPPING_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.mappingId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+    <!-- 根据超类别ID  当前类别ID查询所有超类别对应关系 -->
+    <select id="queryListByCategoryIdAndSubCategoryId" resultMap="SubcategoryMap">
+        SELECT
+        sub.CATEGORY_ID,
+        sub.SUB_CATEGORY_ID,
+        sub.MAPPING_ID
+        FROM HMALL_MST_SUBCATEGORY sub
+        <where>
+            <if test="subCategoryId !=null and subCategoryId!=''and subCategoryId!='undefined'">
+                sub.SUB_CATEGORY_ID = #{subCategoryId}
+            </if>
+            <if test="categoryIdArray != null and categoryIdArray.length != 0">
+                and(
+                <foreach collection="categoryIdArray" item="id" index="index" open="" separator="or" close="">
+                    sub.CATEGORY_ID = #{id}
+                </foreach>
+                )
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据子类别ID 当前类别ID查询所有子类别对应关系 -->
+    <select id="queryListBySubCategoryIdAndCategoryId" resultMap="SubcategoryMap">
+        SELECT
+        sub.CATEGORY_ID,
+        sub.SUB_CATEGORY_ID,
+        sub.MAPPING_ID
+        FROM HMALL_MST_SUBCATEGORY sub
+        <where>
+            <if test="categoryId !=null and categoryId!=''and categoryId!='undefined'">
+                sub.CATEGORY_ID = #{categoryId}
+            </if>
+            <if test="subCategoryIdArray != null and subCategoryIdArray.length != 0">
+                and(
+                <foreach collection="subCategoryIdArray" item="id" index="index" open="" separator="or" close="">
+                    sub.SUB_CATEGORY_ID = #{id}
+                </foreach>
+                )
+            </if>
+        </where>
+    </select>
+</mapper>

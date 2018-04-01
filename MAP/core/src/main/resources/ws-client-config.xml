@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- Webservice接口配置 -->
+<CONFIG>
+    <AUTH>
+        <CREDENTIAL host="mfrerpdev.markor.net" port="8000" username="HD_DAIRT" password="123123"/>
+        <CREDENTIAL host="mfrerpqas.markor.net" port="8000" username="BXRFC_800" password="Mk123456"/>
+    </AUTH>
+    <SERVICES>
+        <!-- 测试接口 -->
+        <SERVICE id="test.sayHello" desc="测试接口">
+            <URL>http://10.5.41.86:8080/ws/HelloDream</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!-- Map传bom数据至Retail的接口 -->
+        <SERVICE id="bom.toRetail" desc="Map传bom数据至Retail的接口">
+            <URL>http://mfrerpdev.markor.net:8000/sap/bc/srt/rfc/sap/zzpp_bom_create/112/zzpp_bom_create/zzpp_bom_create</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!-- ECC接收订单BOM信息接口 heng 最后修改日期：2017.7.10 todo:已换成测试机url 2017/7/10-->
+        <SERVICE id="bom.toEcc" desc="ECC接收订单BOM信息接口">
+            <!--<URL>http://10.6.2.22:8000/sap/bc/srt/rfc/sap/zws_map_vbom_to_ecc/120/zws_map_vbom_to_ecc/zbd_map_vbom_to_ecc</URL>-->
+            <URL>http://10.6.2.23:8010/sap/bc/srt/rfc/sap/zws_map_vbom_to_ecc/800/zws_map_vbom_to_ecc/zbd_map_vbom_to_ecc</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!-- 测试机 -->
+        <!--<SERVICE id="order.pushRetail" desc="订单推送retail接口">
+            <URL>http://mfrerpqas.markor.net:8000/sap/bc/srt/rfc/sap/zzsd_so_create_soap/200/zzsd_so_create_soap/zzsd_so_create_soap</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>-->
+        <SERVICE id="order.pushRetail" desc="订单推送retail接口">
+            <URL>http://mfrerpdev.markor.net:8000/sap/bc/srt/rfc/sap/zzsd_so_create_soap/112/zzsd_so_create_soap/zzsd_so_create_soap</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+
+
+        <!-- 主推物料数据接口（MAP-ECC） heng  2017.7.4 todo:已换成测试机url-->
+        <SERVICE id="map.toEcc" desc="ECC接收常规品物料信息接口">
+            <!--<URL>http://10.6.2.22:8000/sap/bc/srt/rfc/sap/zws_map_cbom_to_ecc/120/zws_map_cbom_to_ecc/zbd_map_cbom_to_ecc</URL>-->
+            <URL>http://10.6.2.23:8010/sap/bc/srt/rfc/sap/zws_map_cbom_to_ecc/800/zws_map_cbom_to_ecc/zbd_map_cbom_to_ecc</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!--主推物料数据接口（MAP-RETAIL） heng  todo:需要换成测试机url 接口下次迭代用  2017.7.6-->
+        <SERVICE id="map.toRetail" desc="MAP-RETAI接口">
+            <URL>http://10.6.2.23:8010/sap/bc/srt/rfc/sap/zws_map_cbom_to_ecc/800/zws_map_cbom_to_ecc/zbd_map_cbom_to_ecc</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+
+        <!--成品零部件在制推送ECC 这里使用测试地址 add by xuxiaoxue 2017-11-07-->
+        <SERVICE id="bom.atpToEcc" desc="成品零部件在制推送ECC">
+            <URL>http://mktjeq101.markor.net:8010/sap/bc/srt/rfc/sap/zfmatp/800/zfmatp/zfmatp</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+        <!-- 中台短信推送梦网 zhangzilong  2017.11.20 -->
+        <SERVICE id="dream.pushMultixMsg" desc="中台短信推送梦网">
+            <URL>http://61.145.229.29:7903/MWGate/wmgw.asmx</URL>
+            <SOAP-ACTION></SOAP-ACTION>
+        </SERVICE>
+    </SERVICES>
+</CONFIG>

@@ -1,0 +1,50 @@
+.binding {
+  padding: 0 30px;
+  font-size: 14px;
+  table{
+  width: 100%;
+    tr {
+      height: 100px;
+      td {
+        border-bottom: 1px solid #dadada;
+        &:nth-child(1){
+          width: 285px;
+          padding-left: 35px;
+          span {
+            margin-left: 10px;
+            font-size: 14px;
+          }
+        }
+        &:nth-child(2){
+          width: 452px;
+          color: #a1a1a1;
+          span{
+            color: #1b1b1b;
+          }
+          img {
+            width: 42px;
+            height: 42px;
+            border-radius: 21px;
+            margin-right: 12px;
+            vertical-align: middle;
+          }
+        }
+        &:nth-child(3){
+          width: 70px;
+          text-align: center;
+          .default {
+            border-color: #000;
+          }
+          .cancel {
+            cursor: pointer;
+          }
+        }
+      }
+      &:last-child {
+        td {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}

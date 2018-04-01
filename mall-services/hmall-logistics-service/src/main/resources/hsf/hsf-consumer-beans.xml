@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--引用HMall中的物流相关业务接口-->
+    <dubbo:reference id="logisticsService4MS" lazy="true" check="false" interface="com.hand.hmall.logistics.service.ILogisticsService4MS" group="hmall" version="1.0.0">
+        <!--收到索勤发货信息后，调用HMall创建发货单交货单-->
+        <dubbo:method name="batchImport" timeout="5000"/>
+    </dubbo:reference>
+    <dubbo:reference id="logisticsService" lazy="true" check="false" interface="com.markor.map.logistics.service.ILogisticsService" group="logistics" version="1.0.0"/>
+
+</beans>

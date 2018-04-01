@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.VCodeHeaderMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.VCodeHeader">
+    <id column="HEADER_ID" jdbcType="DECIMAL" property="headerId" />
+    <result column="VCODE" jdbcType="VARCHAR" property="vcode" />
+    <result column="SEGMENT" jdbcType="VARCHAR" property="segment" />
+    <result column="PLATFORM_CODE" jdbcType="VARCHAR" property="platformCode" />
+    <result column="TYPE_CODE" jdbcType="VARCHAR" property="typeCode" />
+    <result column="ZTMATNR" jdbcType="VARCHAR" property="ztmatnr" />
+    <result column="ZTTEXT" jdbcType="VARCHAR" property="zttext" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    HEADER_ID, VCODE, SEGMENT, PLATFORM_CODE, TYPE_CODE, ZTMATNR, ZTTEXT
+  </sql>
+</mapper>

@@ -1,0 +1,70 @@
+#new_add_address_one {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(209, 209, 209, 0.4);
+  z-index: 1000;
+  .address_position {
+    position: absolute;
+    width: 635px;
+    height: 583px;
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: 4px solid rgba(187, 187, 187, 0.7);
+    border-radius: 4px;
+    .address_title_one {
+      padding: 10px;
+      width: 627px;
+      height: 35px;
+      background-color: #E9E9E9;
+      span {
+        &:last-child::before {
+          content: "\2716";
+          float: right;
+          cursor: pointer;
+          font-size: 18px;
+          line-height: 20px;
+        }
+      }
+    }
+  }
+  .address_main {
+    padding-left: 20px;
+    background-color: #fff;
+    height: 540px;
+    .h-form-group {
+      button {
+        &:first-child {
+          margin-right: 8px;
+        }
+      }
+      display: inline-block;
+      margin-top: 0px;
+      &:first-child {
+        margin-top: 30px;
+      }
+      &:last-child {
+        margin-top: 35px;
+      }
+      .mob_phone {
+        margin-left: 183px;
+      }
+      .phoneline {
+        line-height: 40px;
+        font-size: 16px;
+      }
+      label {
+        display: inline-block;
+      }
+      select {
+        width: 100px;
+        height: 40px;
+      }
+    }
+  }
+}

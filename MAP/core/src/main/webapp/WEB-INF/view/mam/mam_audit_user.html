@@ -1,0 +1,195 @@
+<#--
+    * description: 审核组用户关系界面
+    * author: yanjie.zhang@hand-china.com
+    * date 2017/10/26
+    * version: 0.1
+-->
+<#include "../include/header.html">
+<script type="text/javascript">
+    var viewModel = Hap.createGridViewModel("#grid");
+</script>
+    <script src="${base.contextPath}/common/code?auditGroupCode=HAP.MAM.AUDIT_GROUP" type="text/javascript"></script>
+<body>
+<div id="page-content">
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+        <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" data-bind="click:create"><@spring.message "hap.new"/></span>
+        <span class="btn btn-success k-grid-save-changes" data-bind="click:save" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+    </div>
+    <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <!--  用户名 -->
+        <input placeholder='<@spring.message "mamAuditUser.userId"/>' type="text" style="float:left;width:140px;margin-right:3px;" data-bind="value:model.userName" class="k-textbox">
+
+        <!--审核组-->
+        <input type="text" style="width:150px;" placeholder='<@spring.message "MamAuditUser.auditGroup"/>'
+               id="auditGroupCB"    data-bind="value:model.auditGroup" >
+        <script type="text/javascript">
+            $("#auditGroupCB").kendoComboBox({
+                optionLabel: "----",
+                dataSource     :auditGroupCode,
+                valuePrimitive : true,
+                dataTextField  : "meaning",
+                dataValueField : "value",
+            });
+        </script>
+        <span class="btn btn-primary" style="width:70px" data-bind="click:query" type="submit"><@spring.message "hap.query"/></span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both">
+        <div id="grid"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    Hap.initEnterQuery('#query-form', viewModel.query);
+    var BaseUrl = _basePath;
+    dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hap/mam/audit/user/query",
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hap/mam/audit/user/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hap/mam/audit/user/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hap/mam/audit/user/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "headerId",
+                fields: {
+                    enableFlag: {defaultValue: 'Y', type: 'boolean', checkedValue: 'Y', uncheckedValue: 'N'},
+                    userId: {
+                        validation: {
+                            userId: function (input) {
+                                if (input.is("[name=userId]") && input.val() == "") {
+                                    input.attr("data-userId-msg", "必填!");
+                                    return false;
+                                }
+                                return true;
+                            }
+                        }
+                    },
+                    auditGroup: {
+                        validation: {
+                            auditGroup: function (input) {
+                                if (input.is("[name=auditGroup]") && input.val() == "") {
+                                    input.attr("data-auditGroup-msg", "必填!");
+                                    return false;
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    $("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+       // selectable: 'multiple, rowbox',
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+           {
+               field: "userId",
+               title: '<@spring.message "MamAuditUser.userId"/>',
+               width: 120,
+               template: function (dataItem) {
+                   return dataItem['userName'] || ''
+               },
+               editor          : function (container, options) {
+                   $('<input name="' + options.field + '"/>')
+                           .appendTo(container)
+                           .kendoLov($.extend(<@lov "HAP_MAM_USER_LOV"/>,{
+                       textField: 'userName',
+                       valueField:'userId',
+                       select:function(e){
+                       },
+                       change : function(e) {
+                       },
+                       model    : options.model,
+                   }));
+               }
+            },
+            {
+                field: "auditGroup",
+                title: '<@spring.message "MamAuditUser.auditGroup"/>',
+                width: 120,
+                template: function(dataItem){
+                    var v = dataItem.auditGroup;
+                    $.each(auditGroupCode,function(i,n){
+                        if(n.value == v){
+                            v = n.meaning;
+                            return v;
+                        }
+                    })
+                    return v|| '';
+                },
+                editor: function(container, options){
+                    $('<input name="' + options.field + '"/>')
+                            .appendTo(container)
+                            .kendoDropDownList({
+                                dataTextField: "meaning",
+                                dataValueField: "value",
+                                valuePrimitive: true,
+                                dataSource:auditGroupCode,
+                    });
+                }
+            },
+            {
+                field: "enableFlag",
+                title: '<@spring.message "hap.enableflag"/>',
+                width: 120,
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                attributes: {style: "text-align:center"}
+            },
+        ],
+        editable: true
+    });
+
+    Hap.autoResizeGrid("#grid");
+</script>
+</body>
+</html>

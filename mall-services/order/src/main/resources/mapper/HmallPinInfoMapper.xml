@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright (C) HAND Enterprise Solutions Company Ltd.
+  ~  All Rights Reserved
+  ~
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallPinInfoMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallPinInfo">
+    <id column="PIN_INFO_ID" jdbcType="DECIMAL" property="pinInfoId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="ENTRY_CODE" jdbcType="VARCHAR" property="entryCode" />
+    <result column="EVENT_CODE" jdbcType="VARCHAR" property="eventCode" />
+    <result column="EVENT_DES" jdbcType="VARCHAR" property="eventDes" />
+    <result column="SYSTEM" jdbcType="VARCHAR" property="system" />
+    <result column="OPERATOR" jdbcType="VARCHAR" property="operator" />
+    <result column="MOBILE" jdbcType="VARCHAR" property="mobile" />
+    <result column="OPERATION_TIME" jdbcType="TIMESTAMP" property="operationTime" />
+    <result column="EVENT_INFO" jdbcType="VARCHAR" property="eventInfo" />
+    <result column="FLAG_LEVEL1" jdbcType="VARCHAR" property="flagLevel1" />
+    <result column="FLAG_LEVEL2" jdbcType="VARCHAR" property="flagLevel2" />
+    <result column="FLAG_LEVEL3" jdbcType="VARCHAR" property="flagLevel3" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    PIN_INFO_ID, CODE, ENTRY_CODE, EVENT_CODE, EVENT_DES, SYSTEM, OPERATOR, MOBILE, OPERATION_TIME, 
+    EVENT_INFO, FLAG_LEVEL1, FLAG_LEVEL2, FLAG_LEVEL3, OBJECT_VERSION_NUMBER, CREATION_DATE, 
+    CREATED_BY, LAST_UPDATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, 
+    PROGRAM_ID, PROGRAM_UPDATE_DATE, REQUEST_ID, ATTRIBUTE_CATEGORY
+  </sql>
+
+</mapper>

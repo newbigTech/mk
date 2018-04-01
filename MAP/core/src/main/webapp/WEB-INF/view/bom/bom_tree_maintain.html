@@ -1,0 +1,402 @@
+<#include "../include/header.html">
+<#-- * description: BOM树配置
+	*author:yougui.wu@hand-china.com
+	*
+	* version: 1.0
+* -->
+
+<!-- 加这个style是因为下面那个文本提示的那个框会自己加一个k-input的class（里面有一个padding，他会在外面套一个框不好看），这里把它覆盖了（这里只加了padding的话他只会覆盖padding） -->
+<body>
+<script src="${base.contextPath}/common/code?fieldTypeData=HCS_BA_MAP_FIELD_TYPE" type="text/javascript"></script>
+<div class="container" id="page-content">
+	<div id="main">
+			<div id="left" style="padding: 0px">
+				<div class="panel-body">
+					<div id="treeList" style="height: 100%"></div>
+					
+				</div>
+			</div>
+	</div>
+</div>
+
+<div style="clear: both;">
+   <div id="grid"></div>
+</div>
+
+<!-- 定义模型  也就是观察者设计模式中的观察者  -->
+<script type="text/javascript">
+    var viewModel = kendo.observable({
+        model: {},
+
+		//保存函数
+        saveFunction: function () {
+
+            //这个要在下面设置这个$("#page-content").kendoValidator(才有用的
+            var validator = $("#page-content").data("kendoValidator");
+            if (validator.validate()){ 
+            var grid = $('#grid').data('kendoGrid');
+            if(checktime('starttime')&&checktime('endtime')){
+            SubmitForm({
+                form: viewModel,
+                wrapArray:true,
+                grid:grid,
+                gridName : 'lines',
+                url : '${base.contextPath}/imp/submitlinesandheaders/submit'
+            });
+            }
+            }
+        },
+        //grid数据查询
+        queryResource: function (e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+
+		//清空查询条件
+        resetForm: function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+        },
+
+		//树新增一行
+        nodeCreate: function (e) {
+            $("#treeList").data("kendoTreeList").addRow();
+        },
+
+		//树删除一行
+        nodeDelete:function (e) {
+            if(selectDataItem() === undefined){
+                kendo.ui.showInfoDialog({
+                    message: '<@spring.message "bom.choose.delete.item"/>'
+                });
+                return;
+            }
+            kendo.ui.showConfirmDialog({
+                title: '<@spring.message "hap.prompt"/>',
+                message: '<@spring.message "bom.confirm.delete"/>'
+            }).done(function (e) {
+                if(e.button === 'OK'){
+                    $("#treeList").data("kendoTreeList").removeRow(selectDataItem());
+                }
+            });
+        },
+		//新增时节点的保存
+        nodeSave:function (e) {
+        	var treeList =  $("#treeList").data("kendoTreeList");
+        	var treeData = treeList.dataSource._data;
+        	var jsonTreeData = JSON.stringify(treeData);
+             if(viewModel.isNew === null){
+                kendo.ui.showInfoDialog({
+                    message: '<@spring.message "bom.no.options.save"/>'
+                });
+                return;
+            }
+            //没有被修改
+            if(viewModel.isNew){
+                    kendo.ui.showInfoDialog({
+                        message: '<@spring.message "bom.no.item.save"/>'
+                    });
+            }else{
+                //将编辑界面的值更新到datasource中，并和远程进行同步
+                updateDataToSource(selectDataItem());
+                //物料信息
+                var pzItemInfo={"hierarchy":$("#hierarchy")[0].value,
+            		          "fictionsFlag":$("#fictionsFlag")[0].value,
+            		          "configurableFlag":$("#configurableFlag")[0].value,
+            		          "itemNum":$("#itemNum")[0].value,
+            		          "uom":$("#uomCode")[0].value,
+            		          "obtainMode":$("#obtainMode")[0].value,
+            		          "leadTime":$("#leadTime")[0].value,
+            		          "safetyStock":$("#safetyStock")[0].value,
+            		          "consumptionRate":$("#consumptionRate")[0].value,
+            		          "hierarchy":$("#hierarchy")[0].value
+            		          }; 
+    //3d模型信息
+                var pzItemModel={
+            		   "modelName":$("#modelName")[0].value,
+            		   "coordinateX":$("#coordinateX")[0].value,
+            		   "coordinateY":$("#coordinateY")[0].value,
+            		   "coordinateZ":$("#coordinateZ")[0].value
+               } 
+               viewModel.model.set("pzItemInfo",pzItemInfo);
+               viewModel.model.set("pzItemModel",pzItemModel); 
+               var data=viewModel.model;
+               updateDataToSource(data);  
+               $.ajax({
+                   url: "${base.contextPath}/husm/pz/item/submitTree",
+                   contentType: "application/json",
+                   async:false,
+                   type: "POST",
+                    data:jsonTreeData,//添加请求数据
+                   success:function (data) {
+
+                       //已经存在为true，
+                       if(data.success === true){
+                       	   e.preventDefault();
+    	                   	kendo.ui.showInfoDialog({
+    	                        title: '<@spring.message "hap.tip.info"/>',
+    	                        message: '<@spring.message "hap.tip.success"/>'
+    	                    })
+                       }else{
+    	                   	  kendo.ui.showWarningDialog({
+    	                           message:data.message
+    	                       })
+                       }
+
+                   },
+                   failure:function (resp) {
+                       kendo.ui.showInfoDialog({
+                           message:resp.message
+                       });
+                   }
+               });
+             } 
+
+        },
+        //树展开
+        nodesExpand:function (e) {
+            datas = treeDataSource.data();
+            var row = null;
+            var children = null;
+            for(var i = 0, len = datas.length; i < len ; i++){
+                children = treeDataSource.childNodes(datas[i]);
+                if(children != null && children.length > 0){
+                    row = kendoTreeList.content.find("tr[data-uid=" + datas[i].uid + "]");
+                    kendoTreeList.expand(row);
+                }
+            }
+        },
+        
+        //树关闭
+        nodesCollapse:function (e) {
+
+            datas = treeDataSource.data();
+            var row = null;
+            var children = null;
+            for(var i = 0, len = datas.length; i < len ; i++){
+                children = treeDataSource.childNodes(datas[i]);
+                if(children != null && children.length > 0){
+                    row = kendoTreeList.content.find("tr[data-uid=" + datas[i].uid + "]");
+                    kendoTreeList.collapse(row);
+                }
+            }
+        }
+    });
+
+
+    function selectDataItem() {
+        //获取在树上选择到的数据
+        var treeList = $("#treeList").data("kendoTreeList");
+        var row = treeList.select();
+        var selectDatas = treeList.dataItem(row);
+        return treeList.dataItem(row);
+    }
+</script>
+
+<!-- 创建一个远程数据源 -->
+<script>
+var treeDataSource = new kendo.data.TreeListDataSource({
+    transport: {
+        read: {
+            url: "${base.contextPath}/hap/mdm/bom/queryBomTree",
+            type: "POST",
+            dataType: "json",
+            contentType: 'application/json',
+        },/*
+         create: {
+            url: "${base.contextPath}/husm/pz/item/submitTree",
+            contentType: "application/json",
+            async:false,
+            type: "POST"
+        }, 
+        update: {
+            url: "${base.contextPath}/husm/pz/item/submitTree",
+            contentType: "application/json",
+            type: "POST"
+        },  */
+        destroy: {
+            url: "${base.contextPath}/hap/mdm/bom/delete",
+            contentType: "application/json",
+            type: "POST"
+        } ,
+        parameterMap: function (options, type) {
+            if (type === "read") {
+               var map = {};
+               return JSON.stringify(map);
+            }
+            if (type === "create") {
+                return JSON.stringify(options);
+            }
+            if (type === "update") {
+                return JSON.stringify(options);
+            }
+            if (type === "destroy") {
+
+                return JSON.stringify(options);
+            }
+        } 
+    },
+    schema: {
+        data:"rows",
+        total: 'total',
+        model: {
+            id: "itemId",
+            parentId: "parentItemId",
+            fields: {
+                 bomId : {field: "bomId"},
+                 itemId : {field: "itemId"},
+                 //root节点的父节点以空开始，默认为false，手动设置为true，要不然无法显示
+                 parentItemId:{field: "parentItemId",nullable: true,type:"number"},
+                 infaceId : {field: "infaceId",type:"number",defaultValue:1},
+                 matnr : {field: "matnr",type:"string",defaultValue:"1"},
+                 werks : {field: "werks",type:"string",defaultValue:"1"},
+                 stlal : {field: "stlal",type:"string",defaultValue:"1"},
+                 bmeng : {field: "bmeng",type:"string",defaultValue:"1"},
+                 postp : {field: "postp",type:"string",defaultValue:"1"},
+                 posnr : {field: "posnr",type:"string",defaultValue:"1"},
+                 idnrk : {field: "idnrk",type:"string",defaultValue:"1"},
+                 menge : {field: "menge",type:"string",defaultValue:"1"},
+                 meins : {field: "meins",type:"string",defaultValue:"1"},
+                 deleteFlag : {field: "deleteFlag",type:"string",defaultValue:"N"},
+                 hierarchy : {field: "hierarchy",type:"number",defaultValue:1}
+            }
+        }
+    },
+    errors: function(res){
+        if(!res.success) {
+            console.log
+            return "";
+        }
+    }
+});
+</script>
+
+<script type="text/javascript">
+kendoTreeList = $("#treeList").kendoTreeList({
+    dataSource: treeDataSource,
+	sortable: true,
+    resizable: true,
+	//此处为tree上面的各个按钮
+    toolbar: kendo.template('<div class="pull-left" id="toolbar-btn" style="margin: 0px;">' +
+    '<span class="btn btn-primary" type="button" data-bind="click:nodeCreate" style="float:left;margin:5px 3px 0px 0px;"><i class="fa fa-plus-square" style="margin-right:3px;"></i><@spring.message "hap.new"/></span>' +
+    '<span class="btn btn-success" style="float:left;margin:5px 3px 0px 0px;" data-bind="click:nodeSave"> <i class="fa fa-save" style="margin-right:3px;"></i><@spring.message "hap.save"/></span>' +
+   '<span class="btn btn-danger" style="float:left;margin:5px 3px 0px 0px;" data-bind="click:nodeDelete"><i class="fa fa-trash-o" style="margin-right:3px;"></i><@spring.message "hap.delete"/> </span>' +
+   '<span class="btn btn-default" style="float:left;margin:5px 3px 0px 0px;" data-bind="click:nodesExpand"><i class="fa  fa-chevron-down" style="margin-right:3px;"></i><@spring.message "item.expand"/></span>' +
+   '<span class="btn btn-default" style="float:left;margin:5px 3px 0px 0px;" data-bind="click:nodesCollapse"><i class="fa fa-chevron-up" style="margin-right:3px;"></i><@spring.message "item.close"/></span>' + 
+    '</div>'),
+    navigatable: true,
+	edit: function(e) {
+        this.select(e.container);
+    },
+    save:function (e) {
+    	var inputValue = $("#itemDescriptionGrid").val();
+    	var modelData = e.model;
+    	modelData["item"] = {};
+    	modelData.item["itemId"] = null;
+    	modelData.item["itemCode"] = "1";
+    	modelData.item["itemName"] = inputValue;
+    	modelData.item["description"] = "1";
+    	modelData.item["ecnnumber"] = "1";
+    	modelData.item["publishno"] = "1";
+    	modelData.item["item"] = "1";
+    	modelData.item["matnr"] = "1";
+    	modelData.item["mtart"] = "1";
+    	modelData.item["matkl"] = "1";
+    	modelData.item["deleteFlag"] = "N";
+    	console.log(modelData);
+        var tag = true;
+       	$.ajax({
+           url: "${base.contextPath}/hap/mdm/bom/submitTree",
+           contentType: "application/json",
+           async:false,
+           type: "POST",
+           data:JSON.stringify(modelData),
+           success:function (data) {
+               //已经存在为true，
+               if(data.success === true){
+               	   e.preventDefault();
+                   	kendo.ui.showInfoDialog({
+                        title: '<@spring.message "hap.tip.info"/>',
+                        message: '<@spring.message "hap.tip.success"/>'
+                    }).done(function (event) {
+                        if (event.button == 'OK') {
+                        	 window.location.reload();
+                        }
+                    })
+               }else{
+                   	  kendo.ui.showWarningDialog({
+                           message:data.message
+                       })
+               }
+
+           },
+           failure:function (resp) {
+               kendo.ui.showInfoDialog({
+                   message:resp.message
+               });
+           }
+       });   
+    },
+    editable:{
+        move:true
+    }, 
+     selectable: true, 
+    dataBound: function(e) {
+
+    },
+    change:function onChange(arg) {
+
+    },
+    columns: [
+        {   //设置tree的列
+            title:'<@spring.message "PzItem.description"/>',
+            field:"item.itemName",
+             editor: function (container, options) {
+                $('<input required id="itemDescriptionGrid" type="text" class="k-textbox" name="' + options.field + '"/>').appendTo(container);
+            }, 
+        },
+        
+        {
+            command:[{
+                name:"createchild"
+            }],
+            width:94
+        }
+
+    ],
+    height: "580",
+    messages: {
+        commands: {
+            update: '<@spring.message "hap.submit"/>',
+            canceledit: '<@spring.message "hap.cancel"/>',
+            createchild: '<@spring.message "husm.setup.type.create_child"/>',
+        }
+    }
+}).data("kendoTreeList");
+Hap.autoResizeGrid("#treeList");
+</script>
+
+
+<!-- 校验form里的字段必输 -->
+<script>
+$("#page-content").kendoValidator({
+	messages: {
+        required: '<@spring.message "PzItem.description"/>'
+	}
+});
+</script>
+
+
+
+
+<!-- 将模型绑定到表单 -->
+<script>kendo.bind($('#page-content'), viewModel);</script>
+
+<!-- 将模型绑定到grid -->
+<script>kendo.bind($('#grid'), viewModel);</script>
+
+
+
+</body>
+</html>

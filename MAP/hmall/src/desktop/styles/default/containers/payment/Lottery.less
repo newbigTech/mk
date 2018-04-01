@@ -1,0 +1,91 @@
+
+.lottery {
+  margin: 0;
+  padding: 0;
+  -webkit-backface-visibility: hidden;
+  .square {
+    position: relative;
+    margin-left: 30px;
+    width: 300px;
+    height: 300px;
+    .circle {
+      background-color: #ff0000;
+      margin-top: 30px;
+      margin-bottom: 20px;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      box-shadow: inset 0px 0px 30px rgba(0, 0, 0, 0.3);
+      -webkit-box-shadow: inset 0px 0px 30px rgba(0, 0, 0, 0.3);
+      -webkit-transition: all 0.5s ease;
+      -moz-transition: all 0.5s ease;
+      -ms-transition: all 0.5s ease;
+      -o-transition: all 0.5s ease;
+      transition: all 0.5s ease;
+      li {
+        position: absolute;
+        width: 70px;
+        height: 50px;
+        border-radius: 50%;
+        background: white;
+        list-style: none;
+        text-align: center;
+        font-size: 10px;
+        line-height: 50px;
+        &:nth-child(1) {
+          top: 15px;
+          left: 115px;
+        }
+        &:nth-child(2) {
+          top: 125px;
+          left: 225px;
+          -webkit-transform: rotate(90deg);
+          -moz-transform: rotate(90deg);
+          -ms-transform: rotate(90deg);
+          -o-transform: rotate(90deg);
+          transform: rotate(90deg);
+        }
+        &:nth-child(3) {
+          top: 235px;
+          left: 115px;
+          -webkit-transform: rotate(180deg);
+          -moz-transform: rotate(180deg);
+          -ms-transform: rotate(180deg);
+          -o-transform: rotate(180deg);
+          transform: rotate(180deg);
+        }
+        &:nth-child(4) {
+          top: 125px;
+          left: 5px;
+          -webkit-transform: rotate(270deg);
+          -moz-transform: rotate(270deg);
+          -ms-transform: rotate(270deg);
+          -o-transform: rotate(270deg);
+          transform: rotate(270deg);
+        }
+      }
+    }
+  }
+  .square:before {
+    content: "抽奖";
+    text-align: center;
+    font: 40px/135px Georgia, Times, serif;
+    color: #ff0000;
+    position: absolute;
+    top: 85px;
+    left: 85px;
+    z-index: 10;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: #fff;
+    -webkit-box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+  }
+  button {
+    margin-top: 40px;
+    margin-left: 30px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+}

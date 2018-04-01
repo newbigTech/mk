@@ -1,0 +1,256 @@
+<#include "/include/header.html"/>
+<body>
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+
+        queryResource: function(e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        resetForm        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+
+    var templateType='TEMPLATE';
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div class="panel" style="padding: 0px;">
+            <form class="form-horizontal" id="conditionForm">
+                <div class="panel-body">
+                    <div class="row">
+
+                        <div class="col-sm-5">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">模板ID</label>
+                                <div class="col-sm-8">
+                                    <input id="templateId"   type="text" placeholder="模板ID" style="width: 100%" data-bind="value:model.templateId"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-5">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">模板名称</label>
+                                <div class="col-sm-8">
+                                    <input id="templateName" type="text" placeholder="模板名称" style="width: 100%" data-bind="value:model.templateName"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </form>
+            <div class="panel-footer text-right">
+                <span class="btn btn-success" id="query" data-bind="click:queryResource" type="submit"><i class="fa fa-search"></i> <@spring.message "hap.query"/></span>
+                <span class="btn btn-primary" id="resetForm" data-bind="click:resetForm" type="button"><i class="fa fa-refresh"></i> <@spring.message "hap.reset"/></span>
+
+            </div>
+        </div>
+
+        <div id='grid-container'>
+            <div id="grid" style="clear: both"></div>
+        </div>
+    </div>
+</div>
+
+
+
+</div>
+<script type="text/javascript">
+
+    function toggleAll(e)
+    {
+        var view = dataSource.view();
+        var checked = e.target.checked;
+        for (var i = 0; i < view.length; i++) {
+            view[i].set("checked", checked);
+        }
+    }
+
+    kendo.bind($('#page-content'),viewModel);
+    kendo.bind($('#grid-container'),viewModel);
+
+
+
+    var BaseUrl = "${base.contextPath}/sale/template/",
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"query",
+                        type : "POST",
+                        contentType: "application/json"
+
+                    },
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            if(type =='create' || type =='update'){
+                                var map = viewModel.model.toJSON();
+                                datas = options.models.map(function(data){
+                                    data['__status'] = (type =='create' ? 'add' : 'update');
+                                    return data;
+
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+                            var map={};
+                            map.data =viewModel.model.toJSON();
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+                            for (var k in map.data) {
+                                if (map.data[k] === '' || map.data[k] === null || map.data[k] === undefined)
+                                    delete map.data[k]
+                            }
+                            return kendo.stringify(map);
+
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging : true,
+                pageSize: 10,
+                schema: {
+                    data:'resp',
+                    total:'total',
+                    model: {
+                        id: "id",
+                        fields: {
+                            templateId:{editable:false, validation: { required: true }},
+                            templateName: {editable:false, validation: { required: true } },
+
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+//    //处理grid中的选择框
+//    $("#grid").on("change", "input.chkbx", function (e) {
+//        var target = $(e.target),
+//                grid = $("#grid").data("kendoGrid"),
+//                dataItem = grid.dataItem(target.closest("tr"));
+//        dataItem.set(target.data('field'), this.checked ? 'Y' : 'N');
+//    });
+
+    var grid=$("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+        selectable : 'rowbox',
+        pageable: {
+            pageSizes:[5, 10, 20, 50,500,1000,2000],
+            refresh:true,
+            buttonCount:5,
+            messages: {
+                noRecords: "未找到任何数据",
+                display: "{0} - {1} 共 {2} 条数据",
+                empty: "没有数据",
+                page: "页",
+                of: "/ {0}",
+                itemsPerPage: "条每页",
+                first: "第一页",
+                previous: "前一页",
+                next: "下一页",
+                last: "最后一页",
+                refresh: "刷新"
+            }
+        },
+
+        toolbar: [
+            {
+                name: "create",
+                template: '<button  id="create" onclick="create()" class="btn btn-success"><i class="fa fa-plus"></i> 确定</button>'
+            },{
+                template:'<button  id="cancel" onclick="cancel()"  class="btn btn-primary"><i class="fa fa-refresh" aria-hidden="true"></i> 取消</button>'
+            }
+        ],
+        columns: [
+
+            {
+                field: "templateId",
+                title: '模板ID',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width:"40%"
+            },
+            {
+                field: "templateName",
+                title: '模板名称',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width:"40%"
+            }
+        ],
+        editable: true,
+        dataBound: function() {
+            var view = this.dataSource.view();
+            this.items().each(function(index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+
+    function create()
+    {
+
+        var grid = $("#grid").data("kendoGrid");
+        if (!grid.selectedDataItems().length) {
+            kendo.ui.showWarningDialog({
+                title: '提示信息',
+                message: '你未选中任何要使用的模板!'
+            });
+            return;
+        } else if (grid.selectedDataItems().length > 1) {
+            kendo.ui.showWarningDialog({
+                title: '提示信息',
+                message: '只能使用单个模板!'
+            });
+            return;
+        } else {
+            var data=grid.selectedDataItems()[0];
+            window.parent.editRule(data.id,-1,templateType);
+            window.parent.$("#templateWin").data("kendoWindow").close();
+
+        }
+
+    }
+
+
+    $('.k-input').attr("disabled",true);
+
+</script>
+</body>
+</html>

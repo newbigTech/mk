@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.PricerowMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.Pricerow">
+    <id column="PRICEROW_ID" jdbcType="DECIMAL" property="pricerowId" />
+    <result column="PRODUCT_ID" jdbcType="DECIMAL" property="productId" />
+    <result column="USER_ID" jdbcType="DECIMAL" property="userId" />
+    <result column="USER_GROUP_ID" jdbcType="DECIMAL" property="userGroupId" />
+    <result column="BASE_PRICE" jdbcType="DECIMAL" property="basePrice" />
+    <result column="BOTTOM_PRICE" jdbcType="DECIMAL" property="bottomPrice" />
+    <result column="SALE_UNIT" jdbcType="VARCHAR" property="saleUnit" />
+    <result column="RATE" jdbcType="DECIMAL" property="rate" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="START_TIME" jdbcType="TIMESTAMP" property="startTime" />
+    <result column="END_TIME" jdbcType="TIMESTAMP" property="endTime" />
+    <result column="PRICE_TYPE" jdbcType="VARCHAR" property="priceType" />
+    <result column="PRODUCT_GRADE" jdbcType="VARCHAR" property="productGrade" />
+    <result column="IS_BOTTOM" jdbcType="VARCHAR" property="isBottom" />
+    <result column="PRICE_GROUP" jdbcType="VARCHAR" property="priceGroup" />
+    <result column="CRATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="ODTYPE" jdbcType="VARCHAR" property="odtype" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    PRICEROW_ID, PRODUCT_ID, USER_ID, USER_GROUP_ID, BASE_PRICE, BOTTOM_PRICE, SALE_UNIT, 
+    RATE, SYNCFLAG, START_TIME, END_TIME, PRICE_TYPE, PRODUCT_GRADE, IS_BOTTOM, PRICE_GROUP,CRATION_DATE,ODTYPE
+  </sql>
+  
+</mapper>

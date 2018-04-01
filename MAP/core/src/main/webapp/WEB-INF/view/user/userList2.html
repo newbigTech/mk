@@ -1,0 +1,679 @@
+<#include "/include/header.html">
+    <script src="${base.contextPath}/common/code?yesOrNo=SYS.YES_NO" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?sexData=HR.EMPLOYEE_GENDER" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?userType=HMALL.USER.TYPE&userStatus=HMALL.USER.STATUS&loginMethod=HMALL.LOGIN.METHOD&user_lable=HMALL.USER.LABLE" type="text/javascript"></script>
+    <style>
+        #query-form label {
+            width: 80px;
+            text-align: right;
+        }
+
+        .a-upload {
+            padding: 4px 10px;
+            height: 20px;
+            line-height: 20px;
+            position: relative;
+            cursor: pointer;
+            color: #888;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            display: inline-block;
+            *display: inline;
+            *zoom: 1
+        }
+
+        .a-upload input {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            filter: alpha(opacity=0);
+            cursor: pointer
+        }
+
+        .a-upload:hover {
+            color: #444;
+            background: #eee;
+            border-color: #ccc;
+            text-decoration: none
+        }
+
+        #window_Upload_Button {
+            margin-top: 10px;
+        }
+    </style>
+
+    <body>
+    <script type="text/javascript">
+        var excel_Import_Condition=null;
+        var viewModel = kendo.observable({
+            model: {},
+            queryFunction: function (e) {
+                    $('#grid').data('kendoGrid').dataSource.page(1);
+            },
+            resetForm: function (e) {
+                var formData = viewModel.model.toJSON();
+                for (var k in formData) {
+                    viewModel.model.set(k, null);
+                };
+            }
+        });
+
+
+
+        //移入，移出黑名单(toOrOut（Y表示移入,N表示移出）)
+        function removeBlack(toOrOut){
+            var checked = $('#grid').data('kendoGrid').selectedDataItems();
+            if(checked.length<=0){    //判断用户是否选中数据
+                kendo.ui.showWarningDialog({
+                    title:"提示",
+                    message:"请选择您要操作的会员！"
+                });
+                return;
+            }
+
+
+
+            var gridData = [];
+            for (var i = 0; i < checked.length; i++) {
+                gridData
+                    .push({
+                        userId: checked[i].userId,
+                        isBlackList:toOrOut,
+                        __status: "update",
+                    });
+            }
+            ;
+
+            kendo.ui.showConfirmDialog({
+                title: $l('hap.tip.info'),
+                message: $l('确认？')
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        type: 'POST',
+                        url: '${base.contextPath}/hmall/mst/user/submit',
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify(gridData),
+                        success: function (data) {
+                            if (data.success == false) {
+                                kendo.ui.showErrorDialog({
+                                    message: data.message
+                                });
+                            }else{
+                                kendo.ui.showInfoDialog({
+                                    message: $l("<@spring.message '成功！'/>")
+                                });
+                                refushGrid();
+                            }
+                        }
+                    });
+
+                }
+            })
+        }
+
+        //刷新Grid表格
+        function refushGrid(){
+            //获取当前页面编号
+            var pageNo=$('#grid').data('kendoGrid').dataSource._page;
+            //刷新页面
+            $('#grid').data('kendoGrid').dataSource.read(pageNo);
+        }
+
+
+    </script>
+    <div id="content-container">
+        <div id="page-content">
+            <div class="panel" style="padding: 0px;">
+                <div class="panel-footer text-left">
+                    <span onclick="removeBlack('Y')" class="btn btn-primary" >移入黑名单</span>
+                    <span onclick="removeBlack('N')" class="btn btn-info"  >移出黑名单</span>
+                    <span onclick="batchLabel()" class="btn btn-info"   >批量添加标签</span>
+                    <span onclick="batchRemark()" class="btn btn-info"  >批量添加备注</span><!--
+                    <span onclick="open_batchimport()" class="btn btn-info"  >导入</span>
+                    <span onclick="exportExcleFunction()" class="btn btn-info"  >导出</span>
+                    <span onclick="sync_To_oms()" class="btn btn-info"  >同步到OMS</span>
+-->
+                </div>
+                <form class="form-horizontal" id="conditionForm">
+                    <div class="panel-body" id = "queryInfo">
+                        <div class="row">
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">用户ID：</label>
+                                    <div class="col-sm-8">
+                                        <input id="userId" type="text" placeholder="用户ID" style="width: 100%"
+                                               data-bind="value:model.userId"
+                                               class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">用户账户：</label>
+                                    <div class="col-sm-8">
+                                        <input id="customerid" type="text" placeholder="用户账户" style="width: 100%"
+                                               data-bind="value:model.customerid"
+                                               class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">手机号：</label>
+                                    <div class="col-sm-8">
+                                        <input id="mobileNumber" type="text" placeholder="用户手机号" style="width: 100%"
+                                               data-bind="value:model.mobileNumber"
+                                               class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">用户组：</label>
+                                    <div class="col-sm-8">
+                                        <input id="groupName" data-bind="value:model.groupName" placeholder="用户组" style="width: 100%;"
+                                               class="k-textbox"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">昵称：</label>
+                                    <div class="col-sm-8">
+                                        <input id="name"  placeholder="昵称" data-bind="value:model.name" style="width: 100%;"
+                                               class="k-textbox"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">邮箱：</label>
+                                    <div class="col-sm-8">
+                                        <input id="email" placeholder="邮箱" data-bind="value:model.email" style="width: 100%;"
+                                               class="k-textbox"/>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">会员等级：</label>
+                                    <div class="col-sm-8">
+                                        <input id="userLevel" data-bind="value:model.userLevel" placeholder="会员等级" style="width: 100%;"
+                                               class="k-textbox"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">是否在黑名单：</label>
+                                    <div class="col-sm-8">
+                                        <input id="isBlack" placeholder="是否在黑名单" data-bind="value:model.isBlackList" style="width: 100%;"/>
+                                        <script>
+                                            $("#isBlack").kendoDropDownList({
+                                                valuePrimitive: true,
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                dataSource: yesOrNo
+                                            });
+                                        </script>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-8 ">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">注册时间：</label>
+                                    <div class="col-sm-8">
+                                        <input id="startTime" type="text" style="width: 45%"
+                                               data-bind="value:model.startTime">
+                                        <a> 一 </a>
+                                        <input id="endTime" type="text" style="width: 45%"
+                                               data-bind="value:model.endTime">
+                                        <script>
+                                            var startFinal = $("#startTime").kendoDateTimePicker({
+                                                animation: {
+                                                    close: {
+                                                        effects: "fadeOut zoom:out",
+                                                        duration: 300
+                                                    },
+                                                    open: {
+                                                        effects: "fadeIn zoom:in",
+                                                        duration: 300
+                                                    }
+                                                },
+                                                format: "yyyy-MM-dd HH:mm:ss",
+                                                change: function () {
+                                                    var startTime = $("#startTime").val();
+                                                    endFinal.min(startTime || new Date(1800, 0, 1));
+                                                }
+                                            }).data("kendoDateTimePicker");
+                                            var endFinal = $("#endTime").kendoDateTimePicker({
+                                                animation: {
+                                                    close: {
+                                                        effects: "fadeOut zoom:out",
+                                                        duration: 300
+                                                    },
+                                                    open: {
+                                                        effects: "fadeIn zoom:in",
+                                                        duration: 300
+                                                    }
+                                                },
+                                                format: "yyyy-MM-dd HH:mm:ss",
+                                                change: function () {
+                                                    var endTime = $("#endTime").val();
+                                                    startFinal.max(endTime || new Date(2099, 11, 31));
+                                                }
+                                            }).data("kendoDateTimePicker");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </form>
+                 <script>kendo.bind($('#queryInfo'), viewModel);</script>
+                <div class="panel-footer text-left" id="queryBtn">
+                    <span class="btn btn-success" id="query" data-bind="click:queryFunction"  type="submit"><i class="fa fa-search"></i> <@spring.message "hap.query"/></span>
+                    <span class="btn btn-primary" id="resetForm" data-bind="click:resetForm" type="button"><i class="fa fa-refresh"></i> <@spring.message "hap.reset"/></span>
+
+                </div>
+                <script>kendo.bind($('#queryBtn'), viewModel);</script>
+            </div>
+
+            <div id='grid-container'>
+                <div id="grid" style="clear: both"></div>
+            </div>
+        </div>
+
+        <!-- 批量添加备注 -->
+        <div id="batch_add_remark" style="clear:both;margin:10px 0px 20px 30px;">
+            <form>
+               <!-- <input type="radio" id="remark_all" name="all_page" value="all">
+                <label for="remark_all">全部结果添加</label>
+
+                <input type="radio" id="remark_page" checked="checked" name="all_page" value="page">
+                <label for="remark_page">本页选中结果添加</label>
+
+                <br/><br/>-->
+
+                <textarea rows="6" cols="50"  name="remark"></textarea>
+
+                <br/><br/>
+
+                <span onclick="addRemarkConfirm()" class="btn btn-info"  style="float:left;margin-right:5px;" >确定</span>
+                <span onclick="addRemarkOff()" class="btn btn-info"  style="float:left;margin-right:5px;" >取消</span>
+            </form>
+        </div>
+
+        <!-- 批量添加标签 -->
+        <div id="batch_add_lable" style="clear:both;margin:20px 0px 20px 30px;">
+            <form>
+               <!-- <input type="radio" id="lable_all" name="all_page" value="all">
+                <label for="lable_all">全部结果添加</label>
+
+                <input type="radio" id="lable_page" checked="checked" name="all_page" value="page">
+                <label for="lable_page">本页选中结果添加</label>
+
+                <br/><br/>-->
+
+                <select class="form-control" id="form-field-select-2" name="rolesId" style="height:200px; width:280px; padding:0px;" multiple="multiple">
+                </select>
+
+                <br/><br/>
+
+                <span onclick="addlableConfirm()" class="btn btn-info"  style="float:left;margin-right:5px;" >确定</span>
+                <span onclick="addlableOff()" class="btn btn-info"  style="float:left;margin-right:5px;" >取消</span>
+            </form>
+        </div>
+
+    </div>
+
+
+    <script type="text/javascript">
+
+        //批量添加标签
+        $(function(){
+            var statuList=user_lable;
+            for ( var i in statuList) {
+                $("#form-field-select-2").append("<option>"+statuList[i].meaning+"</option>");
+            }
+        });
+        function batchLabel(){
+            $("#batch_add_lable").data("kendoWindow").open();
+            $("#form-field-select-2").val("");
+        }
+        $("#batch_add_lable").kendoWindow({
+            position: {
+                top: "20%",
+                left: "30%"
+            },
+            width: "400px",
+            title: "添加标签",
+            actions: [
+                "Close"
+            ],
+            visible: false          //设置窗口不可见
+        });
+        //取消按钮
+        function addlableOff(){
+            $("#batch_add_lable").data("kendoWindow").close();
+        }
+        //新增按钮
+        function addlableConfirm(){
+            var checked = $('#grid').data('kendoGrid').selectedDataItems();
+            if(checked.length<=0){
+                alert("列表中的数据不能为空!");
+                return;
+            }
+            //获取多选框，选中的集合
+            var lable_list=$("#form-field-select-2").val();
+            var gridData = [];
+            for (var i = 0; i < checked.length; i++) {
+                gridData
+                    .push({
+                        userId: checked[i].userId,
+                        label:lable_list.toString(),
+                        __status: "update",
+                    });
+            }
+            ;
+
+            //2.发送ajax请求
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/hmall/mst/user/submit',
+                dataType: "json",
+                contentType: "application/json",
+                data: kendo.stringify(gridData),
+                success: function (data) {
+                    if (data.success == false) {
+                        kendo.ui.showErrorDialog({
+                            message: data.message
+                        });
+                    }else{
+                        kendo.ui.showInfoDialog({
+                            message: $l("<@spring.message '成功！'/>")
+                        });
+                        addlableOff();
+                        refushGrid();
+                    }
+                }
+            });
+        }
+
+
+
+        //批量添加备注
+        function batchRemark(){
+            $("#batch_add_remark").data("kendoWindow").open();
+            $("#batch_add_remark [name=remark]").val("");
+        }
+        $("#batch_add_remark").kendoWindow({
+            position: {
+                top: "20%",
+                left: "30%"
+            },
+            width: "400px",
+            title: "添加备注",
+            actions: [
+                "Close"
+            ],
+            visible: false          //设置窗口不可见
+        });
+        //添加备注中的取消按钮
+        function addRemarkOff(){
+            $("#batch_add_remark").data("kendoWindow").close();
+        }
+        //添加备注中的确定按钮
+        function addRemarkConfirm(){
+            var checked = $('#grid').data('kendoGrid').selectedDataItems();
+            //获取列表中数据的个数，如果小于1，则提示用户列表中要有数据
+            if(checked.length<=0){
+                alert("列表中的数据不能为空!");
+                return;
+            }
+
+            //获取表单中的数据，并发送post请求
+            //1.获取条件
+
+            var remark=$("#batch_add_remark [name=remark]").val();
+
+            var gridData = [];
+            for (var i = 0; i < checked.length; i++) {
+                gridData
+                    .push({
+                        userId: checked[i].userId,
+                        remark:remark,
+                        __status: "update",
+                    });
+            }
+            ;
+            //2.发送ajax请求
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/hmall/mst/user/submit',
+                dataType: "json",
+                contentType: "application/json",
+                data: kendo.stringify(gridData),
+                success: function (data) {
+                    if (data.success == false) {
+                        kendo.ui.showErrorDialog({
+                            message: data.message
+                        });
+                    }else{
+                        kendo.ui.showInfoDialog({
+                            message: $l("<@spring.message '成功！'/>")
+                        });
+                        addRemarkOff();
+                        refushGrid();
+                    }
+                }
+            });
+
+        }
+
+
+
+        var BaseUrl = _basePath;
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "/hmall/mst/user/queryInfo",
+                    type: "POST",
+                    dataType: "json"
+                },
+                update: {
+                    url: BaseUrl + "/hmall/mst/user/submit",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                destroy: {
+                    url: BaseUrl + "/hmall/mst/user/remove",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                create: {
+                    url: BaseUrl + "/hmall/mst/user/submit",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type)
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "userId",
+                    fields: {}
+                }
+            }
+        });
+
+        var list = $("#grid").kendoGrid({
+            dataSource: dataSource,
+            height: '600px',
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            selectable: 'multiple, rowbox',
+            pageable: {
+                pageSizes: [5, 10, 50, 100],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                {
+                    field: "userId",
+                    title: '<@spring.message "hmall.user.userid"/>',
+                    width: 120
+                },
+                {
+                    field: "customerid",
+                    title: '<@spring.message "hmall.user.customerid"/>',
+                    width: 120
+                },
+                {
+                    field: "mobileNumber",
+                    title: '<@spring.message "hmall.user.mobileNumber"/>',
+                    width: 120
+                },
+                {
+                    field: "groupName",
+                    title: '<@spring.message "hmall.pricerow.usergroupname"/>',
+                    width: 120
+                },
+                {
+                    field: "creationDate",
+                    title: '<@spring.message "hmall.user.creationDate"/>',
+                    width: 160
+                },
+                {
+                    field: "name",
+                    title: '<@spring.message "hmall.user.name"/>',
+                    width: 120
+                },
+                {
+                    field: "email",
+                    title: '<@spring.message "hmall.user.email"/>',
+                    width: 120
+                },
+                {
+                    field: "region",
+                    title: '<@spring.message "hmall.user.region"/>',
+                    width: 120
+                },
+                {
+                    field: "city",
+                    title: '<@spring.message "hmall.user.city"/>',
+                    width: 120
+                },
+                {
+                    field: "district",
+                    title: '<@spring.message "hmall.user.district"/>',
+                    width: 120
+                },
+                {
+                    field: "label",
+                    title: '<@spring.message "hmall.user.label"/>',
+                    width: 120
+                },
+                {
+                    field: "remark",
+                    title: '<@spring.message "hmall.user.remark"/>',
+                    width: 120
+                },
+                {
+                    field: "isBlackList",
+                    title: '<@spring.message "hmall.user.isBlackList"/>',
+                    width: 120,
+                    template: function (dataItem) {
+                        var v = dataItem.isBlackList;
+                        if (v == null) {
+                            return '';
+                        }
+                        $.each(yesOrNo, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            } else {
+                                return v;
+                            }
+                        })
+                        return v;
+                    },
+                },
+                {
+                    field: "sex",
+                    title: '<@spring.message "hmall.user.sex"/>',
+                    width: 120,
+                    template: function (dataItem) {
+                        var v = dataItem.sex;
+                        if (v == null) {
+                            return '';
+                        }
+                        $.each(sexData, function (i, n) {
+                            if (n.value == v) {
+                                v = n.meaning;
+                                return v;
+                            } else {
+                                return v;
+                            }
+                        })
+                        return v;
+                    },
+                },
+                {
+                    field: "birthday",
+                    title: '<@spring.message "hmall.user.birthday"/>',
+                    width: 160
+                },
+                {
+                    field: "userLevel",
+                    title: '<@spring.message "hmall.productcategory.categorylevel"/>',
+                    width: 120
+                },
+
+            ],
+            editable: false
+        }).data("kendoGrid");
+
+        function deleteData() {
+
+            Hap.deleteGridSelection({
+                grid: $('#grid')
+            });
+
+        }
+
+        Hap.autoResizeGrid("#grid");
+
+    </script>
+    </body>
+    </html>

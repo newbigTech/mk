@@ -1,0 +1,334 @@
+<#include "/include/header.html"/>
+<body>
+
+	<script>
+
+    var viewModel = kendo.observable({
+        model:{},
+        checkedItems:[]
+    });
+    var id='${RequestParameters.id}';
+    var value=[];
+    var operator="";
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var openType='${RequestParameters.openType}';
+    var typeValue='${RequestParameters.typeValue}';
+console.log(typeValue);
+
+    if(openType=='BASE') {
+        for (var i in window.parent.viewModel.model.conditions) {
+            if (window.parent.viewModel.model.conditions[i].id == id) {
+                if (window.parent.viewModel.model.conditions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.conditions[i].parameters.rangeValue != undefined) {
+                        value = window.parent.viewModel.model.conditions[i].parameters.rangeValue.value;
+                    }
+
+                }
+                break;
+            }
+        }
+    }else if(openType=='GROUP') {
+		if (window.parent.groups_data != undefined) {
+			for (var i in window.parent.groups_data) {
+
+				var flag=false;
+				for(var j in window.parent.groups_data[i].child)
+				{
+
+					if(window.parent.groups_data[i].child[j].id==id)
+					{
+						if (window.parent.groups_data[i].child[j].parameters != undefined) {
+							if (window.parent.groups_data[i].child[j].parameters.rangeValue != undefined) {
+								value = window.parent.groups_data[i].child[j].parameters.rangeValue.value;
+
+							}
+						}
+						flag=true;
+						break;
+					}
+				}
+				if(flag){
+					break;
+				}
+
+			}
+		}
+	}else if(openType=='GROUP_EXT') {
+
+		if (window.parent.groups_data != undefined) {
+			for (var i in window.parent.groups_data) {
+
+				var flag=false;
+				if(window.parent.groups_data[i].child!=undefined) {
+					for (var j in window.parent.groups_data[i].child) {
+						if (window.parent.groups_data[i].child[j].child != undefined) {
+							for (var k in  window.parent.groups_data[i].child[j].child) {
+								if (window.parent.groups_data[i].child[j].child[k].id == id) {
+									if (window.parent.groups_data[i].child[j].child[k].parameters != undefined) {
+										if (window.parent.groups_data[i].child[j].child[k].parameters.rangeValue != undefined) {
+											value = window.parent.groups_data[i].child[j].child[k].parameters.rangeValue.value;
+										}
+
+									}
+									flag = true;
+									break;
+								}
+							}
+						}
+					}
+				}
+				if(flag){
+					break;
+				}
+
+			}
+		}
+
+	}
+
+
+    if(value!=null&&value!=undefined)
+    {
+        viewModel.checkedItems =value;
+
+    }
+    if(operator!=null&&operator!=undefined&&operator!="")
+    {
+        viewModel.model.operator =operator;
+
+    }
+
+</script>
+
+
+
+	<div id="content-container">
+		<div id="page-content">
+			<div id="appendPanel" class="panel" style="padding: 0px;">
+				<form class="form-horizontal" id="conditionForm">
+					<div class="panel-body">
+						<div class="row">
+							<div class="panel-body"
+								style="overflow-y: auto; overflow-x: auto; width: 90%; height: 300px;">
+								<div disabled="true" id="treeViewArea" style="clear: both"></div>
+							</div>
+
+						</div>
+					</div>
+				</form>
+
+				<div class="panel-footer text-right">
+                    <span class="btn btn-success" id="query"  disabled="true"  type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+                    <span class="btn btn-primary" id="resetForm" onclick="rollbackWin()" type="button"><i class="fa fa-refresh"></i> 返回</span>
+                    <script>
+                        if(disabled!='true'){
+                            $('#query').removeAttr("disabled");
+                            $('#query').attr("onclick","saveDataCondition()")
+                        }
+                    </script>
+				</div>
+
+			</div>
+
+		</div>
+	</div>
+	<script type="text/javascript">
+    kendo.bind($('#content-container'),viewModel);
+    kendo.bind($('#page-content'),viewModel);
+
+    var serviceRoot = "${base.contextPath}/sale/range";
+
+    if(typeValue=='EXPRESS'){
+        serviceRoot+="/area/query/checked"
+    }else{
+        serviceRoot+="/area/store/query/checked"
+    }
+
+   var  homogeneous = new kendo.data.HierarchicalDataSource({
+        transport: {
+            read: {
+                url: serviceRoot ,
+                type:"POST",
+                contentType:"application/json"
+            },
+            parameterMap: function(options, type) {
+                if (type === "read") {
+                    var map={};
+                    map.checkedItems=viewModel.checkedItems;
+                    map.disabled=disabled;
+
+                    return kendo.stringify(map);
+                }
+            }
+        },
+        schema: {
+            data: "resp",
+            model: {
+                id: "id",
+                children: "items"
+            }
+        }
+    });
+
+    $("#treeViewArea").kendoTreeView({
+        checkboxes: {
+            checkChildren: true,
+        },
+        dataSource:homogeneous,
+        check: onCheck,
+        dataTextField: "name"
+    });
+
+
+    var treeViewArea=$('#treeViewArea').data('kendoTreeView');
+
+    function checkedNodeIds(nodes, checkedNodes) {
+
+        if(nodes.length>0) {
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].checked) {
+                    if(typeValue=='EXPRESS') {
+                        if (nodes[i].type != 2) {
+                            checkedNodes.push(nodes[i].id);
+                        } else {
+                            treeViewArea.expandPath([nodes[i].id])
+                        }
+                    }else{
+                        debugger;
+						if(nodes[i].type!=undefined) {
+							if (nodes[i].type != 2 && nodes[i].type != 3&&nodes[i].type != 4) {
+								checkedNodes.push(nodes[i].id);
+							} else {
+								treeViewArea.expandPath([nodes[i].id])
+							}
+						}else{
+							checkedNodes.push(nodes[i].id);
+						}
+                    }
+                }
+                if (nodes[i].hasChildren) {
+                    checkedNodeIds(nodes[i].children.view(), checkedNodes);
+                }
+            }
+        }
+    }
+
+
+    function onCheck() {
+        var treeView = $("#treeViewArea").data("kendoTreeView");
+        viewModel.checkedItems=[];
+        checkedNodeIds(treeView.dataSource.view(), viewModel.checkedItems);
+    }
+
+
+
+    function saveDataCondition()
+    {
+
+        if(openType=='BASE') {
+            if (window.parent.viewModel.model.conditions != undefined) {
+                for (var i in window.parent.viewModel.model.conditions) {
+                    if (window.parent.viewModel.model.conditions[i].id == id) {
+                        if (window.parent.viewModel.model.conditions[i].parameters == undefined) {
+                            window.parent.viewModel.model.conditions[i].set("parameters", {});
+
+                        }
+                        if (window.parent.viewModel.model.conditions[i].parameters.rangeValue == undefined) {
+                            window.parent.viewModel.model.conditions[i].parameters.set("rangeValue", {});
+
+                        }
+                        if (window.parent.viewModel.model.conditions[i].parameters.rangeOperator == undefined) {
+                            window.parent.viewModel.model.conditions[i].parameters.set("rangeOperator", {});
+
+                        }
+
+                        window.parent.viewModel.model.conditions[i].parameters.rangeValue.value =viewModel.checkedItems;
+                        window.parent.viewModel.model.conditions[i].parameters.rangeOperator.value="MEMBER_OF";
+                        break;
+                    }
+                }
+            }
+        }else if(openType=='GROUP'){
+            if (window.parent.groups_data != undefined) {
+
+                for (var i in window.parent.groups_data) {
+
+                    var flag=false;
+                    for(var j in window.parent.groups_data[i].child)
+                    {
+
+                        if(window.parent.groups_data[i].child[j].id==id)
+                        {
+                            if (window.parent.groups_data[i].child[j].parameters == undefined) {
+                                window.parent.groups_data[i].child[j].parameters={};
+
+                            }
+                            if (window.parent.groups_data[i].child[j].parameters.rangeValue == undefined) {
+                                window.parent.groups_data[i].child[j].parameters.rangeValue={};
+                            }
+                            if (window.parent.groups_data[i].child[j].parameters.rangeOperator == undefined) {
+                                window.parent.groups_data[i].child[j].parameters.rangeOperator={};
+                            }
+                            window.parent.groups_data[i].child[j].parameters.rangeValue.value = viewModel.notIn;
+
+                            window.parent.groups_data[i].child[j].parameters.rangeValue.value =viewModel.checkedItems;
+                            window.parent.groups_data[i].child[j].parameters.rangeOperator.value="MEMBER_OF";
+                            flag=true;
+                            break;
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+
+                }
+            }
+        }else if(openType=='GROUP_EXT'){
+            if (window.parent.groups_data != undefined) {
+                for (var i in window.parent.groups_data) {
+
+                    var flag=false;
+                    if(window.parent.groups_data[i].child!=undefined) {
+                        for (var j in window.parent.groups_data[i].child) {
+                            if (window.parent.groups_data[i].child[j].child != undefined) {
+                                for (var k in  window.parent.groups_data[i].child[j].child) {
+                                    if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters == undefined) {
+                                            window.parent.groups_data[i].child[j].child[k].parameters={};
+                                        }
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.rangeValue == undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.rangeValue={};
+                                        }
+
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.rangeOperator == undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.rangeOperator={};
+                                        }
+                                        window.parent.groups_data[i].child[j].child[k].parameters.rangeValue.value =viewModel.checkedItems;
+                                        window.parent.groups_data[i].child[j].child[k].parameters.rangeOperator.value="MEMBER_OF";
+                                        flag = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+
+                }
+            }
+        }
+        rollbackWin();
+
+    }
+
+    function rollbackWin() {
+        window.parent.$("#areaChooseWin").data("kendoWindow").close();
+    }
+
+
+</script>
+</body>
+</html>

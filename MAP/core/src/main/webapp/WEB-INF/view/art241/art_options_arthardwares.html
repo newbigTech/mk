@@ -1,0 +1,576 @@
+<#--
+        * description: 五金选项查询功能界面
+        * author:zhangyanan
+        * 2018/01/29
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.base.css" type="text/css"/>
+        <link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.bootstrap.css" type="text/css"/>
+        <!--进度条-->
+        <link rel="stylesheet" href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.css">
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcore.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdata.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxbuttons.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxscrollbar.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdatatable.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxtreegrid.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcheckbox.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxlistbox.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdropdownlist.js"></script>
+        <script type="text/javascript" src="${base.contextPath}/resources/demos.js"></script>
+        <script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+        <script src="${base.contextPath}/common/code?husmObtainMode=HUSM_OBTAIN_MODE" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?projectUom=HUSM_PZ_UOM" type="text/javascript"></script>
+
+        <script src="${base.contextPath}/common/code?husmAttrTypeData=HUSM_ATTR_TYPE_DATA"
+                type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?husmAttrEnabledFlag=HUSM_ATTR_ENABLED_FLAG"
+                type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?husmAttrEditableFlag=HUSM_ATTR_EDITABLE_FLAG"
+                type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?husmRequriedFlag=HUSM_REQUIRED_FLAG"
+                type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?husmDefaultValueType=HUSM_DEFAULT_VALUE_TYPE"
+                type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?husmControlTpye=HUSM_CONTROL_TYPE" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?husmControlWidth=HUSM_CONTROL_WIDTH"
+                type="text/javascript"></script>
+        <script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.js"></script>
+        </head>
+        <body>
+
+        <script type="text/javascript">
+            var grid__;
+            //设置第一个form vieModel
+            /*    var treeModel = kendo.observable({
+             firstLoad: true, //预留标志位，判断页面是否是第一次加载
+             isNew: null, //用于判断form表单数据时候被编辑过的标志位
+             uid: null, //存储当前被编辑的dataItem uid
+             model: {}
+             });*/
+
+
+            //            var seqModel = kendo.observable({
+            //                model: {},
+            //                saveFunction: function () {
+            //                    $('#seqGrid').data('kendoGrid').saveChanges();
+            //                }
+            //            });
+
+            //获取分屏需要的全屏参数
+            function divFullScreen() {
+                var width = $(window).width();//计算屏幕的宽度
+                var height = $(window).height();
+                $('#main').width(width - 20);//设置div的宽度等于屏幕的宽度
+                $('#main').height(height - 20);//设置div的宽度等于屏幕的宽度
+            }
+
+        </script>
+
+        <div class="container" style="width: auto; margin: 10px 0px 0px 0px; height: 1000">
+            <div id="main" style="padding: 0px">
+
+                <div id="left" style="padding: 0px">
+                    <div class="panel-body" style="height: 99.8%; padding: 0px;">
+                        <div class="row">
+                            <div id="treeGrid" style="height: 750px"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="right">
+                    <div id="mask"
+                         style="opacity: 0.3; filter: alpha(opacity = 30); background-color: #e0e0e0; z-index: 100; right: 0px; left: 0px; top: 0px; bottom: 0px; position: absolute;">
+                    </div>
+                    <!--五金选项操作按钮-->
+                    <div>
+                        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                                <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;"
+                                      data-bind="click:createFunction"><i class="fa fa-plus-square"></i><@spring.message "hap.new"/></span>
+                            <span onclick="saveData()" class="btn btn-success k-grid-save-changes"
+                                  style="float:left;margin-right:5px;"><i
+                                    class="fa fa-save"></i><@spring.message "hap.save"/></span>
+                            <span onclick="deleteData()" class="btn btn-danger"
+                                  style="float:left;margin-right:5px;"><i
+                                    class="fa fa-eraser"></i><@spring.message "hap.delete"/></span>
+                            <span onclick="importData()" class="btn btn-warning"
+                                  style="float:left;margin-right:5px;"><i
+                                    class="fa fa-file-pdf-o"></i><@spring.message "导入"/></span>
+                            <div style="clear:both">
+                                <div id="Grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                var globPlatformCode;
+                $("#treeGrid").on('rowSelect', function (event) {
+                    // event arguments
+                    var args = event.args;
+                    // row data
+                    var rowData = args.row;
+                    // row key
+                    var itemId = rowData.itemId;
+                    var itemCode = rowData.itemCode;
+                    globPlatformCode = itemCode;
+                    var bomId = rowData.bomId;
+                    /*这里改为查询*/
+                    getFormConfData();
+                });
+
+
+                var dataJson;
+                var dataAdapter;
+                function loadTree() {
+                    $(document).ready(function () {
+                        NProgress.start();
+                        //241项目树
+                        var map = {"brand": "241", "mtart": "Z01"};
+                        $.ajax({
+                            url: "${base.contextPath}/hap/mdm/bom/queryPlatform",
+                            contentType: "application/json",
+                            async: false,
+                            type: "POST",
+                            data: JSON.stringify(map),
+                            success: function (data) {
+                                dataJson = data.rows;
+                            }
+                        });
+                        // create Tree Grid
+                        var source =
+                            {
+                                dataType: "json",
+                                dataFields: [
+                                    {name: 'bomId', type: 'number'},
+                                    {name: 'itemId', type: 'number'},
+                                    {name: 'itemCode', type: 'string'},
+                                    {name: 'itemName', type: 'string'},
+                                    {name: 'parentItemId', type: 'number'},
+                                    {name: 'infaceId', type: 'number'},
+                                    {name: 'matnr', type: 'string'},
+                                    {name: 'werks', type: 'string'},
+                                    {name: 'stlal', type: 'string'},
+                                    {name: 'bmeng', type: 'string'},
+                                    {name: 'postp', type: 'string'},
+                                    {name: 'posnr', type: 'string'},
+                                    {name: 'idnrk', type: 'string'},
+                                    {name: 'menge', type: 'string'},
+                                    {name: 'meins', type: 'string'},
+                                    {name: 'hierarchy', type: 'number'},
+                                    {name: 'deleteFlag', type: 'string'},
+                                    {name: 'item'}
+
+                                ],
+                                hierarchy: {
+                                    keyDataField: {name: 'itemId'},
+                                    parentDataField: {name: 'parentItemId'}
+                                },
+                                id: 'itemId',
+                                localData: dataJson
+                            };
+
+                        dataAdapter = new $.jqx.dataAdapter(source);
+                        var treeGrid = $("#treeGrid").jqxTreeGrid(
+                            {
+                                height: 600,
+                                width: '100%',
+                                source: dataAdapter,
+                                sortable: true,//可拍续
+                                theme: "bootstrap",//主题
+                                hierarchicalCheckboxes: true,//选子，相应的父是否变化
+                                altRows: true,//隔行变色
+                                checkboxes: false,
+                                columnsResize: true,//自动调节列
+                                autoRowHeight: true,//自动调高
+                                filterable: true,
+                                editable: false,
+                                ready: function () {
+                                    // expand row with 根节点id
+                                    $("#treeGrid").jqxTreeGrid('expandRow', 32);
+                                },
+                                columns: [
+                                    {text: '物料编码', dataField: 'itemCode', minWidth: 100, pinned: false},//pinned 固定
+                                    {text: '物料名称', dataField: 'itemName', minWidth: 100, pinned: false}
+                                ]
+                            });
+                        //动态设置分屏div的大小
+                        divFullScreen();//页面加载时全屏
+                        $(window).bind('resize', function () {
+                            divFullScreen();//最大化，还原窗口大小时DIV尺寸跟着变化，不过最好在CSS里给这个DIV加个min-width等于html,body的最小宽度。
+                        });
+
+                        //初始化分屏布局
+                        $("#main").kendoSplitter({
+                            orientation: "horizontal",
+                            panes: [{size: "30%"}, {}]
+                        });
+                    });
+                    //数据加载完成事件
+                    $('#treeGrid').on('bindingComplete', function (event) {
+                        NProgress.done();
+                    });
+                }
+
+            </script>
+
+
+            <script src="${base.contextPath}/common/code?discount_type=HMALL_DISCOUNT_TYPE"
+                    type="text/javascript"></script>
+            <script src="http://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.js"></script>
+            <script type="text/javascript">
+                var viewModel = kendo.observable({
+                    model: {},
+                    createFunction: function () {
+                        //新建行带出左侧列表的物料编码和物料名称
+                        grid__.dataSource.insert(0, {platformCode: globPlatformCode});
+                    },
+                    saveFunction: function () {
+                        $('#Grid').data('kendoGrid').saveChanges();
+                    },
+                    queryResource: function (e) {
+                        $('#Grid').data('kendoGrid').dataSource.page(1);
+                    },
+                    resetFunction: function () {
+                        var formData = viewModel.model.toJSON();
+                        for (var k in formData) {
+                            viewModel.model.set(k, null);
+                        }
+                    }
+
+                });
+            </script>
+            <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+        </div>
+        <!--</div>-->
+        <script>
+            kendo.bind($('#query-form-detail'), viewModel);
+        </script>
+
+        <!-- 导入导出的execl Window -->
+        <div id="excelWindow"></div>
+
+
+        <script>
+            $('#queryPanel').kendoQueryPanel({
+                queryFunction: function () {
+                    viewModel.queryResource();
+                },
+                resetFunction: function (e) {
+                    viewModel.resetFunction();
+                }
+            })
+        </script>
+
+        <script type="text/javascript">
+
+            var BaseUrl = _basePath;
+            function getFormConfData() {
+                grid__.setDataSource(dataSource);
+                $('#mask').remove();
+
+                Hap.autoResizeGrid("#Grid");
+            }
+
+            //初始化起始时间从
+            initDateTimePicker("startTime", function () {
+                var startTime = $("#startTime").val();
+                var endTime = $("#endTime").data("kendoDateTimePicker");
+                endTime.min(startTime || new Date(1800, 0, 1));
+            });
+
+            //初始化起始时间至
+            initDateTimePicker("endTime", function () {
+                var endTime = $("#endTime").val();
+                var startTime = $("#startTime").data("kendoDateTimePicker");
+                startTime.max(endTime || new Date(2099, 11, 31));
+            });
+            /**
+             * 初始化时间选择控件
+             * @param elementId -被初始化的控件ID
+             * @param onChange - value值变化时的时间处理函数
+             */
+            function initDateTimePicker(elementId, onChange) {
+                $("#" + elementId).kendoDateTimePicker({
+                    animation: {
+                        close: {
+                            effects: "fadeOut zoom:out",
+                            duration: 300
+                        },
+                        open: {
+                            effects: "fadeIn zoom:in",
+                            duration: 300
+                        }
+                    },
+                    format: "yyyy-MM-dd HH:mm:ss",
+                    change: onChange
+                });
+            }
+
+            function importData() {
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '导入',
+                    content: "${base.contextPath}/art241/art_options_arthardwares_excel.html",
+                    actions: [
+                        "Pin",
+                        "Close"
+                    ],
+                    modal: true,
+                    visible: false,
+                    width: 800,
+                    height: 400,
+                    iframe: true,
+                    close: function () {
+                        grid__.dataSource.page(1);
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+            }
+
+            //删除
+            function deleteData() {
+                var selections = grid__.selectedDataItems();
+                if (!selections.length) {
+                    kendo.ui.showInfoDialog({
+                        message: "<@spring.message 'hap.tip.selectrows'/>"
+                    });
+                    return;
+                }
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('是否删除选择的五金选项行？')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        $.ajax({
+                            url: BaseUrl + "/markor/art241/options/artHardwares/delArtHardwares",
+                            type: 'post',
+                            dataType: 'json',
+                            contentType: "application/json",
+                            async: false,
+                            data: JSON.stringify(selections),
+                            success: function (data) {
+                                if (data.success) {
+                                    kendo.ui.showInfoDialog({
+                                        message: "删除成功"
+                                    });
+                                    grid__.dataSource.page(1);
+                                } else {
+                                    kendo.ui.showInfoDialog({
+                                        message: data.message
+                                    });
+                                    grid__.dataSource.page(1);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            //保存
+            function saveData() {
+                var selections = grid__.selectedDataItems();
+                if (!selections.length) {
+                    kendo.ui.showInfoDialog({
+                        message: "<@spring.message 'hap.tip.selectrows'/>"
+                    });
+                    return;
+                }
+                for (var i = 0; i < selections.length; i++) {
+                    if (selections[i].platformCode == null || selections[i].platformCode == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "平台码不能为空"
+                        });
+                        return;
+                    }
+                    if (selections[i].platformCode == null || selections[i].platformCode == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "平台码不能为空"
+                        });
+                        return;
+                    }
+                    if (selections[i].handlesComCode == null || selections[i].handlesComCode == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "拉手组合不能为空"
+                        });
+                        return;
+                    }
+                    if (selections[i].handlesComCode.length > 3) {
+                        kendo.ui.showInfoDialog({
+                            message: "拉手组合长度不能大于3位"
+                        });
+                        return;
+                    }
+                    if (selections[i].handlesColor == null || selections[i].handlesColor == '') {
+                        kendo.ui.showInfoDialog({
+                            message: "拉手颜色不能为空"
+                        });
+                        return;
+                    }
+                    if (selections[i].handlesColor.length > 1) {
+                        kendo.ui.showInfoDialog({
+                            message: "拉手颜色长度不能大于1位"
+                        });
+                        return;
+                    }
+                    if (selections[i].optionMatCode.length > 10) {
+                        kendo.ui.showInfoDialog({
+                            message: "配置包编码长度不能大于10位"
+                        });
+                        return;
+                    }
+                    if (selections[i].optionValueMatCode.length > 10) {
+                        kendo.ui.showInfoDialog({
+                            message: "材料编码长度不能大于10位"
+                        });
+                        return;
+                    }
+                }
+                $.ajax({
+                    url: BaseUrl + "/markor/art241/options/artHardwares/saveArtHardwares",
+                    type: 'post',
+                    dataType: 'json',
+                    contentType: "application/json",
+                    async: false,
+                    data: JSON.stringify(selections),
+                    success: function (data) {
+                        if (data.success) {
+                            kendo.ui.showInfoDialog({
+                                message: "保存成功"
+                            });
+                            grid__.dataSource.page(1);
+                        } else {
+                            var splitArray = data.message.split('！');
+                            var errorMessage = '';
+                            for (var i = 0; i < splitArray.length; i++) {
+                                errorMessage += splitArray[i] + '<br/>'
+                            }
+                            kendo.ui.showInfoDialog({
+                                message: errorMessage
+                            });
+                            grid__.dataSource.page(1);
+                        }
+                    }
+                });
+            }
+            $(function () {
+
+                loadTree();
+            });
+
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/markor/art241/options/artHardwares/query",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            viewModel.model.set('platformCode', globPlatformCode);
+                            return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 20,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "id",
+                        fields: {
+                            platformCode: {editable: false}
+                        }
+                    }
+                }
+            });
+
+                grid__ = $("#Grid").kendoGrid({
+                    height: "400px",
+                    pageable: true,
+                    resizable: true,
+                    editable: true,
+                    navigatable: true,
+                    scrollable: true,
+                    selectable: 'multiple, rowbox',
+                    sortable: false,
+                    pageable: {
+                        pageSizes: [5, 10, 20, 50],
+                        refresh: true,
+                        buttonCount: 10
+                    },
+                    columns: [{
+                        field: "platformCode",
+                        title: '平台编码',
+                        attributes: {
+                            style: "text-align:center"
+                        },
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    }, {
+                        field: "handlesComCode",
+                        title: '拉手组合码',
+                        attributes: {style: "text-align:center"},
+                        width: 130,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+
+                    }, {
+                        field: "handlesColor",
+                        title: '拉手颜色',
+                        attributes: {style: "text-align:center"},
+                        width: 90,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        }
+                    },
+                        {
+                            field: "optionMatCode",
+                            title: '配置包编码',
+                            attributes: {style: "text-align:center"},
+                            width: 110,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        }, {
+                            field: "optionValueMatCode",
+                            title: '材料编码',
+                            attributes: {style: "text-align:center"},
+                            width: 110,
+                            headerAttributes: {
+                                "class": "table-header-cell",
+                                style: "text-align: center"
+                            }
+                        }
+                    ],
+                    dataBound: function () {
+                        var rows = this.items();
+                        var page = this.pager.page() - 1;
+                        var pagesize = this.pager.pageSize();
+                        $(rows).each(
+                            function () {
+                                var index = $(this).index() + 1 + page * pagesize;
+                                var rowLabel = $(this).find(".row-number");
+                                $(rowLabel).html(index);
+                            });
+                    }
+                }).data("kendoGrid");
+
+
+        </script>
+
+        </body>
+        </html>

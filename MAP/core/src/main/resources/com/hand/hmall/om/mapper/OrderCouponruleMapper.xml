@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OrderCouponruleMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OrderCouponrule">
+        <result column="COUPONRULE_ID" property="couponruleId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="COUPON_ID" property="couponId" jdbcType="VARCHAR"/>
+        <result column="COUPON_NAME" property="couponName" jdbcType="VARCHAR"/>
+        <result column="RELEASE_ID" property="releaseId" jdbcType="VARCHAR"/>
+        <result column="START_DATE" property="startDate" jdbcType="DATE"/>
+        <result column="END_DATE" property="endDate" jdbcType="DATE"/>
+        <result column="BENEFIT" property="benefit" jdbcType="DECIMAL"/>
+        <result column="COUPON_CODE" property="couponCode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="OrderSyncInfo" type="com.hand.hmall.om.dto.OrderCouponruleDto">
+        <result column="COUPON_ID" property="couponId" jdbcType="VARCHAR"/>
+        <result column="COUPON_NAME" property="couponName" jdbcType="VARCHAR"/>
+        <result column="RELEASE_ID" property="releaseId" jdbcType="VARCHAR"/>
+        <result column="START_DATE" property="startDate" jdbcType="VARCHAR"/>
+        <result column="END_DATE" property="endDate" jdbcType="VARCHAR"/>
+        <result column="BENEFIT" property="benefit" jdbcType="DECIMAL"/>
+        <result column="COUPON_CODE" property="couponCode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectOrderSyncByOrderId" parameterType="java.lang.Long" resultMap="OrderSyncInfo">
+        SELECT oc.COUPON_ID, oc.COUPON_NAME, oc.COUPON_CODE, oc.RELEASE_ID, oc.START_DATE, oc.END_DATE, oc.BENEFIT,oc.BENEFIT
+        FROM hmall_om_couponrule oc
+        WHERE 1 = 1
+        AND oc.order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderCouponruleByOrderId" parameterType="com.hand.hmall.om.dto.OrderCouponrule" resultMap="BaseResultMap">
+        SELECT *
+        FROM hmall_om_couponrule
+        <where>
+            <if test="orderId !=null">
+                order_id = #{orderId}
+            </if>
+        </where>
+    </select>
+
+    <!--根据订单ID删除优惠券信息 -->
+    <delete id="deleteOrderCouponruleByOrderId" parameterType="com.hand.hmall.om.dto.OrderCouponrule">
+        DELETE FROM hmall_om_couponrule
+        WHERE 1=1
+        <if test="orderId !=null and orderId!=''">
+            AND ORDER_ID = #{orderId}
+        </if>
+    </delete>
+
+    <!--根据orderId更新优惠卷信息 -->
+    <update id="updateOrderCouponruleByOrderId" parameterType="com.hand.hmall.om.dto.OrderCouponrule">
+        update hmall_om_couponrule
+        <set>
+            <if test="couponId !=null">
+                COUPON_ID = #{couponId},
+            </if>
+            <if test="couponName !=null">
+                COUPON_NAME = #{couponName},
+            </if>
+            <if test="releaseId !=null">
+                RELEASE_ID = #{releaseId},
+            </if>
+            <if test="startDate !=null">
+                START_DATE = #{startDate},
+            </if>
+            <if test="endDate !=null">
+                END_DATE = #{endDate},
+            </if>
+            <if test="benefit !=null">
+                BENEFIT = #{benefit},
+            </if>
+            <if test="couponCode !=null">
+                COUPON_CODE = #{couponCode}
+            </if>
+        </set>
+        where ORDER_ID = #{orderId,jdbcType=DECIMAL}
+    </update>
+</mapper>

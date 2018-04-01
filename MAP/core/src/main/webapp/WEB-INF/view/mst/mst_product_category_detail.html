@@ -1,0 +1,1047 @@
+<#--
+        * description: Hmall商品管理 品类管理 类品详情
+        * author:xuxiaoxue@markor.com.cn
+        * 2017/5/31
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?approvalStatusList=HMALL.PRODUCT.APPROVAL_STATUS" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?isSinSaleList=SYS.YES_NO" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?saleStatusList=HMALL.PRODUCT.SALE_STATUS" type="text/javascript"></script>
+    <script type="text/javascript">
+        /*接受商品类别页面传递过来的数据*/
+
+        var categoryId = "${RequestParameters.categoryId!0}";
+
+        var viewModel = kendo.observable({
+            model: {
+            }
+        });
+
+        if(categoryId != 0){
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/mst/product/category/query?categoryId=' + categoryId,
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    if (data.success) {
+                        var catalogVersion;
+                        var a0 = data.rows[0] || {};
+                        for (var k in a0) {
+                            viewModel.model.set(k, a0[k]);
+                            if(k == "catalogversionId"){
+                                catalogVersion = a0[k];
+                            }
+                        }
+                        viewModel.model.set("catalogVersion",catalogVersion);
+                    }
+                }
+            });
+        }
+
+        /*超类别*/
+        var viewModelSupertype = kendo.observable({
+            model: {},
+            createFunction: function () {
+                $('#supertype_grid').data('kendoGrid').addRow();
+            },
+            saveFunction: function () {
+                $('#supertype_grid').data('kendoGrid').saveChanges();
+            },
+            queryResource: function (e) {
+                $('#supertype_grid').data('kendoGrid').dataSource.page(1);
+            }
+        });
+        /*子类别*/
+        var viewModelChildtype = kendo.observable({
+            model: {},
+            createFunction: function () {
+                $('#childtype_grid').data('kendoGrid').addRow();
+            },
+            saveFunction: function () {
+                $('#childtype_grid').data('kendoGrid').saveChanges();
+            },
+            queryResource: function (e) {
+                $('#childtype_grid').data('kendoGrid').dataSource.page(1);
+            }
+        });
+        /*商品*/
+        var viewModelCommodity = kendo.observable({
+            model: {},
+            createFunction: function () {
+                $('#commodity_grid').data('kendoGrid').addRow();
+            },
+            saveFunction: function () {
+                $('#commodity_grid').data('kendoGrid').saveChanges();
+            },
+            queryResource: function (e) {
+                $('#commodity_grid').data('kendoGrid').dataSource.page(1);
+            }
+        });
+
+        $(function(){
+            if(categoryId == ''){
+                $("#tabstrip").hide();
+            }
+        });
+        //版本目录数据
+        var catalogData = new Array();
+        $.ajax({
+            url : '${base.contextPath}/hmall/mst/catalogversion/selectCatalog',
+            type : 'POST',
+            contentType : "application/json;charset=utf-8",
+            cache : false,
+            dataType : 'json',
+            async : false,
+            success : function(data) {
+                catalogData = data.rows;
+            }
+        });
+		//类别保存
+        function saveCategory(){
+             var data = viewModel.model.toJSON();
+            var validator = $("#myForm").kendoValidator().data("kendoValidator");
+            if (validator.validate()) {
+                $.ajax({
+                    url : BaseUrl+"/mst/product/category/saveCategory",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify([data]),
+                    error: function(request) {
+                        alert("Connection error");
+                    },
+                    success: function(data) {
+                        $("#tabstrip").show();
+                        if(data != "fail"){
+                            kendo.ui.showInfoDialog({
+                                message : "<@spring.message 'hap.tip.success'/>"
+                            })
+                            categoryId = data;
+                            //超类别
+                            $.ajax({
+                                url: BaseUrl + "/mst/product/category/querySuperType?categoryId="+categoryId,
+                                type: "POST",
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function (json) {
+                                    if (json.success) {
+                                        supertype_dataSource.data(json.rows);
+                                        $("#supertype_grid").data("kendoGrid").refresh();
+                                    }
+                                }
+                            });
+                            //子类别
+                            $.ajax({
+                                url: BaseUrl + "/mst/product/category/querySubType?categoryId="+categoryId,
+                                type: "POST",
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function (json) {
+                                    if (json.success) {
+                                        childtype_dataSource.data(json.rows);
+                                        $("#childtype_grid").data("kendoGrid").refresh();
+                                    }
+                                }
+                            });
+                            //商品
+                            $.ajax({
+                                url: BaseUrl + "/mst/product/category/queryProductByCategoryId?categoryId="+categoryId,
+                                type: "POST",
+                                dataType: "json",
+                                contentType: "application/json",
+                                success: function (json) {
+                                    if (json.success) {
+                                        commodity_dataSource.data(json.rows);
+                                        $("#commodity_grid").data("kendoGrid").refresh();
+                                    }
+                                }
+                            });
+                        }else{
+                            kendo.ui.showInfoDialog({
+                                message : "操作失败，类别编码重复!"
+                            })
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+    <body>
+
+    <div id="content-container" style="width:1350px;">
+        <div class="pull-left" id="toolbar-btn" style="width: 100%;margin-right:10px;padding-bottom:10px;margin-top:30px;margin-left:5px">
+            <span onclick="saveCategory()" class="btn btn-success" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+            <span onclick="" class="btn btn-danger" style="float:left;margin-right:5px;"><@spring.message "hmall.synchronous"/></span>
+            <span onclick="" class=" btn btn-primary k-grid-add" style="float:left;margin-right:5px;"><@spring.message "hap.delete"/></span>
+        </div>
+        <div id="page-content" style="height: 170px;">
+            <div class="panel" style="padding: 0px;border:none;box-shadow: none;">
+                <form class="form-horizontal" id="myForm">
+                    <input type="hidden" name="categoryId" id="categoryId" data-bind="value:model.categoryId">
+                    <div class="panel-body" style="margin-top: 10px;">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.categorycode"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='categoryCode' type="text"  style="width: 100%" name="categoryCode"
+                                               data-bind="value:model.categoryCode" class="k-textbox" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.categoryname"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="categoryName" type="text"  style="width: 100%" name="categoryName"
+                                               data-bind="value:model.categoryName" class="k-textbox" required>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.catalogversion"/></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" style="width: 100%;height: 2.5em; margin-right: 5px;" id="catalogVersion" name="catalogVersion"
+                                               data-bind="value:model.catalogVersion">
+                                        <script type="text/javascript">
+                                            $("#catalogVersion").kendoDropDownList({
+                                                dataTextField: "catalogName",
+                                                dataValueField: "catalogversionId",
+                                                valuePrimitive: true,
+                                                dataSource: catalogData,
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.product.creationdate"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="creationDate" type="text"  style="width: 100%" data-bind="value:model.creationDate" class="k-textbox" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.product.lastupdatedate"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="lastUpdateDate" type="text" style="width: 100%" data-bind="value:model.lastUpdateDate" class="k-textbox" readonly>
+                                    </div>
+                                </div>
+							</div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label" style="text-align:left">级别</label>
+                                        <div class="col-sm-8">
+                                            <input id="categoryLevel" type="text" style="width: 100%" name="categoryLevel"
+                                                   data-bind="value:model.categoryLevel" class="k-textbox" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left">是否推送</label>
+                                    <div class="col-sm-8">
+                                        <div id="syncflag" class="full_width" data-bind="enabled: true,value:model.syncflag"></div>
+                                        <script type="text/javascript">
+                                            $("#syncflag").kendoRadio({
+                                                layout: '',//vertical
+                                                readonly: false,
+                                                items: [{
+                                                    label: "是",
+                                                    value: "Y"
+                                                }, {
+                                                    label: "否",
+                                                    value: "N"
+                                                }],
+                                                change: function (e) {
+
+                                                }
+                                            }).data("kendoRadio");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script>kendo.bind($('#page-content'), viewModel);</script>
+        <div class="col-sm-12" style="margin-top:22px;">
+        <div id="tabstrip">
+            <ul>
+                <li id="supertypetab"><@spring.message "超类别"/></li>
+                <li id="childtypetab"><@spring.message "子类别"/></li>
+                <li id="commoditytab"><@spring.message "商品"/></li>
+            </ul>
+            <!--超类别-->
+            <div class="panel-default" style="border-radius:0;border:1px solid #ccc;border-bottom:1px solid rgba(0, 0, 0, 0.17);margin-bottom:0px; height: 430px;top: 700px; ">
+                <div class="panel-heading">
+                    <span class="panel-title" style="float:left;margin-left:10px;margin-right:5px;padding: 0px;"> 超类别</span>
+                </div>
+                <div class="panel-body" style="margin-left:10px;margin-right:5px;padding: 0px;height:325px">
+                    <div id="supertype-page-content" style="height: 350px;">
+                        <div class="pull-left" id="supertype-toolbar-btn" style="padding-bottom:10px;padding-top:10px;">
+                            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="addCategory(1)"><i class="fa fa-plus-square"></i><@spring.message "新增"/></span>
+                            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="addType(1)" data-bind=""><i class="fa fa-plus-square"></i><@spring.message "添加"/></span>
+                            <span onclick="deleteData(1)" class="btn btn-danger" style="float:left;margin-right:5px;"><i class="fa fa-eraser"></i><@spring.message "hap.delete"/></span>
+                        </div>
+                        <script>kendo.bind($('#supertype-toolbar-btn'), viewModelSupertype);</script>
+
+
+                        <script>
+                            $('#queryPanel').kendoQueryPanel({
+                                queryFunction: function () {
+                                    viewModelSupertype.queryResource();
+                                },
+                                resetFunction: function (e) {
+                                    viewModelSupertype.resetFunction();
+                                }
+                            })
+                        </script>
+                        <div style="clear:both">
+                            <div id="supertype_grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--超类别结束-->
+
+            <!--子类别-->
+            <div class="panel-default" style="border-radius:0;border:1px solid #ccc;border-bottom:1px solid rgba(0, 0, 0, 0.17);margin-bottom:0px; height: 430px;top: 700px; ">
+                <div class="panel-heading">
+                    <span class="panel-title" style="float:left;margin-left:10px;margin-right:5px;padding: 0px;"> 子类别</span>
+                </div>
+                <div class="panel-body" style="margin-left:10px;margin-right:5px;padding: 0px;height:325px">
+                    <div id="childtype-page-content" style="height: 350px;">
+                        <div class="pull-left" id="childtype-toolbar-btn" style="padding-bottom:10px;padding-top:10px;">
+                            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="addCategory(2)"><i class="fa fa-plus-square"></i><@spring.message "新增"/></span>
+                            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="addType(2)"><i class="fa fa-plus-square"></i><@spring.message "添加"/></span>
+                            <span onclick="deleteData(2)" class="btn btn-danger" style="float:left;margin-right:5px;"><i class="fa fa-eraser"></i><@spring.message "hap.delete"/></span>
+                        </div>
+                        <script>kendo.bind($('#childtype-toolbar-btn'), viewModelChildtype);</script>
+
+                        <script>
+                            $('#queryPanel').kendoQueryPanel({
+                                queryFunction: function () {
+                                    viewModelChildtype.queryResource();
+                                },
+                                resetFunction: function (e) {
+                                    viewModelChildtype.resetFunction();
+                                }
+                            })
+                        </script>
+                        <div style="clear:both">
+                            <div id="childtype_grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--子类别结束-->
+
+            <!--商品-->
+            <div class="panel-default" style="border-radius:0;border:1px solid #ccc;border-bottom:1px solid rgba(0, 0, 0, 0.17);margin-bottom:0px; height: 430px;top: 700px; ">
+                <div class="panel-heading">
+                    <span class="panel-title" style="float:left;margin-left:10px;margin-right:5px;padding: 0px;"> 商品</span>
+                </div>
+                <div class="panel-body" style="margin-left:10px;margin-right:5px;padding: 0px;height:325px">
+                    <div id="commodity-page-content" style="height: 350px;">
+                        <lable style="margin-left:10px;margin-top: 20px;left:10px;position: absolute;">商品：</lable>
+                        <div class="pull-left" id="commodity-toolbar-btn" style="padding-bottom:10px;padding-top:10px;position:relative;left: 60px;">
+                        <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;"
+                              onclick="addCommidity()"><i class="fa fa-plus-square"></i><@spring.message "添加"/></span>
+                        <span onclick="deleteCommodityData()" class="btn btn-danger" style="float:left;margin-right:5px;"><i class="fa fa-eraser"></i><@spring.message "hap.delete"/></span>
+                        </div>
+                        <script>kendo.bind($('#commodity-toolbar-btn'), viewModelCommodity);</script>
+
+
+                        <div style="clear:both">
+                            <div id="commodity_grid"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!--商品结束-->
+
+        </div>
+        </div>
+    </div>
+
+
+    <div id="typedialogEdit" style="display:none;"></div>
+    <div id="categorydialogEdit" style="display:none;"></div>
+    </div>
+    </body>
+    <script>
+        /*  tab页*/
+        var tabToActivate = $("#supertypetab");
+        var tabstrip = $("#tabstrip").kendoTabStrip({
+                    animation: {
+                        close: {
+                            duration: 200,
+                            effects: "fadeOut"
+                        },
+                        open: {
+                            duration: 200,
+                            effects: "fadeIn"
+                        }
+                    },
+                    show: function (e) {
+                        if (e.item.id == "inboundtab") {
+                            Hap.autoResizeGrid("#inboundGrid");
+                        } else if (e.item.id == "outboundtab") {
+                            Hap.autoResizeGrid("#outboundGrid");
+                        }
+                    }
+
+                }
+        ).data("kendoTabStrip");
+        tabstrip.activateTab(tabToActivate);
+        /*tab页结束*/
+
+
+        function exportExcelFunction() {
+            if (map1 == undefined) {
+                kendo.ui.showWarningDialog({
+                    title: "提示",
+                    message: "表格中没有数据"
+                })
+            } else {
+                if (map1.length > 0) {
+                    $("#data_ExportExcled").attr("value", map1);
+                    $("#form_ExportExcle").submit();
+                } else {
+                    kendo.ui.showWarningDialog({
+                        title: "提示",
+                        message: "表格中没有数据"
+                    })
+                }
+            }
+        }
+
+        var BaseUrl = _basePath;
+        /*超类别*/
+        supertype_dataSource = new kendo.data.DataSource(
+                {
+                    transport: {
+                        read: {
+                           url: BaseUrl + "/mst/product/category/querySuperType?categoryId="+categoryId,
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        update: {
+                            url: BaseUrl + "/mst/product/category/submit",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        destroy: {
+                            url: BaseUrl + "/mst/product/category/remove",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        create: {
+                            url: BaseUrl + "/mst/product/category/submit",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type !== "read" && options.models) {
+                                var datas = Hap.prepareSubmitParameter(options, type)
+                                return kendo.stringify(datas);
+                            } else if (type === "read") {
+                                return Hap.prepareQueryParameter(viewModelSupertype.model.toJSON(), options)
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            id: "categoryCode",
+                            fields: {}
+                        }
+                    }
+                });
+        /*子类别*/
+        childtype_dataSource = new kendo.data.DataSource(
+                {
+                    transport: {
+                        read: {
+                             url: BaseUrl + "/mst/product/category/querySubType?categoryId="+categoryId,
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        update: {
+                            url: BaseUrl + "/mst/product/category/submit",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        destroy: {
+                            url: BaseUrl + "/mst/product/category/remove",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        create: {
+                            url: BaseUrl + "/mst/product/category/submit",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type !== "read" && options.models) {
+                                var datas = Hap.prepareSubmitParameter(options, type)
+                                return kendo.stringify(datas);
+                            } else if (type === "read") {
+                                return Hap.prepareQueryParameter(viewModelChildtype.model.toJSON(), options)
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            id: "categoryPk",
+                            fields: {}
+                        }
+                    }
+                });
+
+        /*商品*/
+        commodity_dataSource = new kendo.data.DataSource(
+                {
+                    transport: {
+                        read: {
+                            url: BaseUrl + "/mst/product/category/queryProductByCategoryId?categoryId="+categoryId,
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        update: {
+                            url: BaseUrl + "/mst/product/category/submit",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        destroy: {
+                            url: BaseUrl + "/mst/product/category/remove",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        create: {
+                            url: BaseUrl + "/mst/product/category/submit",
+                            type: "POST",
+                            contentType: "application/json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type !== "read" && options.models) {
+                                var datas = Hap.prepareSubmitParameter(options, type)
+                                return kendo.stringify(datas);
+                            } else if (type === "read") {
+                                return Hap.prepareQueryParameter(viewModelCommodity.model.toJSON(), options)
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            id: "categoryPk",
+                            fields: {}
+                        }
+                    }
+                });
+
+
+        /*超类表*/
+        $("#supertype_grid").kendoGrid({
+            dataSource: supertype_dataSource,
+            height: '330px',
+            pageable: true,
+            editable: false,
+            navigatable: true,
+            scrollable: true,
+            selectable: 'multiple, rowbox',
+            sortable: true,
+            rownumber: true,
+            /* selectable : "multiple,rowbox", */
+            pageable: {
+                pageSizes: [1, 5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 10
+            },
+
+            columns: [
+                {
+                    field: "categoryCode",
+                    title: '<@spring.message "hmall.ProductCategory.categoryCode"/>',
+                    width: 120,
+                    template: function(dataItem){
+                        if(dataItem.categoryCode!=null&&dataItem.categoryCode!=''){
+                            return '<a style="margin-right:10px;" href="javascript:void(0);" onclick="entryCategoryFunction(\''+dataItem.categoryId+'\',\''+dataItem.categoryName+'\')">'+dataItem.categoryCode+'</a>'
+                        }
+                    }
+                },
+                {
+                    field: "categoryName",
+                    title: '<@spring.message "hmall.ProductCategory.categoryName"/>',
+                    width: 120
+                },
+                {
+                    field: "catalogversion",
+                    title: '<@spring.message "hmall.ProductCategory.catalogversion"/>',
+                    width: 120
+                },
+                {
+                    field: "categoryLevel",
+                    title: '<@spring.message "hmall.ProductCategory.categoryLevel"/>',
+                    width: 120
+                }
+            ],
+
+        }).data("kendoGrid");
+
+        var supertype_grid = $("#supertype_grid");
+        supertype_grid.on('dblclick', '.k-grid-content tr', function (event) {
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var data = $('#supertype_grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+            var categoryId=data.categoryId;
+            var categoryName = data.categoryName;
+
+            var url = crudServiceBaseUrl + "/mst/mst_product_category_detail.html?categoryId="+categoryId;
+            openDetail(categoryId,categoryName,url);
+        });
+
+
+        /*子类表*/
+        $("#childtype_grid").kendoGrid({
+            dataSource: childtype_dataSource,
+            height: '330px',
+            pageable: true,
+            editable: false,
+            navigatable: true,
+            scrollable: true,
+            selectable: 'multiple, rowbox',
+            sortable: true,
+            rownumber: true,
+            /* selectable : "multiple,rowbox", */
+            pageable: {
+                pageSizes: [1, 5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 10
+            },
+
+            columns: [
+                {
+                    field: "categoryCode",
+                    title: '<@spring.message "hmall.ProductCategory.categoryCode"/>',
+                    width: 120,
+                    template: function(dataItem){
+                        if(dataItem.categoryCode!=null&&dataItem.categoryCode!=''){
+                            return '<a style="margin-right:10px;" href="javascript:void(0);" onclick="entryCategoryFunction(\''+dataItem.categoryId+'\',\''+dataItem.categoryName+'\')">'+dataItem.categoryCode+'</a>'
+                        }
+                    }
+                },
+                {
+                    field: "categoryName",
+                    title: '<@spring.message "hmall.ProductCategory.categoryName"/>',
+                    width: 120
+                },
+                {
+                    field: "catalogversion",
+                    title: '<@spring.message "hmall.ProductCategory.catalogversion"/>',
+                    width: 120
+                },
+                {
+                    field: "categoryLevel",
+                    title: '<@spring.message "hmall.ProductCategory.categoryLevel"/>',
+                    width: 120
+                }
+            ],
+
+        }).data("kendoGrid");
+
+        var childtype_grid = $("#childtype_grid");
+        childtype_grid.on('dblclick', '.k-grid-content tr', function (event) {
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var data = $('#childtype_grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+            var categoryId=data.categoryId;
+            var categoryName = data.categoryName;
+
+            var url = crudServiceBaseUrl + "/mst/mst_product_category_detail.html?categoryId="+categoryId;
+            openDetail(categoryId,categoryName,url);
+        });
+
+
+        /*商品表*/
+
+        $("#commodity_grid").kendoGrid({
+            dataSource: commodity_dataSource,
+            height: '330px',
+            pageable: true,
+            editable: false,
+            navigatable: true,
+            scrollable: true,
+            selectable: 'multiple, rowbox',
+            sortable: true,
+            rownumber: true,
+            /* selectable : "multiple,rowbox", */
+            pageable: {
+                pageSizes: [1, 5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 10
+            },
+
+             columns: [
+                 {
+                     field: "imageUrl",
+                     title: '<@spring.message "hmall.product.imageUrlId"/>',
+                     width: 120,
+                     template:function(dataItem){
+                         var url=dataItem['imageUrl'];
+                         if(url!=null&&url!=""){
+                             return "<img src='"+dataItem['imageUrl']+"' width='60' height='60'>"
+                         }else{
+                             return "";
+                         }
+                     },
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     }
+                 }, {
+                     field: "code",
+                     title: '<@spring.message "hmall.product.code"/>',
+                     width: 120,
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     },
+                     template: function(dataItem){
+                         if(dataItem.code!=null&&dataItem.code!=''){
+                             return '<a style="margin-right:10px;" href="javascript:void(0);" onclick="entryProductFunction(\'' + dataItem.productId +'\',\''+dataItem.code+'\')">'+dataItem.code+'</a>'
+                         }
+                     }
+                 }, {
+                     field: "name",
+                     title: '<@spring.message "hmall.product.name"/>',
+                     width: 120,
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     }
+                 }, {
+                     field: "catalogversion",
+                     title: '<@spring.message "hmall.product.catalogversion"/>',
+                     width: 120,
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     }
+                 }, {
+                     field: "approvalStatus",
+                     title: '<@spring.message "hmall.product.approvalStatus"/>',
+                     width: 120,
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     },
+                     template: function (dataItem) {
+                         var v = dataItem.approvalStatus;
+                         if (v == null) {
+                             return '';
+                         }
+                         $.each(approvalStatusList, function (i, n) {
+                             if (n.value == v) {
+                                 v = n.meaning;
+                                 return v;
+                             } else {
+                                 return '';
+                             }
+                         })
+                         return v;
+                     }
+                 },{
+                     field: "saleStatus",
+                     title: '<@spring.message "hmall.product.saleStatus"/>',
+                     width: 120,
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     },
+                     template: function (dataItem) {
+                         var v = dataItem.saleStatus;
+                         if (v == null) {
+                             return '';
+                         }
+                         $.each(saleStatusList, function (i, n) {
+                             if (n.value == v) {
+                                 v = n.meaning;
+                                 return v;
+                             } else {
+                                 return '';
+                             }
+                         })
+                         return v;
+                     }
+                 }, {
+                     field: "isSinSale",
+                     title: '<@spring.message "hmall.product.isAlone"/>',
+                     width: 120,
+                     template: function (dataItem) {
+                         var v = dataItem.isSinSale;
+                         if (v == null) {
+                             return '';
+                         }
+                         $.each(isSinSaleList, function (i, n) {
+                             if (n.value == v) {
+                                 v = n.meaning;
+                                 return v;
+                             } else {
+                                 return '';
+                             }
+                         })
+                         return v;
+                     },
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     }
+                 }, {
+                     field: "creationDate",
+                     title: '<@spring.message "hmall.product.creationDate"/>',
+                     width: 120,
+                     attributes: {style: "text-align:center"},
+                     headerAttributes : {
+                         "class" : "table-header-cell",
+                         style : "text-align: center"
+                     }
+                 },
+        ],
+            editable: "inline"
+
+        });
+
+
+        var commodity_grid = $("#commodity_grid");
+        commodity_grid.on('dblclick', '.k-grid-content tr', function (event) {
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var data = $('#commodity_grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+            var productId=data.productId;
+            var code = data.code;
+            var url = crudServiceBaseUrl + "/mst/mst_product_view.html?productId="+productId+"&code="+code;
+            openDetail(productId,code,url);
+        });
+        /*商品表结束*/
+
+        /*删除按钮*/
+        function deleteData(num) {
+            if (num == 1) {
+                delCategory(num);
+            } else if (num == 2) {
+                delCategory(num);
+            }
+        }
+
+        //下拉框
+        $("#directoryVersionId").kendoDropDownList();
+
+        var addTypeFlag;
+        //超类别添加-1 子类别添加-2
+        function addType(num) {
+            addTypeFlag = num;
+            var title;
+            if(num == 1){
+                title = '商品类别-超类别['+categoryName+']';
+            }else if(num ==2){
+                title = '商品类别-子类别['+categoryName+']';
+            }
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var dialog = $("#typedialogEdit").kendoWindow({
+                width: 700,
+                height: 400,
+                title: '商品类别['+categoryName+']',
+                visible: false,
+                iframe: true,
+                modal: true,
+                close: addTypeClose,
+                content: crudServiceBaseUrl+"/mst/mst_product_category_detail_add.html?categoryId="+categoryId+"&flag="+num,
+            }).data("kendoWindow");
+            dialog.refresh();
+            dialog.center();
+            dialog.open();
+        };
+
+        var addTypeClose = function () {
+            if(addTypeFlag ==1){
+                $('#supertype_grid').data('kendoGrid').dataSource.page(1);
+            }else if(addTypeFlag ==2){
+                $('#childtype_grid').data('kendoGrid').dataSource.page(1);
+            }
+        }
+
+        var addCategoryFlag;
+        //新增类别
+        function addCategory(num){
+            addCategoryFlag = num;
+            var categoryTitle;
+            if(num ==1){
+                categoryTitle = '添加商品['+categoryName+']的超类别';
+            }else if(num == 2){
+                categoryTitle = '添加商品['+categoryName+']的子类别';
+            }
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var dialog = $("#categorydialogEdit").kendoWindow({
+                width: 450,
+                height: 400,
+                title: '商品类别['+categoryName+']',
+                visible: false,
+                iframe: true,
+                modal: true,
+                close: addCategoryClose,
+                content: crudServiceBaseUrl+"/mst/mst_product_category_add.html?categoryId="+categoryId+"&flag="+num,
+            }).data("kendoWindow");
+            dialog.center();
+            dialog.open();
+        }
+        var addCategoryClose = function () {
+            if(addCategoryFlag ==1){
+                $('#supertype_grid').data('kendoGrid').dataSource.page(1);
+            }else if(addCategoryFlag ==2){
+                $('#childtype_grid').data('kendoGrid').dataSource.page(1);
+            }
+        }
+        //类别删除
+        function delCategory(num){
+            var grid;
+            //删除超类别
+            if(num == 1){
+                grid = $("#supertype_grid").data("kendoGrid");
+            }else if(num == 2){
+                grid = $("#childtype_grid").data("kendoGrid");
+            }
+            var items = grid.selectedDataItems();
+            var selectId='';
+            for(var i=0;i<items.length;i++){
+                selectId = selectId+items[i].categoryId+',';
+            }
+            kendo.ui.showConfirmDialog({
+                title: $l('hap.tip.info'),
+                message: $l('hap.delete.category')
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        type : "post",
+                        url : BaseUrl + "/mst/product/category/delCategory?categoryId="+categoryId+"&selectId="+selectId+"&flag="+num,
+                        cache : false,
+                        dataType : "json",
+                        success : function(json) {
+                            if(num ==1){
+                                $('#supertype_grid').data('kendoGrid').dataSource.page(1);
+                            }else if(num ==2){
+                                $('#childtype_grid').data('kendoGrid').dataSource.page(1);
+                            }else if(num==3){
+                                $('#commodity_grid').data('kendoGrid').dataSource.page(1);
+                            }
+                        }
+                    });
+                }
+            })
+        }
+
+        //商品删除
+        function deleteCommodityData(){
+            var grid=$("#commodity_grid").data("kendoGrid");
+            var items = grid.selectedDataItems();
+            var selectId='';
+            for(var i=0;i<items.length;i++){
+                selectId = selectId+items[i].productId+',';
+            }
+            kendo.ui.showConfirmDialog({
+                title: $l('hap.tip.info'),
+                message: $l('hap.delete.category')
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        type : "post",
+                        url : BaseUrl + "/mst/product/category/delProduct?categoryId="+categoryId+"&selectId="+selectId,
+                        cache : false,
+                        dataType : "json",
+                        success : function(json) {
+
+                                $('#commodity_grid').data('kendoGrid').dataSource.page(1);
+
+                        }
+                    });
+                }
+            })
+        }
+
+        /*添加商品*/
+        function addCommidity(){
+            var title = '商品['+categoryName+']';
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var dialog = $("#typedialogEdit").kendoWindow({
+                width: 700,
+                height: 400,
+                title: title,
+                visible: false,
+                iframe: true,
+                modal: true,
+                close: addCommodityClose,
+                content: crudServiceBaseUrl+"/mst/mst_product_category_detail_commodity_add.html?categoryId="+categoryId,
+            }).data("kendoWindow");
+            dialog.center();
+            dialog.open();
+        }
+
+        var addCommodityClose = function () {
+            $('#commodity_grid').data('kendoGrid').dataSource.page(1);
+        }
+
+
+
+        //跳到类品详情界面
+        function entryCategoryFunction(categoryId,categoryName){
+            var crudServiceBaseUrl = '${base.contextPath}';
+                var url = crudServiceBaseUrl + "/mst/mst_product_category_detail.html?categoryId=" + categoryId;
+                openDetail(categoryId, categoryName, url);
+        }
+
+        //跳到商品详情界面
+        function entryProductFunction(productId,code){
+            var crudServiceBaseUrl = '${base.contextPath}';
+            var url = crudServiceBaseUrl + "/mst/mst_product_view.html?productId="+productId+"&code="+code;
+            openDetail(productId, code,url);
+        }
+
+        //弹出窗口
+        function openDetail(param1,param2,url) {
+                window.top.openTab(param1, param2, url);
+        }
+    </script>

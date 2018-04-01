@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.RefundEntryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.RefundEntry">
+        <result column="AS_REFUND_ENTRY_ID" property="asRefundEntryId" jdbcType="DECIMAL" />
+        <result column="AS_REFUND_ID" property="asRefundId" jdbcType="DECIMAL" />
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR" />
+        <result column="PAY_STATUS" property="payStatus" jdbcType="VARCHAR"/>
+        <result column="PAY_MODE" property="payMode" jdbcType="VARCHAR" />
+        <result column="ACCOUNT" property="account" jdbcType="VARCHAR" />
+        <result column="PAY_AMOUNT" property="payAmount" jdbcType="DECIMAL" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="COULD_AMOUNT" property="couldAmount" jdbcType="DECIMAL" />
+        <result column="CODE" property="refundHeaderCode" jdbcType="VARCHAR" />
+        <result column="change_reason" property="changeReason" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="HPAYResult" type="com.hand.hmall.as.dto.RefundEntry">
+        <result column="AS_REFUND_ENTRY_ID" property="asRefundEntryId" jdbcType="VARCHAR"/>
+        <result column="PAYMENTINFO_ID" property="paymentinfoId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="PAY_MODE" property="payMode" jdbcType="VARCHAR"/>
+        <result column="PAY_AMOUNT" property="payAmount" jdbcType="DECIMAL"/>
+        <result column="OUT_TRADE_NO" property="outTradeNo" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON" jdbcType="VARCHAR" property="returnReason"/>
+        <result column="NUMBER_CODE" property="numberCode" jdbcType="VARCHAR"/>
+        <result column="TOTAL_AMOUNT" property="totalAmount" jdbcType="DECIMAL" />
+    </resultMap>
+
+    <select id="selectRefundOrderEntry" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select are.AS_REFUND_ENTRY_ID, ar.code as refundHeaderCode, are.pay_mode, are.account, are.name, are.pay_amount, are.change_reason,are.pay_status,
+        case
+        when op.refund_amount is null then op.pay_amount
+        else (op.pay_amount-op.refund_amount)
+        end couldAmount
+        from hmall_as_refund_entry are
+        left join hmall_as_refund ar
+        on are.as_refund_id = ar.as_refund_id
+        left join hmall_om_paymentinfo op
+        on op.paymentinfo_id = are.paymentinfo_id
+        where 1 = 1
+        <if test="_parameter != null">
+            and are.as_refund_id = #{_parameter}
+        </if>
+    </select>
+
+    <select id="queryForHPAY" resultMap="HPAYResult" parameterType="com.hand.hmall.as.dto.RefundEntry">
+        SELECT
+            hare.AS_REFUND_ENTRY_ID,
+            hare.PAYMENTINFO_ID,
+            hare.PAY_AMOUNT,
+            hare.PAY_MODE,
+            hare.CODE,
+            hop.OUT_TRADE_NO,
+            'ZEST' AS RETURN_REASON,
+            hop.NUMBER_CODE,
+            hop.PAY_AMOUNT AS TOTAL_AMOUNT
+        FROM HMALL_AS_REFUND_ENTRY hare
+            LEFT JOIN HMALL_AS_REFUND har
+                ON hare.AS_REFUND_ID = har.AS_REFUND_ID
+            LEFT JOIN HMALL_OM_ORDER hor
+                ON hor.ORDER_ID = har.ORDER_ID
+            LEFT JOIN HMALL_OM_PAYMENTINFO hop
+                ON hare.PAYMENTINFO_ID = hop.PAYMENTINFO_ID
+        WHERE hare.AS_REFUND_ENTRY_ID = #{asRefundEntryId}
+    </select>
+
+    <update id="updatePayStatus" parameterType="com.hand.hmall.as.dto.RefundEntry">
+        UPDATE HMALL_AS_REFUND_ENTRY hare
+            SET hare.PAY_STATUS = 'Y'
+        WHERE hare.AS_REFUND_ENTRY_ID = #{asRefundEntryId}
+    </update>
+
+    <update id="updatePayAmount" parameterType="com.hand.hmall.as.dto.RefundEntry">
+        UPDATE HMALL_AS_REFUND_ENTRY hare
+        SET hare.PAY_AMOUNT = #{payAmount}
+        WHERE hare.AS_REFUND_ENTRY_ID = #{asRefundEntryId}
+    </update>
+</mapper>

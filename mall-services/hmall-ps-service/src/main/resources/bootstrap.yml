@@ -1,0 +1,82 @@
+---
+# bootstrap.yml
+spring:
+  application:
+    name: hmall-ps-service
+  profiles:
+    active: native
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.30.101:1521:mkoracle
+    username: hap_dev
+    password: hap_dev
+    tomcat:
+      rollback-on-return: true
+
+#mybatis:
+#  type-aliases-package: com.hand.hmall.ps.model
+#  mapper-locations: classpath:mapper/*.xml
+#  config-location: classpath:config/mybatis-configuration.xml
+#
+#mapper:
+#  mappers:
+#      - tk.mybatis.mapper.common.Mapper
+#  not-empty: false
+#  before: true
+
+feign:
+  hystrix:
+    enabled: false
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+ribbon:
+  OKToRetryOnAllOperations: false
+#logging
+logging.config: classpath:log4j2.xml
+logging.path: logs/${spring.application.name}-${instance.num:00}
+
+server.port: 2226
+
+eureka:
+  instance:
+    nonSecurePort: ${server.port:2226}
+    hostname: ${HOSTNAME:localhost}
+    preferIpAddress: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:1111/eureka/
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2181
+---
+spring:
+  profiles: dev_idc
+server.port: 7112
+---
+spring:
+  profiles: sit_idc
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@10.5.72.13:1521:TEST
+    username: mk_test
+    password: mk_test
+server.port: 7112
+dubbo:
+  registry:
+    address: zookeeper://10.5.72.24:2182
+---
+spring:
+  profiles: prod
+  datasource:
+    driver: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@172.16.10.110:1521:MAPDB
+    username: mapprod
+    password: mapprod
+server.port: 7112
+dubbo:
+  registry:
+    address: zookeeper://172.16.10.30:2181
+---

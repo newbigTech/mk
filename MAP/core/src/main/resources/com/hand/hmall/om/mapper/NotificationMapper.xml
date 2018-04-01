@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.om.mapper.NotificationMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.Notification">
+    <id column="NOTIFICATION_ID" jdbcType="DECIMAL" property="notificationId" />
+    <result column="NOTIFICATION_STATUS" jdbcType="VARCHAR" property="notificationStatus" />
+    <result column="NOTIFICATION_TYPE" jdbcType="VARCHAR" property="notificationType" />
+    <result column="NOTIFICATION_TIME" jdbcType="TIMESTAMP" property="notificationTime" />
+    <result column="NOTIFICATION_CONTENT" jdbcType="VARCHAR" property="notificationContent" />
+    <result column="CONFIRM_PERSON" jdbcType="DECIMAL" property="confirmPerson" />
+    <result column="CONFIRM_TIME" jdbcType="TIMESTAMP" property="confirmTime" />
+    <result column="RELATED_DATAID" jdbcType="DECIMAL" property="relatedDataid" />
+    <result column="employee_code" jdbcType="VARCHAR" property="employeeCode" />
+    <result column="employee_name" jdbcType="VARCHAR" property="employeeName" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    NT.NOTIFICATION_ID, NT.NOTIFICATION_STATUS, NT.NOTIFICATION_TYPE, NT.NOTIFICATION_TIME, NT.NOTIFICATION_CONTENT,
+    NT.CONFIRM_PERSON, NT.CONFIRM_TIME, NT.RELATED_DATAID
+  </sql>
+
+  <select id="selectByNotification" resultMap="BaseResultMap">
+    select NT.NOTIFICATION_ID,
+    NT.NOTIFICATION_STATUS,
+    NT.NOTIFICATION_TYPE,
+    NT.NOTIFICATION_TIME,
+    NT.NOTIFICATION_CONTENT,
+    NT.CONFIRM_PERSON,
+    NT.CONFIRM_TIME,
+    NT.RELATED_DATAID,
+    he.employee_code,
+    he.name employee_name,
+    DECODE(NT.NOTIFICATION_TYPE,
+    'ORDER_NEW',
+    (SELECT O.CODE
+    FROM HMALL_OM_ORDER O
+    WHERE O.ORDER_ID = NT.RELATED_DATAID),
+    'CRAFT_CHECKING',
+    (SELECT O.CODE
+    FROM HMALL_OM_ORDER O
+    WHERE O.ORDER_ID = NT.RELATED_DATAID),
+    'PRODUCT_NEW',
+    (select p.code
+    from hmall_mst_product p
+    where p.product_id = NT.RELATED_DATAID),
+    'PRODUCT_CHANGE',
+    (select p.code
+    from hmall_mst_product p
+    where p.product_id = NT.RELATED_DATAID)) code
+    from HMALL_OM_TO_DO_NOTIFICATION nt
+    left join hr_employee he
+    on nt.confirm_person = he.employee_id
+    <where>
+      <if test="notification.notificationStatus != null and notification.notificationStatus != ''">
+        NT.NOTIFICATION_STATUS = #{notification.notificationStatus}
+      </if>
+      <if test="notification.confirmPerson != null and notification.confirmPerson != ''">
+        AND NT.CONFIRM_PERSON = #{notification.confirmPerson}
+      </if>
+      <if test="notification.confirmTimeFrom != null">
+        AND NT.CONFIRM_TIME <![CDATA[>=]]> #{notification.confirmTimeFrom}
+      </if>
+      <if test="notification.confirmTimeTo != null">
+        AND NT.CONFIRM_TIME <![CDATA[<=]]> #{notification.confirmTimeTo}
+      </if>
+      <if test="noticeTypes != null and !noticeTypes.isEmpty()">
+         AND NT.NOTIFICATION_TYPE IN
+        <foreach item="noticeType" index="index" collection="noticeTypes" open="(" separator="," close=")">
+          #{noticeType}
+        </foreach>
+      </if>
+    </where>
+    order by NT.Notification_Time desc
+  </select>
+</mapper>

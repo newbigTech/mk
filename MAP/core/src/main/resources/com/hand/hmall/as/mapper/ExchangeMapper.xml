@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.ExchangeMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.Exchange">
+        <result column="AS_EXCHANGE_ID" property="asExchangeId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE"/>
+        <result column="EXECUTION_DATE" property="executionDate" jdbcType="DATE"/>
+        <result column="TRANS_FEE" property="transFee" jdbcType="DECIMAL"/>
+        <result column="RESTORE_FEE" property="restoreFee" jdbcType="DECIMAL"/>
+        <result column="PACKAGE_FEE" property="packageFee" jdbcType="DECIMAL"/>
+        <result column="INSTALL_FEE" property="installFee" jdbcType="DECIMAL"/>
+        <result column="PRE_ORDER_FEE" property="preOrderFee" jdbcType="DECIMAL"/>
+        <result column="AFTER_CHANGE_FEE" property="afterChangeFee" jdbcType="DECIMAL"/>
+        <result column="FINAL_FEE" property="finalFee" jdbcType="DECIMAL"/>
+    </resultMap>
+
+
+</mapper>

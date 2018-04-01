@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsCompensateMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsCompensate">
+        <result column="COMPENSATE_ID" property="compensateId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="SERVICE_ID" property="serviceId" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE"/>
+        <result column="COMPENSATE_FEE" property="compensateFee" jdbcType="DECIMAL"/>
+        <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="CUSTOMERID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="USER_GROUP" property="userGroup" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="SEX" property="sex" jdbcType="VARCHAR"/>
+        <result column="SOLD_PARTY" property="soldParty" jdbcType="VARCHAR"/>
+        <result column="SALES_OFFICE" property="salesOffice" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_DISTRICT" property="receiverDistrict" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="TRADE_FINISH_TIME" property="tradeFinishTime" jdbcType="DATE"/>
+    </resultMap>
+
+    <!--根据赔付单ID查询赔付单信息-->
+    <select id="selectCompensateById" parameterType="com.hand.hmall.as.dto.AsCompensate" resultMap="BaseResultMap">
+        SELECT
+        co.*,
+        ug.NAME USER_GROUP,
+        u.CUSTOMERID,
+        omOrder.ESC_ORDER_CODE
+        FROM HMALL_AS_COMPENSATE co
+        LEFT JOIN HMALL_OM_ORDER omOrder ON co.ORDER_ID = omOrder.ORDER_ID
+        LEFT JOIN HMALL_MST_USER u ON u.USER_ID = omOrder.USER_ID
+        LEFT JOIN HMALL_MST_USER_MAPPING um ON omOrder.USER_ID = um.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP ug ON um.USERGROUP_ID = ug.USERGROUP_ID
+        <where>
+            <if test="compensateId != null">
+                co.COMPENSATE_ID = #{compensateId}
+            </if>
+        </where>
+    </select>
+
+    <!--查询赔付金额-->
+    <select id="selectCompensateFeeById" parameterType="com.hand.hmall.as.dto.AsCompensate" resultType="java.math.BigDecimal">
+        SELECT sum(TOTAL_FEE)
+        FROM HMALL_AS_COMPENSATE_ENTRY
+        <where>
+            <if test="compensateId != null">
+                COMPENSATE_ID = #{compensateId}
+            </if>
+        </where>
+    </select>
+
+    <!--查询赔付金额-->
+    <select id="selectMstUnit" resultMap="BaseResultMap">
+        SELECT
+        code,
+        DESCRIPTION
+        FROM HMALL_MST_UNIT
+    </select>
+    <select id="getCompensateForRetail" parameterType="com.hand.hmall.as.dto.AsCompensate" resultMap="BaseResultMap">
+        SELECT hac.COMPENSATE_ID,
+        hac.NAME,
+        hac.ADDRESS,
+        hac.MOBILE,
+        hac.NOTE,
+        hac.CODE,
+        hac.STATUS,
+        hac.ORDER_ID,
+        hac.SERVICE_ID,
+        hac.SYNCFLAG,
+        hac.APPOINTMENT_DATE,
+        hac.COMPENSATE_FEE,
+        hac.SAP_CODE,
+        hac.CREATION_DATE,
+        mu.CUSTOMERID,
+        mu.SEX,
+        web.SOLD_PARTY,
+        web.SALES_OFFICE,
+        od.RECEIVER_DISTRICT,
+        od.SHIPPING_TYPE,
+        od.TRADE_FINISH_TIME,
+        od.ESC_ORDER_CODE
+        FROM HMALL_AS_COMPENSATE hac LEFT JOIN HMALL_OM_ORDER od ON hac.ORDER_ID =od.ORDER_ID
+        LEFT JOIN hmall_mst_user mu ON od.user_id = mu.user_id
+        LEFT JOIN HMALL_MST_WEBSITE web ON od.WEBSITE_ID =web.CODE
+        <where>
+            <if test="compensateId != null">
+                hac.COMPENSATE_ID = #{compensateId}
+            </if>
+        </where>
+    </select>
+    <select id="selectSendRetailData" parameterType="com.hand.hmall.as.dto.AsCompensate" resultMap="BaseResultMap">
+        SELECT c.*, o.ESC_ORDER_CODE AS ESC_ORDER_CODE
+        FROM HMALL_AS_COMPENSATE c
+          LEFT JOIN HMALL_OM_ORDER o
+          ON c.ORDER_ID = o.ORDER_ID
+        <where>
+            1=1
+            <if test="compensateId != null">
+              AND c.COMPENSATE_ID = #{compensateId}
+            </if>
+            <if test="syncflag != null">
+               AND c.SYNCFLAG = #{syncflag}
+            </if>
+
+        </where>
+    </select>
+</mapper>

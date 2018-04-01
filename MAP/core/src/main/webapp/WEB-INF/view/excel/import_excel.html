@@ -1,0 +1,454 @@
+<#--
+ * description: Excel导入通用界面
+ * author: tangzulong@hand-china.com
+ * date: 2017-02-20 19:45
+ * 
+ * 
+-->
+
+ <#include "../include/header.html">
+
+<style>
+	table{
+		table-layout: fixed;
+	}
+	th,td{
+		text-align: center;
+		valign:center;
+		overflow: hidden; 
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color:black;
+	}
+</style>
+
+<body>
+<div id="aa"></div>
+    <div id="content-container">
+        <div id="page-content">
+			<div class="panel" style="float: left;width: 95%;margin-left: 2.5%;height: 70px;margin-top: 2%;">
+				<div class="row" style="margin-top: 2%;margin-left: 1%">
+					<div class="col-sm-6" >
+						<input id="inputName" data-bind="value:model.fileName" placeholder="输入文件名进行搜索" style="margin-right: 2px;margin-left: 2px" class="k-textbox"/>
+						<span class="btn btn-success k-grid-save-changes"  data-bind="click:queryFunction">搜索</span>
+					</div>
+					<div class="col-sm-3"></div>
+					<div class="col-sm-3" >
+						<form id="uploadForm">
+							<input type="file" id="excelFile" name="excelFile" style="display: none;" accept="xls*" onchange="fileSelected()"/>
+							<script>
+							/**
+							*获取其他页面传过来的type值
+							*/
+							var thisUrl=document.URL;
+							var getVal=thisUrl.split("?")[1];
+							var type=getVal.split("=")[1];
+                                /**
+								 * 是否符合导入标准，为null时代表没有导入
+                                 * @type {null}
+                                 */
+								var isOkImport = null;
+                                /**
+								 * 导入文件的名字和大小,是否导入成功,导入失败类型
+                                 */
+								var name,fileSize,success,fileSizeShow;
+								function fileSelected(){
+									var file = document.getElementById('excelFile').files[0];
+                                    fileSize = file.size;
+							        if (file.size > 1024 * 1024){
+							        	fileSizeShow = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+							        }else{
+                                        fileSizeShow = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+							        }
+							           
+							        name = file.name;
+							        var suffix=name.split(".");
+                                    /**
+									 * 获取截取的最后一个字符串，即为后缀名
+                                     */
+							        var last=suffix[suffix.length-1];
+                                    /**
+									 * 只有导入的文件是excel且小于100MB时才能导入
+                                     */
+							        if(last=='xlsx'||last=='xls'){
+										$("#img").html("<img src='../resources/images/xlsx.png' style='height:30px;'/>");
+										$("#fileName").html(name);
+										$("#fileSize").html(fileSizeShow);
+										$("#fileType").html(file.type);
+										$("#fileProgress").html("");
+										$("#fileProgress").hide();
+										if(file.size > 1024*1024*100){
+											$("#fileStatus").html("<font style='color:red;'><b>文件过大,禁止导入</b></font>");
+											isOkImport = false;
+										}
+										else{
+											$("#fileStatus").html("<font style='color:green;'><b>等待上传</b></font>");
+											isOkImport = true;
+										}
+							        }
+							        else{
+							        	if(last=='docx'||last=='exe'||last=='jpg'||last=='js'||last=='mp3'||last=='pdf'||last=='pptx'||last=='txt'||last=='wps'){
+											$("#img").html("<img src='../resources/images/"+last+".jpg' style='height:30px;'/>");
+											$("#fileName").html(name);
+											$("#fileSize").html(fileSizeShow);
+											$("#fileType").html(file.type);
+											$("#fileStatus").html("<font style='color:red;'><b>禁止导入</b></font>");
+											$("#fileProgress").html("");
+											$("#fileProgress").hide();
+											isOkImport = false;
+							        	}
+							        	else{
+											$("#img").html("<img src='../resources/images/unknown.jpg' style='height:30px;'/>");
+											$("#fileName").html(name);
+											$("#fileSize").html(fileSizeShow);
+											$("#fileType").html(file.type);
+											$("#fileStatus").html("<font style='color:red;'><b>禁止导入</b></font>");
+											$("#fileProgress").html("");
+											$("#fileProgress").hide();
+											isOkImport = false;
+							        	}						        	
+							        }
+								}
+							</script>
+						<span class="btn btn-primary k-grid-save-changes" style="float: left; margin-right: 5px;margin-left: 14%;" onclick="fileClick()" >选择文件</span>
+ 						<span class="btn btn-danger"style="float: left; margin-right: 5px;" onclick="uploadExcel()" >执行导入</span>
+						</form>
+ 						<script>
+	 						function fileClick() {
+	 							$("#excelFile").click();
+	 						}
+ 						</script>
+ 						<script>
+                            /**
+							 * 导入excel的方法，参数为区分tab页的表示，switch的参数，导入的信息
+							 * 由于需要导入进度，故不用ajxj，故加了权限验证的参数
+                             */
+	 						function uploadExcel(){
+                            	
+	 							if(isOkImport==true){
+	 								kendo.ui.showConfirmDialog({
+	 							    	title: '提示',
+	 							    	message: '确定导入？'
+	 							    }).done(function(event){
+										if(event.button=="OK"){
+										    var excelFile = new FormData($("#uploadForm")[0]);
+										    var xhr=new XMLHttpRequest();
+										    xhr.open("post","${base.contextPath}/s/excel/excelTest?type="+type+"&fileSize="+fileSizeShow+"&${_csrf.parameterName}=${_csrf.token}",true);
+										    //xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+										    xhr.onreadystatechange=function (){
+												if(this.readyState==2){
+										    		$("#fileProgress").data("kendoProgressBar").value(2);
+										    	}else if(this.readyState==3){
+										    		$("#fileProgress").data("kendoProgressBar").value(3);
+										    	}else{
+                                                    $("#fileProgress").data("kendoProgressBar").value(4);
+                                                    var returnMessage = eval ("(" + this.responseText + ")");
+                                                    success = returnMessage.success;
+                                                  
+										    	}
+										    };
+										    xhr.upload.onprogress=function (ev){
+									    		$("#fileStatus").html("<font style='color:blue;'><b>正在导入</b></font>");
+									        	$("#fileProgress").show();
+										    };
+										    xhr.send(excelFile);
+		 								} 
+	 								});
+	 							}
+	 							else if(isOkImport==false){
+	 								kendo.ui.showWarningDialog({
+	 					                title: '警告',
+	 					                message: '该文件不符合导入要求！'
+	 					            });
+	 							}
+	 							else{
+	 								kendo.ui.showErrorDialog({
+	 					                title: '错误',
+	 					                message: '当前导入文件为空！'
+	 					            });
+	 							}
+	 						} 					
+ 						</script>
+ 					</div>
+				</div>
+			</div>  
+			
+			<div style="float:left;width:95%;margin-left: 2.5%;height: 30px;margin-bottom: 1%;">
+				<h4 style="margin-left: 1%;">当前导入文件信息</h4>
+			</div>
+			<div class="panel" style="float: left;width: 95%;margin-left: 2.5%;height:70px;">
+				<div style="margin-top: 1.5%;">
+					<table border="0" style="width:98%;" align="center">
+						<tr>
+							<th width="40px;"></th>
+							<th>文件名</th>
+							<th>文件大小</th>
+							<th>文件类型</th>
+							<th>当前状态</th>
+							<th>当前进度</th>
+						</tr>
+						<tr>
+							<td id="img" width="40px;"></td>
+							<td id="fileName" name="fileName"></td>
+							<td id="fileSize"></td>
+							<td id="fileType"></td>
+							<td id="fileStatus"></td>
+							 <td>
+								<div id="fileProgress" style="width:200px"></div>
+								<script>
+						        	var pb = $("#fileProgress").kendoProgressBar({
+						                min: 1,
+						                max: 4,
+						                value: 1,
+						                type: "percent",
+						                showStatus: false,
+						                animation: {
+						                    duration: 300
+						                },
+						                complete: function(e) {
+						                    if(success){
+                                                $("#fileStatus").html("<font style='color:orange;'><b>导入完成</b></font>");
+											}else{
+                                                $("#fileStatus").html("<font style='color:red;'><b>导入失败</b></font>");
+											}
+						                	$('#grid').data('kendoGrid').dataSource.page(1);
+						                }
+						            }).data("kendoProgressBar");
+						        	$("#fileProgress").hide();
+								</script>
+							</td> 
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div style="float:left;width:95%;margin-left: 2%;height:30px;margin-bottom: 1%;">
+				<h4 style="margin-left: 1%;">文件导入历史记录</h4>
+			</div>
+			<div style="clear: both;">
+				<div class="col-xs-12">
+					<div id="grid"></div>
+				</div>								
+			</div>              
+        </div>
+    </div>
+    
+    
+	<script type="text/javascript">
+		var viewModel = kendo.observable({
+	        model: {
+	           // importCode : pageName
+			},
+	        queryFunction: function (e) {
+	            $('#grid').data('kendoGrid').dataSource.page(1);
+	        }
+	    });
+		
+		kendo.bind($('#page-content'), viewModel);
+
+        /**
+         * 回车触发查询
+         */
+        $("#inputName").keydown(function(e){
+            if(e.keyCode == 13){
+                e.target.blur();
+                viewModel.queryFunction(e);
+            }
+        }); 
+	
+		var crudServiceBaseUrl = '${base.contextPath}/s/excel';
+		var dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: crudServiceBaseUrl + '/query?type='+type,
+                    contentType : "application/json;charset=UTF-8",
+                    type: "POST",
+                    dataType: "json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type);
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        var datas=Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                        return kendo.stringify(datas);
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            serverSorting: true,
+            pageSize: 10,
+            schema: {
+                data: 'resp',
+                total: 'total',
+                model: {
+                    id: "fileId",
+                    fields: {
+                    	fileName: {type: "string"},
+                    	fileSize: {type: "string"},
+                    	fileStatus: {type: "string"},
+                    	importDate: {type: "string"},
+                    	failureCount: {type: "string"}
+                    }
+                }
+            }
+        });
+
+		var grid =  $("#grid").kendoGrid({
+	        dataSource: dataSource,
+	        navigatable: false,
+	        height:'100%',
+	        width:'100%',
+	        resizable: true,
+	        scrollable: true,
+	        selectable : 'multiple',
+	        editable: false,
+	       // sortable: true,
+	        rownumber: true, 
+	        pageable: {
+	            pageSizes:[5, 10, 20, 50],
+	            refresh:true,
+	            buttonCount:5
+	        },
+	        columns: [
+				{
+					field : "fileName",
+					title : '文件名称',
+					width :300,
+					attributes : {
+						style : "text-align:center"
+					},
+					headerAttributes : {
+						"class" : "table-header-cell",
+						"style" : "text-align: center"
+					},
+					template:function(rowdata){
+						return "<img src='../resources/images/xlsx.png' style='height:24px;'/>&nbsp;&nbsp;"+rowdata.fileName;
+					},
+					editor:function(container,options){
+						container.html("<img src='../resources/images/xlsx.png' style='height:24px;'/>&nbsp;&nbsp;"+options.model.fileName);
+						container.removeClass('k-edit-cell');
+					}
+				},
+				{
+					field : "fileSize",
+					title : '文件大小',
+                    width :120,
+					attributes : {
+						style : "text-align:center"
+					},
+					headerAttributes : {
+						"class" : "table-header-cell",
+						"style" : "text-align: center"
+					}
+				},
+				{
+					field : "failureCount",
+					title : '处理失败数',
+                    width :120,
+					attributes : {
+						style : "text-align:center"
+					},
+					headerAttributes : {
+						"class" : "table-header-cell",
+						"style" : "text-align: center"
+					}
+				},
+				{
+					field : "importDate",
+					title : '时间',
+					width :160,
+					format:"{0:yyyy-MM-dd HH:mm:ss}",
+					attributes : {
+						style : "text-align:center"
+					},
+					headerAttributes : {
+						"class" : "table-header-cell",
+						"style" : "text-align: center"
+					}
+				},
+				{
+					field : "fileStatus",
+					title : '状态',
+                    width :120,
+					attributes : {
+						style : "text-align:center"
+					},
+					headerAttributes : {
+						"class" : "table-header-cell",
+						"style" : "text-align: center"
+					}
+				},
+				{
+					field : "operation",
+					title : '操作',
+                    width :120,
+					attributes : {
+						style : "text-align:center"
+					},
+					headerAttributes : {
+						"class" : "table-header-cell",
+						"style" : "text-align: center"
+					},
+					template:function(rowdata){
+                        return '<a href="javascript:void(0);" onclick=downloadExcel(\''+rowdata.fileName+'\')>下载&nbsp;&nbsp;<a href="javascript:void(0);" onclick=deleteHistory(\''+rowdata.fileId+","+rowdata.fileName+'\')>删除</a>'
+					}
+				}
+	        ]
+	    }).data("kendoGrid");
+		
+		Hap.autoResizeGrid("#grid");
+
+        /**
+		 * 下载excel文件
+         * @param fileName 文件的名字
+         */
+		 function downloadExcel(fileName){
+            kendo.ui.showConfirmDialog({
+                title:'提示',
+                message: '确定下载？'
+            }).done(function (event) {
+                if (event.button == 'OK'){
+                    window.location.href=crudServiceBaseUrl+'/downLoad?fileName='+fileName;
+                }
+            })
+		} 
+
+        /**
+		 * 删除一行excel导入历史
+         * @param uid gird的uid
+         */
+         function deleteHistory(str){
+			var fileId=str.split(",")[0];
+			var fileName=str.split(",")[1];
+            kendo.ui.showConfirmDialog({
+                title:'提示',
+                message: '确定删除？'
+            }).done(function (event) {
+                if (event.button == 'OK') {
+                    $.ajax({
+                        url : crudServiceBaseUrl+'/deleteByFileId?fileId='+fileId+"&fileName="+fileName,
+                        type : "POST",
+                        dataType : "json",
+                        contentType : "application/json",
+                        success : function(json) {
+                        	//及时刷新
+                        	refushGrid();
+                        },
+                        error : function(e) {
+                        	alert("删除失败"+JSON.stringify(e));
+                        }
+                    });
+                }
+            })
+        } 
+        
+        //刷新表格
+        function refushGrid(){
+        	//获取当前页面编号
+			var pageNo = $('#grid').data('kendoGrid').dataSource._page;
+        	$("#grid").data('kendoGrid').dataSource.read(pageNo);
+        }
+	</script>
+</body>
+</html>

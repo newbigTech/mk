@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.fnd.mapper.GlobalVariantMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.fnd.dto.GlobalVariant">
+    <id column="GLOBALVARIANT_ID" jdbcType="DECIMAL" property="globalvariantId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="VALUE" jdbcType="VARCHAR" property="value" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    GLOBALVARIANT_ID, CODE, VALUE, DESCRIPTION
+  </sql>
+
+  <select id="selectGlobalVariantByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT * FROM HMALL_FND_GLOBALVARIANT gv WHERE gv.code = #{code, jdbcType=VARCHAR}
+  </select>
+</mapper>

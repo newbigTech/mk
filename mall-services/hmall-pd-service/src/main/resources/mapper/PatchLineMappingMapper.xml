@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.PatchLineMappingMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.PatchLineMapping">
+    <id column="MAPPING_ID" jdbcType="DECIMAL" property="mappingId" />
+    <result column="PRODUCT_ID" jdbcType="DECIMAL" property="productId" />
+    <result column="PATCH_LINE_ID" jdbcType="DECIMAL" property="patchLineId" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    MAPPING_ID, PRODUCT_ID, PATCH_LINE_ID
+  </sql>
+
+ <!-- <insert id="insert" parameterType="com.hand.hmall.dto.PatchLineMapping">
+    insert into HMALL_MST_PATCHLINE_MAPPING (MAPPING_ID, PRODUCT_ID, PATCH_LINE_ID)
+    values (#{mappingId,jdbcType=DECIMAL}, #{productId,jdbcType=DECIMAL}, #{patchLineId,jdbcType=DECIMAL})
+  </insert>-->
+
+</mapper>

@@ -1,0 +1,41 @@
+# application.yml
+#zuul
+zuul:
+  host:
+    max-per-route-connections: 2000
+    max-total-connections: 3000
+  routes:
+    hmall-ur-service:
+      path: /hmall-ur-service/**
+      serviceId: hmall-ur-service
+    hmall-od-service:
+      path: /hmall-od-service/**
+      serviceId: hmall-od-service
+    hmall-ps-service:
+      path: /hmall-ps-service/**
+      serviceId: hmall-ps-service
+    hmall-pd-service:
+      path: /hmall-pd-serivice/**
+      serviceId: hmall-pd-service
+    hmall-thirdparty-service:
+      path: /hmall-thirdparty-service/**
+      serviceId: hmall-thirdparty-service
+    hmall-drools-service:
+      path: /hmall-drools-service/**
+      serviceId: hmall-drools-service
+    hap-service:
+      path: /hap-service/**
+      serviceId: hap-service
+    hmall-promote-server:
+      path: /hmall-promote-server/**
+      serviceId: hmall-promote-server
+    hmall-logistics-server:
+      path: /hmall-logistics-service/**
+      serviceId: hmall-logistics-service
+    hmall-aftersale-service:
+      path: /hmall-aftersale-service/**
+      serviceId: hmall-aftersale-service
+    hmall-promotion-service:
+          path: /hmall-promotion-service/**
+          serviceId: hmall-promotion-service
+

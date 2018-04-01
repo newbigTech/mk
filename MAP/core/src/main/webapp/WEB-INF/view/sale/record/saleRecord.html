@@ -1,0 +1,136 @@
+<div class="panel" style="padding: 4px;">
+	<form class="form-horizontal" id="recordInfo">
+
+		<div class="panel-body">
+			<div class="row">
+
+				<div id="gridRecord"></div>
+
+			</div>
+		</div>
+	</form>
+</div>
+<script>
+    var BaseUrl = "${base.contextPath}/sale/operator/",
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"queryByBaseId",
+                        type : "POST",
+                        contentType: "application/json"
+
+                    },
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            if(type =='create' || type =='update'){
+                                var map = viewModel.model.toJSON();
+                                datas = options.models.map(function(data){
+                                    data['__status'] = (type =='create' ? 'add' : 'update');
+                                    return data;
+
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+                            var map={};
+                            map.baseId =baseId;
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+                            for (var k in map.data) {
+                                if (map.data[k] === '' || map.data[k] === null || map.data[k] === undefined)
+                                    delete map.data[k]
+                            }
+                            return kendo.stringify(map);
+
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging : true,
+                pageSize: 10,
+                schema: {
+                    data:'resp',
+                    total:'total',
+                    model: {
+                        id: "id",
+                        fields: {
+                            changeDate:{editable:false, validation: { required: true }},
+                            operator: {editable:false, validation: { required: true } },
+                            operation: {editable:false, validation: { required: true } }
+
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+    var gridRecord=$("#gridRecord").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        navigatable: true,
+        height: '100%',
+        autoResize:true,
+        rownumber : true,
+//        selectable : 'multiple, rowbox',
+        pageable: {
+            pageSizes: ['All', 5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+
+            {
+                field: "changeDate",
+                title: '修改时间',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                template:function (dataItem) {
+                    if(dataItem.changeDate)
+                    {
+                        var date=new Date(dataItem.changeDate);
+
+                        return date.toLocaleString();
+                    }
+                    return "";
+                },
+                width:"40%"
+            },
+            {
+                field: "operator",
+                title: '操作人员',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width:"40%"
+            },
+            {
+                field: "operation",
+                title: '操作内容',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width:"40%"
+            }
+
+        ],
+        editable: true
+
+    }).data("kendoGrid");
+</script>

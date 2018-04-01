@@ -1,0 +1,267 @@
+<#--
+        * description: 价格详情页面
+        * author: peng.chen03@hand-china.com
+        * version: 0.1
+        * #copyright#
+        -->
+    <#include "../../include/header.html">
+        <script type="text/javascript">
+
+            var productId = '${RequestParameters.productId!0}';
+            //价格viewModel
+            var priceViewModel = kendo.observable({
+                model: {
+                    isEnabled: true,
+                },
+                queryFunction:function(e){
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                },
+                resetFunction : function(){
+                    var formData = priceViewModel.model.toJSON();
+                    for (var k in formData) {
+                        priceViewModel.model.set(k, null);
+                    }
+                }
+            });
+
+            $(function () {
+                var rownumList = $('[data-index="0"]');
+                for (var i = 0; i < rownumList.length; i++) {
+                    var rownumText = $(rownumList[i]).html();
+                    if ("#" == rownumText) {
+                        $(rownumList[i]).html("序号");
+                        $(rownumList[i]).eq(0).parent().parent().prev().children().eq(0).css("width", "50px");
+                        $(rownumList[i]).eq(0).parent().parent().parent().parent().parent().next().children("table").children("colgroup").children().eq(0).css("width", "50px");
+                    }
+                }
+            });
+
+            function savePricerowFunction() {
+                var checked = $('#Grid').data('kendoGrid').selectedDataItems();
+
+                var gridData = [];
+                for (var i = 0; i < checked.length; i++) {
+                    gridData
+                        .push({
+                            productId: productId,
+                            pricerowId: checked[i].pricerowId,
+                            syncflag :'N',
+                            __status: "update",
+                        });
+                }
+                ;
+
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/mst/pricerow/submit',
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify(gridData),
+                    success: function (data) {
+                        if (data.success == false) {
+                            kendo.ui.showErrorDialog({
+                                message: data.message
+                            });
+                        }else{
+                            kendo.ui.showConfirmDialog({
+                                title: $l('hap.tip.info'),
+                                message: $l('保存成功！')
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    window.parent.$('#pricerowGrid').data('kendoGrid').dataSource.page(1);
+                                    window.parent.$("#editWin").data("kendoWindow").close();
+                                }
+                            })
+                        }
+                    }
+                });
+
+            }
+        </script>
+        <body>
+ <div id="content" style="margin-top: 5px;">
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                <span onclick="savePricerowFunction()" class="btn btn-info" style="float:left;margin-left:5px;"><@spring.message "hap.save"/></span>
+        </div>
+        <script>kendo.bind($('#toolbar-btn'), priceViewModel);</script>
+        <div id="queryPanel" class="pull-right" style="margin-right:5px;padding-bottom:10px;">
+            <div class="k-query-simple" id="query-form">
+                <input id="productId" type="text" class="form-control full_width" placeholder='<@spring.message "商品"/>'
+                       data-bind="value:model.productId">
+                <script>
+                    $("#productId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_PRODUCT")},{
+                        query: function(e) {
+
+                        },
+                        select:function(e){
+
+                        }
+                    }));
+                </script>
+                <input id="userId" type="text"  class="form-control full_width" placeholder='<@spring.message "用户"/>'
+                       data-bind="value:model.userId">
+                <script>
+                    $("#userId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_USER")},{
+                        query: function(e) {
+
+                        },
+                        select:function(e){
+
+                        }
+                    }));
+                </script>
+                <input id="userGroupId" type="text"  class="form-control full_width" placeholder='<@spring.message "用户组"/>'
+                       data-bind="value:model.userGroupId">
+                <script>
+                    $("#userGroupId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_USERGROUP")},{
+                        query: function(e) {
+                            var userId =  priceViewModel.model.userId;
+                            if(userId){
+                                e.param['userId'] = userId;
+                            }
+                        },
+                        select:function(e){
+
+                        }
+                    }));
+                </script>
+            </div>
+            <script>kendo.bind($('#query-form'), priceViewModel);</script>
+            <!--更多查询-->
+            <div  id="query-form2">
+                <div class="rows">
+
+                </div>
+            </div>
+            <script>kendo.bind($('#query-form2'), priceViewModel);</script>
+        </div>
+        <div id="page-content">
+            <div style="clear: both;">
+                <div id="Grid"></div>
+            </div>
+        </div>
+   </div>
+    <script>
+            $('#queryPanel').kendoQueryPanel({
+                queryFunction: function () {
+                    priceViewModel.queryFunction();
+                },
+                resetFunction: function () {
+                    priceViewModel.resetFunction();
+                }
+            })
+
+            var BaseUrl = _basePath;
+
+            priceRowDataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hmall/mst/pricerow/queryInfo",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/hmall/mst/pricerow/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/hmall/mst/pricerow/remove",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/hmall/mst/pricerow/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(priceViewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "pricerowId",
+                        fields: {}
+                    }
+                }
+            });
+
+            //价格行grid
+            var Grid = $("#Grid");
+            $("#Grid").kendoGrid({
+                dataSource: priceRowDataSource,
+                height: '300px',
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                rownumber: true,
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "code",
+                        title: '<@spring.message "hmall.pricerow.productCode"/>',
+                        width: 120
+                    },{
+                        field: "productName",
+                        title: '<@spring.message "商品名称"/>',
+                        width: 120
+                    },
+                    {
+                        field: "userName",
+                        title: '<@spring.message "hmall.pricerow.userName"/>',
+                        width: 120
+                    },
+                    {
+                        field: "name",
+                        title: '<@spring.message "hmall.pricerow.userGroupName"/>',
+                        width: 120
+                    },
+                    {
+                        field: "basePrice",
+                        title: '<@spring.message "hmall.pricerow.basePrice"/>',
+                        width: 120
+                    },
+                    {
+                        field: "bottomPrice",
+                        title: '<@spring.message "hmall.pricerow.bottomPrice"/>',
+                        width: 120
+                    },
+                    {
+                        field: "saleUnit",
+                        title: '<@spring.message "hmall.pricerow.saleUnit"/>',
+                        width: 120
+                    },
+                    {
+                        field: "rate",
+                        title: '<@spring.message "hmall.pricerow.rate"/>',
+                        width: 120
+                    },
+                    {
+                        field: "creationsDate",
+                        title: '<@spring.message "hmall.pricerow.creationDate"/>',
+                        width: 220
+                    }
+                ],
+                editable: false
+            }).data("kendoGrid");
+            Hap.autoResizeGrid("#Grid");
+        </script>
+
+        </body>
+        </html>

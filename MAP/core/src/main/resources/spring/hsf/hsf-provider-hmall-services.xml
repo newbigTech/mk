@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <bean id="hMallProductServiceImpl" class="com.hand.hmall.services.product.HMallProductServiceImpl"/>
+    <dubbo:service interface="com.hand.hmall.services.product.service.IHMallProductService"
+                   ref="hMallProductServiceImpl"
+                   group="hmall"
+                   version="1.0.0"/>
+
+    <bean id="hMallOrderServiceImpl" class="com.hand.hmall.services.order.HMallOrderServiceImpl"/>
+    <dubbo:service interface="com.hand.hmall.services.order.service.IHMallOrderService" ref="hMallOrderServiceImpl"
+                   group="hmall"
+                   version="1.0.0"/>
+    
+    <bean id="serviceOrderServiceImpl" class="com.hand.hmall.services.order.ServiceOrderServiceImpl"/>
+    <dubbo:service interface="com.hand.hmall.services.order.service.IServiceOrderService" ref="serviceOrderServiceImpl"
+                   group="hmall"
+                   version="1.0.0"/>
+
+
+
+    <bean id="iRetailFabricServer4Retail" class="com.hand.hmall.ws.impl.RetailFabricServerImpl"/>
+    <dubbo:service interface="com.hand.hmall.services.ws.IRetailFabricServer4Retail" ref="iRetailFabricServer4Retail"
+                   group="hmall"
+                   version="1.0.0"/>
+
+    <bean id="iFndRegionsServer4Retail" class="com.hand.hmall.ws.impl.FndRegionsServerImpl"/>
+    <dubbo:service interface="com.hand.hmall.services.ws.IFndRegionsServer4Retail" ref="iFndRegionsServer4Retail"
+                   group="hmall"
+                   version="1.0.0"/>
+
+
+
+    <bean id="iAsReturnServiceForRetail" class="com.hand.hmall.services.as.AsReturnServiceForRetailImpl"/>
+    <dubbo:service interface="com.hand.hmall.services.as.service.IAsReturnServiceForRetail" ref="iAsReturnServiceForRetail"
+                   group="hmall"
+                   version="1.0.0"/>
+
+    <bean id="iPinServiceForRetail" class="com.hand.hmall.services.pin.PinServiceForRetailImpl"/>
+    <dubbo:service interface="com.hand.hmall.services.pin.service.IPinServiceForRetail" ref="iPinServiceForRetail"
+                   group="hmall"
+                   version="1.0.0"/>
+
+</beans>

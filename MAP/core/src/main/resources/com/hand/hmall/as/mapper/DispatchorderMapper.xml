@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.DispatchorderMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.Dispatchorder">
+        <result column="RECEIPT_ORDER_ID" property="receiptOrderId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="receipt_type" property="receiptType" jdbcType="VARCHAR" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="SV_CATEGORY1" property="svCategory1" jdbcType="VARCHAR" />
+        <result column="SV_CATEGORY2" property="svCategory2" jdbcType="VARCHAR" />
+        <result column="SALES_CODE" property="salesCode" jdbcType="VARCHAR" />
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR" />
+        <result column="COMPLAINT" property="complaint" jdbcType="VARCHAR" />
+        <result column="NOTE" property="note" jdbcType="VARCHAR" />
+        <result column="USER_ID" property="userId" jdbcType="VARCHAR" />
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR" />
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+        <result column="CS" property="cs" jdbcType="VARCHAR" />
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE" />
+        <result column="EXECUTION_DATE" property="executionDate" jdbcType="DATE" />
+        <result column="TECHNICIAN_NAME" property="technicianName" jdbcType="VARCHAR" />
+        <result column="IS_CHARGE" property="isCharge" jdbcType="VARCHAR" />
+        <result column="LINKS_CODE" property="linksCode" jdbcType="VARCHAR" />
+        <result column="PAY_STATUS" property="payStatus" jdbcType="VARCHAR" />
+        <result column="TRANS_FEE" property="transFee" jdbcType="DECIMAL" />
+        <result column="RESTORE_FEE" property="restoreFee" jdbcType="DECIMAL" />
+        <result column="REPAIR_FEE" property="repairFee" jdbcType="DECIMAL" />
+        <result column="SHOULD_PAY" property="shouldPay" jdbcType="DECIMAL" />
+        <result column="REAL_PAY" property="realPay" jdbcType="DECIMAL" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+</mapper>

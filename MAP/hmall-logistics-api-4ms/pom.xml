@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <version>1.1-SNAPSHOT</version>
+    <groupId>com.markor.map</groupId>
+    <artifactId>hmall-logistics-api-4ms</artifactId>
+
+    <!--
+    <properties>
+        <hap.version>3.1.6-RELEASE</hap.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <skipTests>true</skipTests>
+    </properties>
+    -->
+
+    <!--
+    <dependencies>
+        <dependency>
+            <groupId>com.hand</groupId>
+            <artifactId>hap</artifactId>
+            <version>${hap.version}</version>
+            <classifier>classes</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.markor.map.framework</groupId>
+            <artifactId>interface-common</artifactId>
+            <version>1.0-RELEASE</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    -->
+
+    <distributionManagement>
+        <repository>
+            <id>Markor-Release</id>
+            <name>Markor-Release</name>
+            <url>http://172.16.10.52/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>Markor-Snapshot</id>
+            <name>Markor-Snapshot</name>
+            <url>http://172.16.10.52/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+</project>

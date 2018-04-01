@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.fnd.mapper.FndBusinessLogMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.fnd.dto.FndBusinessLog">
+        <result column="BUSINESS_LOG_ID" property="businessLogId" jdbcType="DECIMAL" />
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL" />
+        <result column="OPERATION_TYPE" property="operationType" jdbcType="VARCHAR" />
+        <result column="OPERATION_USER" property="operationUser" jdbcType="DECIMAL" />
+        <result column="OPERATION_TIME" property="operationTime" jdbcType="DATE" />
+        <result column="OPERATION_CONTENT" property="operationContent" jdbcType="VARCHAR" />
+        <result column="LAST_VERSION" property="lastVersion" jdbcType="DECIMAL" />
+        <result column="CURRENT_VERSION" property="currentVersion" jdbcType="DECIMAL" />
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--操作日志标签页根据订单ID查询数据-->
+    <select id="selectByOrderId" parameterType="com.hand.hmall.fnd.dto.FndBusinessLog" resultMap="BaseResultMap">
+        SELECT fbl.BUSINESS_LOG_ID, fbl.ORDER_ID, fbl.OPERATION_TYPE, su.user_name, fbl.OPERATION_TIME, fbl.OPERATION_CONTENT, fbl.LAST_VERSION, fbl.CURRENT_VERSION
+        FROM hmall_fnd_business_log fbl
+        LEFT JOIN SYS_USER su
+        ON su.USER_ID = fbl.OPERATION_USER
+        WHERE 1 = 1
+        <if test="orderId != null and orderId != ''">
+            AND fbl.order_id = #{orderId}
+        </if>
+        ORDER BY fbl.OPERATION_TIME
+    </select>
+
+</mapper>

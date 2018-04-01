@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.MstBundlesMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.MstBundles">
+        <result column="BUNDLES_ID" property="bundlesId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+        <result column="SYNC_FLAG" property="syncFlag" jdbcType="VARCHAR"/>
+        <result column="PROMOTION_CODE" property="promotionCode" jdbcType="VARCHAR"/>
+        <result column="PRICE" property="price" jdbcType="DECIMAL"/>
+        <result column="PRIORITY" property="priority" jdbcType="DECIMAL"/>
+        <result column="IS_OVERLAY" property="isOverlay" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        BUNDLES_ID,CODE,STATUS,NAME,DESCRIPTION,SYNC_FLAG,PROMOTION_CODE,PRICE,PRIORITY,IS_OVERLAY
+    </sql>
+    <select id="selectBundlesBySyncFlag" parameterType="com.hand.hmall.mst.dto.MstBundles" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_MST_BUNDLES HMB WHERE HMB.SYNC_FLAG = #{syncFlag}
+    </select>
+
+</mapper>

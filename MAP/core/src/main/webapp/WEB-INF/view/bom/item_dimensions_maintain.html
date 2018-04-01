@@ -1,0 +1,815 @@
+<#include "../include/header.html">
+
+<!--
+    * description: MAP产品外形尺寸维护
+    *
+    * author: chenzhigang@markor.com.cn
+    *
+    * version:
+    *
+-->
+
+<body>
+
+<style>
+</style>
+
+<script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+
+    /**
+     * 根据导入成功的平台ID刷新页面
+     * 此方法被excel导入页面在执行导入成功时调用
+     * @Param id - 导入成功的平台ID
+     */
+    function refreshPage (id) {
+        currentItemId = id;
+        refreshItemDimensionsConf();
+    }
+
+    var kendoTreeList; // 左侧平台列表控件对象，在$(document).ready()时创建
+
+    /**
+     * 当前平台尺寸属性配置信息控制器
+     * 根据平台ID创建，负责存储配置信息变化量以及保存新建的尺寸配置信息
+     * @param platformId - 平台ID
+     */
+    function CurrentPlatformSizeInfo(platformId) {
+
+        /** 持久层数据库中的配置信息 **/
+        var persistenceConfs;
+
+        /** 被修改的配置信息 **/
+        var updatedPersistenceConfs = [];
+
+        /** 新建的配置信息 **/
+        var newConfInfo;
+
+        /** 控制器对象创建时，加载持久层配置信息 **/
+        $.ajax({
+            url: '${base.contextPath}/markor/hap/mdm/bom/platformSize/query/' + currentItemId,
+            success: function (response) {
+                if (response.success) {
+                    persistenceConfs = response.rows
+                } else {
+                    kendo.ui.showWarningDialog({ message: response.message });
+                }
+            }
+        });
+
+        /** 检验是否包含配置信息 **/
+        this.contain = function (infoId) {
+            for (var i in persistenceConfs) {
+                if (persistenceConfs[i].infoId == infoId) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        /** 点击保存按钮动作，将新建的或修改的配置信息保存到数据库 **/
+        this.save = function () {
+
+//            var tempConf;
+
+            if (newConfInfo) {
+                if (newConfInfo.itemCode == null || newConfInfo.itemCode.trim() == "") {
+                    kendo.ui.showWarningDialog({
+                        message: "配置包编码不能为空"
+                    });
+                    return;
+                }
+
+                if (!newConfInfo.attrCode) {
+                    kendo.ui.showWarningDialog({
+                        message: "尺寸属性不能为空"
+                    });
+                    return;
+                }
+            }
+
+            var repeatedCheckArr = [];
+            for (var i in updatedPersistenceConfs) {
+                repeatedCheckArr.push(updatedPersistenceConfs[i]);
+            }
+            containCheck:
+            for (var i in persistenceConfs) {
+                for (var j in updatedPersistenceConfs) {
+                    if (persistenceConfs[i].infoId == updatedPersistenceConfs[j].infoId) {
+                        continue containCheck;
+                    }
+                }
+                repeatedCheckArr.push(persistenceConfs[i]);
+            }
+            if (newConfInfo) {
+                repeatedCheckArr.push(newConfInfo);
+            }
+            for (var i = 0; i < repeatedCheckArr.length - 1; i++) {
+                for (var j = i + 1; j < repeatedCheckArr.length; j++) {
+                    if (repeatedCheckArr[i].itemCode == repeatedCheckArr[j].itemCode
+                            && repeatedCheckArr[i].attrCode == repeatedCheckArr[j].attrCode) {
+                        kendo.ui.showWarningDialog({
+                            message: "尺寸属性配置重复"
+                        });
+                        return;
+                    }
+                }
+            }
+
+            // 校验可配置包编码合法情况
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/markor/hap/mdm/bom/platformSize/checkItemCode',
+                data: JSON.stringify(repeatedCheckArr),
+                contentType: 'application/json',
+                // async: false,
+                success: function (result) {
+                    if (result.success) {
+
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '${base.contextPath}/markor/hap/mdm/bom/platformSize/save',
+                            data: JSON.stringify(repeatedCheckArr),
+                            contentType: 'application/json',
+                            // async: false,
+                            success: function (result) {
+                                if (result.success) {
+                                    // 保存成功后刷新页面
+                                    refreshItemDimensionsConf();
+                                } else {
+                                    kendo.ui.showErrorDialog({
+                                        message: result.message
+                                    });
+                                }
+                            },
+                            error: function (result) {
+                                kendo.ui.showErrorDialog({
+                                    message: result.message
+                                });
+                            }
+                        });
+
+
+                    } else {
+                        kendo.ui.showErrorDialog({
+                            message: result.message
+                        });
+                    }
+                },
+                error: function (result) {
+                    kendo.ui.showErrorDialog({
+                        message: result.message
+                    });
+                }
+            });
+
+
+
+        };
+
+        /** 新建配置时触发，创建一个表示新建配置的对象，并赋予其当前平台编码值 **/
+        this.createNewConf = function () {
+            newConfInfo = {
+                platformCode: currentItemCode
+            };
+        };
+
+        /** 更新配置信息到当前控制器的缓冲区 **/
+        this.updateConf = function(infoId, itemCode, attrCode) {
+
+            for (var i in updatedPersistenceConfs) {
+                if (updatedPersistenceConfs[i].infoId == infoId) {
+                    updatedPersistenceConfs[i].attrCode = attrCode;
+                    return;
+                }
+            }
+            updatedPersistenceConfs.push({
+                infoId: infoId,
+                itemCode: itemCode,
+                attrCode: attrCode
+            });
+        };
+
+        /** 设置新建配置项的尺寸编码到当前控制器的缓冲区 **/
+        this.setNewAttrCode = function (attrCode) {
+            newConfInfo.attrCode = attrCode;
+        };
+
+        /** 设置新建配置项的可用包编码到当前控制器的缓冲区 **/
+        this.setNewItemCode = function (itemCode) {
+            newConfInfo.itemCode = itemCode;
+        };
+
+    }
+    var platformConf;
+
+
+    /** 尺寸属性值对象集合相关函数对象，页面初始化时加载并保持，后续使用时直接饮用即可 **/
+    var sizeAttrsInfoFun = null;
+
+    /** 初始化尺寸属性值对象集合 **/
+    $.ajax({
+        url: '${base.contextPath}/markor/hap/mdm/bom/platformSize/allSizeAttrs',
+        success: function (response) {
+            if (response.success) {
+                sizeAttrsInfoFun = new function () {
+                    this.getSizeAttrDesc = function (attrItemCode) {
+                        for (var i in response.rows) {
+                            if (response.rows[i].attrCode == attrItemCode) {
+                                return response.rows[i].desc;
+                            }
+                        }
+                        return "";
+                    };
+                };
+            } else {
+                kendo.ui.showErrorDialog({ message: response.message });
+            }
+        }
+    });
+
+    function newConf() {
+
+        if (hasNewConf) {
+            return; // 保存完当前新建配置项后才能再次创建
+        }
+
+        // 只有选定某个平台后才能新建配置项
+        if (currentItemCode) {
+            hasNewConf = true; // 新建一条配置项
+            $("#itemDimensionsConfGrid").data("kendoGrid").addRow();
+            platformConf.createNewConf();
+        } else {
+            kendo.ui.showWarningDialog({
+                message: '必须选定某个平台后才能新建'
+            });
+        }
+    }
+
+
+    function saveConf() {
+        platformConf.save();
+    }
+
+
+    function deleteConf() {
+
+        kendo.ui.showConfirmDialog({
+            title: '提示',
+            message: '确认删除?'
+        }).done(function (e) {
+            log(e);
+            if (e.button != "OK") {
+                return;
+            }
+            var deletedItems = $("#itemDimensionsConfGrid").data("kendoGrid").selectedDataItems();
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/markor/hap/mdm/bom/platformSize/delete',
+                data: JSON.stringify(deletedItems),
+                contentType: 'application/json',
+                async: false,
+                success: function (result) {
+                    if (result.success) {
+                        refreshItemDimensionsConf();
+                    } else {
+                        kendo.ui.showErrorDialog({
+                            message: result.message
+                        })
+                    }
+                },
+                error: function (data) {
+
+                }
+
+            });
+        });
+
+
+    }
+
+
+    function log(msg) {
+        /* console.log(msg);*/
+    }
+
+    // 页面当前选中的平台ID，页面初始化时赋予此值为空
+    var currentItemId;
+    // 页面当前选中的平台CODE，页面初始化时赋予此值为空
+    var currentItemCode;
+
+    // 是否存在新建的配置项
+    var hasNewConf = false;
+
+    // 尺寸属性配置表格控件，在页面加载完毕后初始化
+    var dimConfGrid;
+
+
+    var treeDataSource = new kendo.data.TreeListDataSource({
+        //请求结束操作
+        requestEnd: function (e) {
+
+            if (!(e.response.success === true)) {
+                kendo.ui.showErrorDialog({
+                    message: '<@spring.message "bom.operation.failed"/>'
+                });
+                return;
+            }
+
+            //新建，必须获取到主表code 再保存行表
+            if (e.type === "create") {
+                //设置返回的code到viewMoel
+                viewModel.model.set("itmeCode", e.response.rows[0].itmeCode);
+                //设置标志位为true，表示此数据已经保存过或者没有被修改过
+                viewModel.set("isNew", true);
+                kendo.ui.showInfoDialog({
+                    message: '<@spring.message "hpm.save_sucess"/>'
+                });
+
+            } else if (e.type === "update") { //更新直接接着保存行表，然后提示保存成功
+                //设置标志位为true，表示此数据已经保存过或者没有被修改过
+                viewModel.set("isNew", true);
+                kendo.ui.showInfoDialog({
+                    message: '<@spring.message "hpm.save_sucess"/>'
+                });
+            }
+        },
+        transport: {
+            read: {
+                url: "${base.contextPath}/hap/mdm/bom/queryPlatform",
+                type: "POST",
+                dataType: "json",
+                contentType: 'application/json',
+            },
+            destroy: {
+                url: "${base.contextPath}/husm/pz/item/removeTree",
+                contentType: "application/json",
+                type: "POST"
+            },
+            parameterMap: function (options, type) {
+                if (type === "read") {
+                    var map = {};
+                    map.plaformName = $('#platformName').val();
+                    map.platformId = viewModel.model.platformId;
+                    return JSON.stringify(map);
+                }
+                if (type === "create") {
+                    return JSON.stringify(options);
+                }
+                if (type === "update") {
+                    return JSON.stringify(options);
+                }
+                if (type === "destroy") {
+
+                    return JSON.stringify(options);
+                }
+            }
+        },
+        schema: {
+            data: "rows",
+            total: 'total',
+            model: {
+                id: "itemId",
+                parentId: "parentItemId",
+                expanded: true,
+                fields: {
+                    bomId: {field: "bomId"},
+                    itemId: {field: "itemId"},
+                    //root节点的父节点以空开始，默认为false，手动设置为true，要不然无法显示
+                    parentItemId: {field: "parentItemId", nullable: true, type: "number"},
+                    infaceId: {field: "infaceId", type: "number", defaultValue: 1},
+                    matnr: {field: "matnr", type: "string", defaultValue: "1"},
+                    werks: {field: "werks", type: "string", defaultValue: "1"},
+                    stlal: {field: "stlal", type: "string", defaultValue: "1"},
+                    bmeng: {field: "bmeng", type: "string", defaultValue: "1"},
+                    postp: {field: "postp", type: "string", defaultValue: "1"},
+                    posnr: {field: "posnr", type: "string", defaultValue: "1"},
+                    idnrk: {field: "idnrk", type: "string", defaultValue: "1"},
+                    menge: {field: "menge", type: "string", defaultValue: "1"},
+                    meins: {field: "meins", type: "string", defaultValue: "1"},
+                    deleteFlag: {field: "deleteFlag", type: "string", defaultValue: "N"},
+                    hierarchy: {field: "hierarchy", type: "number", defaultValue: 1}
+                }
+            }
+        },
+        errors: function (res) {
+            if (!res.success && res.message) {
+                return res.message;
+            }
+        }
+    });
+
+
+    //设置第一个form vieModel
+    var viewModel = kendo.observable({
+        firstLoad: true, //预留标志位，判断页面是否是第一次加载
+        isNew: null, //用于判断form表单数据时候被编辑过的标志位
+        uid: null, //存储当前被编辑的dataItem uid
+        model: {},
+        //树展开
+        nodesExpand: function (e) {
+            datas = treeDataSource.data();
+            var row = null;
+            var children = null;
+            for (var i = 0, len = datas.length; i < len; i++) {
+                children = treeDataSource.childNodes(datas[i]);
+                if (children != null && children.length > 0) {
+                    row = kendoTreeList.content.find("tr[data-uid=" + datas[i].uid + "]");
+                    kendoTreeList.expand(row);
+                }
+            }
+        }
+    });
+
+
+    function queryItems() {
+        var map = {
+            platformName: $('#platformName').val(),
+            platformId: viewModel.model.platformId
+        };
+        log(map);
+        var treeview = $("#treeList").data("kendoTreeList");
+        log(treeview);
+        $.ajax({
+            type: 'POST',
+            url: '${base.contextPath}/hap/mdm/bom/queryPlatform',
+            data: JSON.stringify(map),
+            contentType: 'application/json',
+            async: false,
+            success: function (sucData) {
+                if (sucData.success) {
+                    treeview.setDataSource(sucData.rows);
+                } else {
+                    kendo.ui.showErrorDialog({
+                        message: sucData.message
+                    })
+                }
+            },
+            error: function (data) {
+
+            }
+
+        });
+    }
+
+
+    function selectDataItem() {
+        //获取在树上选择到的数据
+        var treeList = $("#treeList").data("kendoTreeList");
+        var row = treeList.select();
+        var selectDatas = treeList.dataItem(row);
+        var itemId = selectDatas.itemId;
+        viewModel.set("itemId", itemId);
+
+        currentItemId = itemId; // 将当前平台ID设置为选中的平台ID
+        currentItemCode = selectDatas.matnr;  // 将当前平台ID设置为选中的平台CODE
+        refreshItemDimensionsConf(); // 根据平台ID刷新尺寸配置信息界面
+
+        return treeList.dataItem(row);
+    }
+
+
+    /**
+     * 根据平台ID刷新尺寸配置信息界面
+     */
+    function refreshItemDimensionsConf() {
+
+        platformConf = new CurrentPlatformSizeInfo(currentItemId);
+
+        hasNewConf = false; // 刷新配置表格后已无新建配置项
+
+        var dataSource_ = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: '${base.contextPath}/markor/hap/mdm/bom/platformSize/query/' + currentItemId,
+                    type: "GET",
+                    dataType: "json"
+                },
+                parameterMap: function (options, type) {
+                },
+
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "infoId",
+                    fields: {
+                    }
+                }
+            }
+        });
+
+
+        /*选配关系grid*/
+        dimConfGrid = $("#itemDimensionsConfGrid").kendoGrid({
+            dataSource: dataSource_,
+            height: '470px',
+            rownumber: true,
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            columnMenu: true,// 实现列显示与否
+            reorderable: true,//调整列位置
+            selectable: 'multiple, rowbox',
+            pageable: {
+                pageSizes: [5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                {
+                    /*平台*/
+                    field: "infoId",
+                    title: 'INFO_ID',
+                    width: 120,
+                    template: function (dataItem) {
+                        return dataItem['infoId'] || ''
+                    },
+                    editor: function (container, options) {
+                        container.html(options.model.infoId);
+                        container.removeClass('k-edit-cell');
+                    },
+                    hidden: true
+                },
+                {
+                    /*平台*/
+                    field: "platformCode",
+                    title: '<@spring.message "map.platformname"/>',
+                    width: 120,
+                    template: function (dataItem) {
+                        return dataItem['platformCode'] || ''
+                    },
+                    editor: function (container, options) {
+                        container.html(options.model.platformCode = currentItemCode);
+                        container.removeClass('k-edit-cell');
+                    }
+                },
+                {
+                    /*可配置包编码*/
+                    field: "itemCode",
+                    title: '可配置包编码',
+                    width: 120,
+                    template: function (dataItem) {
+                        return dataItem['itemCode'] || ''
+                    },
+                    editor: function (container, options) {
+
+                        if (platformConf.contain(options.model.infoId)) {
+                            container.html(options.model.itemCode);
+                            container.removeClass('k-edit-cell');
+                        } else {
+                            /*添加lov  heng 2017/7/20*/
+                           /* $('<input id="' + options.field + '" name="' + options.field
+                                + '" onkeyup="this.value = this.value.slice(0, 70); platformConf.setNewItemCode(this.value);" required="required"/>')
+                                .appendTo(container);*/
+                            $('<input id="' + options.field + '" name="' + options.field
+                                    + '" onkeyup="this.value = this.value.slice(0, 70); " required="required"/>')
+                                    .appendTo(container)
+                                    .kendoLov($.extend(<@lov "MAP_MDM_ITEM_LOV"/>,{
+                              /*  textField: 'itemCode',
+                                valueField:'itemCode',*/
+                                query: function(e) {
+                                    /* 此处拿的是进入页面选取的平台ID*/
+                                    e.param['platformId'] =currentItemId;
+                                },
+                                select:function(e){
+                                    options.model.set('itemCode',e.item.itemCode);
+                                    platformConf.setNewItemCode(e.item.itemCode);
+                                    dimConfGrid.refresh();
+                                },
+                                model    : options.model,
+                            }));
+                        }
+
+
+
+                    }
+                },
+                {
+                    /*计算属性*/
+                    field: "attrCode",
+                    title: '计算属性',
+                    width: 120,
+                    template: function (dataItem) {
+
+                        return sizeAttrsInfoFun.getSizeAttrDesc(dataItem['attrCode']);
+
+                    },
+                    editor: function (container, options) {
+                        $('<input name="attrCode"  style="background-color: #fbeed5"/>')
+                            .appendTo(container)
+                            .kendoDropDownList({
+                                dataTextField: "desc",
+                                dataValueField: "attrCode",
+                                valuePrimitive: true,
+
+                                dataSource: new kendo.data.DataSource({
+                                    transport: {
+                                        read: {
+                                            url: "${base.contextPath}/markor/hap/mdm/bom/platformSize/allSizeAttrs",
+                                            type: "GET",
+                                            dataType: "json"
+                                        },
+                                        parameterMap: function (options, type) {
+
+                                        }
+                                    },
+                                    batch: true,
+                                    serverPaging: true,
+                                    pageSize: 10,
+                                    schema: {
+                                        data: 'rows',
+                                        total: 'total',
+                                        model: {
+                                            id: "infoId",
+                                            fields: {
+                                            }
+                                        }
+                                    }
+                                }),
+
+                                change: function (e) {
+                                    log(options.model.infoId + ", " + options.model.attrCode);
+
+                                    if (platformConf.contain(options.model.infoId)) {
+                                        platformConf.updateConf(options.model.infoId, options.model.itemCode, options.model.attrCode);
+                                    } else {
+                                        platformConf.setNewAttrCode(options.model.attrCode);
+                                    }
+                                }
+                            });
+                    }
+                }
+            ],
+            editable: true
+        }).data('kendoGrid');
+
+    }
+
+
+</script>
+
+<div class="container"
+     style="width: auto; margin: 10px 0px 0px 0px; height: 100%">
+
+
+    <div id="left" style="padding: 0px; " class="col-md-4">
+        <div class="panel-body" style="height: 99.8%; padding: 0px; border: 1px solid #CCCCCC; margin-right: 10px;">
+            <div class="row">
+                <div style='padding-top: 7px; padding-bottom: 7px;'>
+                    <!-- 平台名称查询输入框 -->
+                    <input id="platformName" placeholder='<@spring.message "husm.platformName"/>' type="text"
+                           style="width:250px;margin-right:5px;margin-left:10px;" class="k-textbox">
+                    <!-- 查询按钮 -->
+                    <span id="query_platformName" class="btn btn-primary" onclick="queryItems()"
+                          style="margin-right:5px;" type="submit">
+            <i class="fa fa-search" style="margin-right:3px;"><@spring.message "hap.query"/></i>
+
+        </span>
+                </div>
+            </div>
+            <div class="row">
+                <div id="treeList" style="height: 550px;"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="right" class="col-md-8" style="border: 1px solid #CCCCCC;">
+        <div class="row" id="page-item-all"
+             style="position: relative; margin: 0px; min-height: 500px">
+
+            <!--选配关系维护增删按钮-->
+            <div id="page-content">
+                <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+
+
+                    <span onclick="importExcel()" class="btn btn-default" style="float:left;">
+                        <i class="fa fa-file-excel-o"></i><@spring.message "hap.execlImport"/></span>
+
+                    <span type="button" class="btn btn-primary" style="float:left; margin-left: 5px" onclick="newConf()">
+                        <i class="fa fa-plus-square" style="margin-right:3px;"></i>新建
+                    </span>
+
+                    <span class="btn btn-success k-grid-save-changes" style="float:left; margin-left: 5px;" onclick="saveConf()">
+                        <i class="fa fa-save" style="margin-right:3px;"></i>保存
+                    </span>
+
+                    <span class="btn btn-danger" data-bind="click:deleteFunction" onclick="javascript: deleteConf()" style="float:left;margin-left:5px; width: 70px;">
+                        <i class="fa fa-trash-o" style="margin-right:3px;"></i><@spring.message "hap.delete"/>
+                    </span>
+
+
+                </div>
+                <div style="clear:both">
+                    <div id="itemDimensionsConfGrid"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- 导入导出的execl Window -->
+<div id="excelWindow"></div>
+
+<script type="text/javascript">
+
+
+    function importExcel() {
+        var excelWindow = $("#excelWindow").kendoWindow({
+            title: '产品外形尺寸属性导入',
+            content: "${base.contextPath}/bom/item_dimensions_maintain_excel.html",
+            actions: [
+                "Pin",
+                "Close"
+            ],
+            modal: true,
+            visible: false,
+            width: 800,
+            height: 400,
+            iframe: true,
+            close: function () {
+
+                //window 关闭  刷新 本页面的  Grid
+                refreshItemDimensionsConf();
+                // $('#relationGrid').data('kendoGrid').dataSource.page(1);
+            }
+        }).data("kendoWindow");
+        excelWindow.center().open();
+
+    }
+
+
+    $(document).ready(function () {
+
+
+        kendoTreeList = $("#treeList").kendoTreeList({
+            dataSource: treeDataSource,
+            sortable: true,
+            resizable: true,
+            navigatable: true,
+            edit: function (e) {
+                this.select(e.container);
+            },
+
+
+            editable: {
+                move: true
+            },
+            selectable: true,
+            dataBound: function (e) {
+
+                if (viewModel.firstLoad) {
+
+                    datas = treeDataSource.rootNodes();
+
+                    for (var i = 0, len = datas.length; i < len; i++) {
+
+                        var row = this.content.find("tr[data-uid=" + datas[i].uid + "]");
+
+                        this.collapse(row);
+                    }
+
+                    viewModel.set("firstLoad", false);
+                }
+
+            },
+            change: function onChange(/*arg*/) {
+                selectDataItem();
+            },
+            columns: [
+                {
+                    title: '<@spring.message "item.platformList"/>',
+                    field: "item.itemName",
+                    template: kendo.template("( #:item.itemCode# ) #:item.itemName#"),
+                    editor: function (container, options) {
+                        $('<input required id="itemDescriptionGrid" type="text" class="k-textbox" name="' + options.field + '"/>').appendTo(container);
+                    },
+                }
+
+            ],
+            messages: {
+                commands: {
+                    update: '<@spring.message "hap.submit"/>',
+                    canceledit: '<@spring.message "hap.cancel"/>',
+                    createchild: '<@spring.message "husm.setup.type.create_child"/>',
+                }
+            }
+        }).data("kendoTreeList");
+        currentItemId = -999999999; // 首次进入页面时没有选中平台，所以设置一个无效的值
+        refreshItemDimensionsConf();
+        queryItems();
+    });
+</script>
+
+</body>
+</html>
+

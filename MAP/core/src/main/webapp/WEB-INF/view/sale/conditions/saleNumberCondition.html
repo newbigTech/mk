@@ -1,0 +1,205 @@
+<#include "/include/header.html"/>
+<body>
+<script type="text/javascript" src="../../lib/DisabledElement.js"></script>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{}
+    });
+    var id='${RequestParameters.id}';
+    var value="";
+    var operator="";
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var openType='${RequestParameters.openType}';
+
+    if(openType=='BASE') {
+        for (var i in window.parent.viewModel.model.conditions) {
+            if (window.parent.viewModel.model.conditions[i].id == id) {
+                definitionId = window.parent.viewModel.model.conditions[i].definitionId;
+                if (window.parent.viewModel.model.conditions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.conditions[i].parameters.value != undefined) {
+                        value = window.parent.viewModel.model.conditions[i].parameters.value.value;
+                    }
+                    if (window.parent.viewModel.model.conditions[i].parameters.operator != undefined) {
+                        operator = window.parent.viewModel.model.conditions[i].parameters.operator.value;
+                    }
+                }
+                break;
+            }
+        }
+
+    }else if(openType=='GROUP') {
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                    var flag=false;
+                    for(var j in window.parent.groups_data[i].child)
+                    {
+
+                        if(window.parent.groups_data[i].child[j].id==id)
+                        {
+                            if (window.parent.groups_data[i].child[j].parameters != undefined) {
+                                if (window.parent.groups_data[i].child[j].parameters.value != undefined) {
+                                    value = window.parent.groups_data[i].child[j].parameters.value.value;
+                                }
+                                if (window.parent.groups_data[i].child[j].parameters.operator != undefined) {
+                                    operator = window.parent.groups_data[i].child[j].parameters.operator.value;
+                                }
+                            }
+                            flag=true;
+                            break;
+                        }
+                    }
+                    if(flag){
+                        break;
+                    }
+
+            }
+        }
+    }else if(openType=='GROUP_EXT') {
+
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                if(window.parent.groups_data[i].child!=undefined) {
+                    for (var j in window.parent.groups_data[i].child) {
+                        if (window.parent.groups_data[i].child[j].child != undefined) {
+                            for (var k in  window.parent.groups_data[i].child[j].child) {
+                                if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                    if (window.parent.groups_data[i].child[j].child[k].parameters != undefined) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.value != undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.value.value;
+                                        }
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.operator != undefined) {
+                                            operator = window.parent.groups_data[i].child[j].child[k].parameters.operator.value;
+                                        }
+                                    }
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+
+    }
+
+    if (value != null && value != undefined && value != "") {
+        viewModel.model.value = value;
+    }
+    if (operator != null && operator != undefined && operator != "") {
+        viewModel.model.operator = operator;
+
+    }
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div id="appendPanel" class="panel" style="padding: 0px;">
+            <form class="form-horizontal" id="conditionForm">
+                <div class="panel-body">
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">操作符</label>
+                                <div class="col-sm-8">
+                                    <input id="operator" disabled="true"  data-bind="value:model.operator" placeholder="操作符" style="width: 100%;"  data-value-primitive="true"/>
+                                    <script>
+                                        if(disabled!='true')
+                                        {
+                                            $("#operator").removeAttr("disabled");
+                                        }
+                                        if(viewModel.model.operator==null||viewModel.model.operator==undefined||viewModel.model.operator=="") {
+                                            viewModel.model.operator = 'GEATER_THAN_OR_EQUAL';
+                                        }
+                                        $("#operator").kendoDropDownList({
+                                            dataTextField  : "meaning",
+                                            dataValueField : "value",
+                                            dataSource     : [{"meaning":">=","value":"GEATER_THAN_OR_EQUAL"},{"meaning":">","value":"GEATER_THAN"}]
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label id="number" class="col-sm-4 control-label">数值 </label>
+                                <div class="col-sm-7">
+                                    <input id="value" disabled="true" type="text" placeholder="数值" style="width: 100%" data-bind="value:model.value">
+                                    <script>
+                                        if(disabled!='true')
+                                        {
+                                            $("#value").removeAttr("disabled");
+                                        }
+                                        if(definitionId=='o_total_reached') {
+                                            $("#value").kendoNumericTextBox({
+                                                format: "c",
+                                                min: 0
+                                            })
+                                        }else {
+                                            $('#number').text("数值 (件)");
+                                            $("#value").kendoNumericTextBox({
+                                                format: "n0",
+                                                min: 0
+                                            })
+                                        }
+                                    </script>
+
+                                </div>
+                                <label class="col-sm-1 control-label"></label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+
+           <div class="panel-footer text-right">
+                <span class="btn btn-success" disabled="true" id="query"  type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+                <span class="btn btn-primary" id="resetForm"  type="button" onclick="rollBackWin()"><i class="fa fa-refresh"></i> 返回</span>
+           </div>
+
+            <script>
+
+                if(disabled!="true") {
+                    $('#query').removeAttr('disabled');
+                    $('#query').attr("onclick", "saveNumberCondition()");
+                }
+
+            </script>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    kendo.bind($('#content-container'),viewModel);
+    kendo.bind($('#page-content'),viewModel);
+
+
+
+    function saveNumberCondition()
+    {
+        window.parent.saveNumberCondition(viewModel.model,id,openType);
+        rollBackWin();
+    }
+
+    function rollBackWin() {
+        window.parent.$("#addTempConditionDataWin").data("kendoWindow").close();
+    }
+
+
+</script>
+</body>
+</html>

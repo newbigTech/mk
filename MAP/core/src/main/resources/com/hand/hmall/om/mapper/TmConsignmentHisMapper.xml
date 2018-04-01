@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.om.mapper.TmConsignmentHisMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.HmallTmConsignmentHis">
+    <id column="HIS_ID" jdbcType="DECIMAL" property="hisId" />
+    <result column="EXPORT_TIME" jdbcType="DATE" property="exportTime" />
+  </resultMap>
+
+  <!-- 更新天猫订单的发货单 -->
+  <update id="createExportData" parameterType="java.util.Date">
+    <![CDATA[
+        insert into HMALL_TM_CONSIGNMENT_HIS (HIS_ID, EXPORT_TIME)
+    values (HMALL_TM_CONSIGNMENT_HIS_S.NEXTVAL, #{outTime,jdbcType=DATE})
+        ]]>
+  </update>
+
+  <select id="queryAll" resultMap="BaseResultMap">
+    SELECT
+    HTCH.HIS_ID,
+    HTCH.EXPORT_TIME
+    FROM
+    HMALL_TM_CONSIGNMENT_HIS HTCH
+    ORDER BY HTCH.HIS_ID DESC
+  </select>
+</mapper>

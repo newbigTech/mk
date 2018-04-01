@@ -1,0 +1,148 @@
+- hosts: hmallapi1
+  remote_user: root
+  vars:
+    - SC_DIR: "/usr/hmall/sc"
+    - PROFILES: "--spring.profiles.active=dev_test"
+    - JAVAAGENT: "-javaagent:/u01/hitoa/pinpoint-agent-1.6.1/pinpoint-bootstrap-1.6.1.jar"
+    - ENV: "test"
+  tasks:
+    - name: "创建文件夹"
+      file: path={{ SC_DIR }} state=directory
+    - name: "关闭端口占用"
+      shell: kill $(netstat -nlp | grep {{ item }} | awk '{print $7}'|cut -d '/' -f 1)
+      ignore_errors: True
+      with_items:
+        - 1111
+    - name: "复制 jar包"
+      copy: src=jar_idc/{{ item }}.jar dest={{ SC_DIR }}
+      ignore_errors: True
+      with_items:
+        - hmall-eureka-server
+    - name: "运行 jar包"
+      shell: chdir={{ SC_DIR }} nohup java {{ JAVAAGENT }} -Dpinpoint.agentId={{ item.agentId }}-{{ ENV }}-{{ item.agentNo }} -Dpinpoint.applicationName={{ item.agentId }} -jar {{ item.name }}.jar --server.port={{ item.port }} &
+      ignore_errors: True
+      with_items:
+        - { name: 'hmall-eureka-server', port: '1111', agentId: 'eureka', agentNo: '1' }
+- hosts: hmallapi1
+  remote_user: root
+  vars:
+    - SC_DIR: "/usr/hmall/sc"
+    - EUREKA: "--eureka.client.serviceUrl.defaultZone=http://10.5.72.14:1111/eureka/"
+    - JAVAAGENT: "-javaagent:/u01/hitoa/pinpoint-agent-1.6.1/pinpoint-bootstrap-1.6.1.jar"
+    - ENV: "test"
+  tasks:
+    - name: "创建文件夹"
+      file: path={{ SC_DIR }} state=directory
+    - name: "关闭端口占用"
+      shell: kill $(netstat -nlp | grep {{ item }} | awk '{print $7}'|cut -d '/' -f 1)
+      ignore_errors: True
+      with_items:
+        - 5555
+        - 7114
+    - name: "复制 jar包"
+      copy: src=jar_idc/{{ item }}.jar dest={{ SC_DIR }}
+      ignore_errors: True
+      with_items:
+        - hmall-api-gateway
+    - name: "运行 jar包"
+      shell: chdir={{ SC_DIR }} nohup java {{ JAVAAGENT }} -Dpinpoint.agentId={{ item.agentId }}-{{ ENV }}-{{ item.agentNo }} -Dpinpoint.applicationName={{ item.agentId }} -jar {{ item.name }}.jar --server.port={{ item.port }} &
+      ignore_errors: True
+      with_items:
+        - { name: 'hmall-api-gateway', port: '5555', agentId: 'hmall-api', agentNo: '1'}
+- hosts: hmallapi2
+  remote_user: root
+  vars:
+    - SC_DIR: "/usr/hmall/sc"
+    - EUREKA: "--eureka.client.serviceUrl.defaultZone=http://10.5.72.14:1111/eureka/"
+    - JAVAAGENT: "-javaagent:/u01/hitoa/pinpoint-agent-1.6.1/pinpoint-bootstrap-1.6.1.jar"
+    - ENV: "test"
+  tasks:
+    - name: "创建文件夹"
+      file: path={{ SC_DIR }} state=directory
+    - name: "关闭端口占用"
+      shell: kill $(netstat -nlp | grep {{ item }} | awk '{print $7}'|cut -d '/' -f 1)
+      ignore_errors: True
+      with_items:
+        - 7000
+        - 7101
+        - 7200
+        - 7112
+    - name: "复制 jar包"
+      copy: src=jar_idc/{{ item }}.jar dest={{ SC_DIR }}
+      ignore_errors: True
+      with_items:
+        - user
+        - hmall-ur-service
+        - hap-service
+        - hmall-ps-service
+    - name: "运行 jar包"
+      shell: chdir={{ SC_DIR }} nohup java {{ JAVAAGENT }} -Dpinpoint.agentId={{ item.agentId }}-{{ ENV }}-{{ item.agentNo }} -Dpinpoint.applicationName={{ item.agentId }} -jar {{ item.name }}.jar {{ EUREKA }}  --server.port={{ item.port }} &
+      ignore_errors: True
+      with_items:
+        - { name: 'user', port: '7000', agentId: 'user', agentNo: '1'}
+        - { name: 'hmall-ur-service', port: '7101', agentId: 'hmall-ur', agentNo: '1'}
+        - { name: 'hap-service', port: '7200', agentId: 'hap-service', agentNo: '1'}
+        - { name: 'hmall-ps-service', port: '7112', agentId: 'hmall-ps', agentNo: '1'}
+- hosts: hmallapi3
+  remote_user: root
+  vars:
+    - SC_DIR: "/usr/hmall/sc"
+    - EUREKA: "--eureka.client.serviceUrl.defaultZone=http://10.5.72.14:1111/eureka/"
+    - JAVAAGENT: "-javaagent:/u01/hitoa/pinpoint-agent-1.6.1/pinpoint-bootstrap-1.6.1.jar"
+    - ENV: "test"
+  tasks:
+    - name: "创建文件夹"
+      file: path={{ SC_DIR }} state=directory
+    - name: "关闭端口占用"
+      shell: kill $(netstat -nlp | grep {{ item }} | awk '{print $7}'|cut -d '/' -f 1)
+      ignore_errors: True
+      with_items:
+        - 7002
+        - 7104
+        - 7105
+    - name: "复制 jar包"
+      copy: src=jar_idc/{{ item }}.jar dest={{ SC_DIR }}
+      ignore_errors: True
+      with_items:
+        - order
+        - hmall-od-service
+        - hmall-pd-service
+    - name: "运行 jar包"
+      shell: chdir={{ SC_DIR }} nohup java {{ JAVAAGENT }} -Dpinpoint.agentId={{ item.agentId }}-{{ ENV }}-{{ item.agentNo }} -Dpinpoint.applicationName={{ item.agentId }} -jar {{ item.name }}.jar {{ EUREKA }}  --server.port={{ item.port }} &
+      ignore_errors: True
+      with_items:
+        - { name: 'order', port: '7002', agentId: 'order', agentNo: '1'}
+        - { name: 'hmall-od-service', port: '7104', agentId: 'hmall-od', agentNo: '1'}
+        - { name: 'hmall-pd-service', port: '7105', agentId: 'hmall-pd', agentNo: '1'}
+- hosts: hmallapi4
+  remote_user: root
+  vars:
+    - SC_DIR: "/usr/hmall/sc"
+    - EUREKA: "--eureka.client.serviceUrl.defaultZone=http://10.5.72.14:1111/eureka/"
+    - JAVAAGENT: "-javaagent:/u01/hitoa/pinpoint-agent-1.6.1/pinpoint-bootstrap-1.6.1.jar"
+    - ENV: "test"
+  tasks:
+    - name: "创建文件夹"
+      file: path={{ SC_DIR }} state=directory
+    - name: "关闭端口占用"
+      shell: kill $(netstat -nlp | grep {{ item }} | awk '{print $7}'|cut -d '/' -f 1)
+      ignore_errors: True
+      with_items:
+        - 7111
+        - 7110
+    - name: "复制 jar包"
+      copy: src=jar_idc/{{ item }}.jar dest={{ SC_DIR }}
+      ignore_errors: True
+      with_items:
+        - hmall-drools-service
+        - hmall-promote-server
+    - name: "运行 jar包"
+      shell: chdir={{ SC_DIR }} nohup java {{ JAVAAGENT }} -Dpinpoint.agentId={{ item.agentId }}-{{ ENV }}-{{ item.agentNo }} -Dpinpoint.applicationName={{ item.agentId }} -jar {{ item.name }}.jar {{ EUREKA }}  --server.port={{ item.port }} &
+      ignore_errors: True
+      with_items:
+        - { name: 'hmall-drools-service', port: '7111', agentId: 'hmall-drools', agentNo: '1'}
+        - { name: 'hmall-promote-server', port: '7110', agentId: 'hmall-promote', agentNo: '1'}
+
+
+
+

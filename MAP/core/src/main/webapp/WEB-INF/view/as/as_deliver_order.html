@@ -1,0 +1,543 @@
+
+<#include "/include/header.html" />
+
+<style type="text/css">
+    #forms .condition_forms {
+        float: left;
+        width: auto;
+        height: 36px;
+        margin-left: 10px;
+        padding-bottom: 10px;
+    }
+
+    #forms .condition_forms label {
+        width: 9em;
+        text-align: right;
+    }
+
+    #forms .condition_forms input {
+        width: 200px;
+    }
+
+</style>
+
+<body>
+
+<script type="text/javascript">
+
+    // 售后单（送货单）ID（编辑以存在的送货单时有值）
+    var receipt_order_id = "${RequestParameters.receiptOrderId!-1}";
+
+    // 服务单ID（新建送货单时有值）
+    var service_order_id = "${RequestParameters.code!-1}";
+    // 订单ID（新建送货单时有值）
+    var order_id = "${RequestParameters.orderId!-1}";
+    // 订单编号即编码（新建送货单时有值）
+    var order_code = "${RequestParameters.orderCode!-1}";
+
+    console.log('送货单页面：送货单ID = [' + receipt_order_id + '], 服务单ID = [' + service_order_id + '],  ' +
+        '订单ID = [' + order_id + '],  订单编号（编码） = [' + order_code + ']');
+
+    /**
+     * 页面上班部分form绑定对象
+     */
+    var viewModel = kendo.observable({
+        deliverOrder: {
+            receiptType: '送货单', // 售后单类型（送货单）
+            salesCode: order_code, // 订单编号
+            linksCode: service_order_id // 服务单单号
+        }
+    });
+
+
+    // 订单行表格数据
+    var selectedOrderEntries = [];
+
+    /**
+     * 刷新订单行表格方法
+     */
+    function refreshOrderEntryGrid() {
+        console.log("selectedOrderEntries... selectedOrderEntries...");
+        console.log(selectedOrderEntries);
+        var _dataSource_ = new kendo.data.DataSource({
+            data: selectedOrderEntries,
+            schema: {
+                model: {
+                    id: "serviceOrderId",
+                    fields: {}
+                }
+            }
+        });
+
+        var _grid_ = $("#grid").kendoGrid({
+            height: "400px",
+            resizable: true,
+            navigatable: true,
+            scrollable: true,
+            selectable: true,
+            rownumber: true,
+            sortable: true,
+            selectable: 'multiple, rowbox',
+            //pageable: {
+            //    pageSizes: [5, 10, 20, 50],
+            //    refresh: true,
+            //    buttonCount: 5
+            //},
+            columns: [
+                {
+                    field: "serviceOrderId",
+                    title: '送货单号',
+                    width: 120
+                }, {
+                    field: "vproductCode",
+                    title: '<@spring.message "hmall.OrderEntry.vproduct"/>',
+                    width: 120
+                }, {
+                    field: "suitCode",
+                    title: '<@spring.message "hmall.OrderEntry.suitCode"/>',
+                    width: 120
+                }, {
+                    field: "productCode",
+                    title: '<@spring.message "hmall.OrderEntry.productCode"/>',
+                    width: 120
+                }, {
+                    field: "name",
+                    title: '<@spring.message "hmall.OrderEntry.productName"/>',
+                    width: 120
+                }, {
+                    field: "quantity",
+                    title: '<@spring.message "hmall.OrderEntry.quantity"/>',
+                    width: 80
+                }, {
+                    field: "basePrice",
+                    title: '<@spring.message "hmall.OrderEntry.basePrice"/>',
+                    format: "{0:n2}",
+                    width: 80
+                }, {
+                    field: "discountFee",
+                    title: '<@spring.message "hmall.OrderEntry.discountFee"/>',
+                    format: "{0:n2}",
+                    width: 80
+                }, {
+                    field: "unitFee",
+                    title: '<@spring.message "hmall.OrderEntry.unitFee"/>',
+                    format: "{0:n2}",
+                    width: 80
+                }, {
+                    field: "totalFee",
+                    title: '总价', // <@spring.message "hmall.OrderEntry.totalFee"/>
+                    format: "{0:n2}",
+                    width: 80
+                }, {
+                    field: "isGift",
+                    title: '<@spring.message "hmall.OrderEntry.isGift"/>',
+                    width: 80
+                }, {
+                    field: "causeCode", // TODO: 功能设计未确定对应字段，待修改
+                    title: '原因代码',
+                    width: 80
+                }, {
+                    field: "causeDesc", // TODO: 功能设计未确定对应字段，待修改
+                    title: '原因描述',
+                    width: 80
+                }, {
+                    field: "finalCauseCode", // TODO: 功能设计未确定对应字段，待修改
+                    title: '最终原因代码',
+                    width: 140
+                }, {
+                    field: "finalCauseDesc", // TODO: 功能设计未确定对应字段，待修改
+                    title: '最终原因描述',
+                    width: 140
+                }, {
+                    field: "note",
+                    title: '备注',
+                    width: 80
+                }
+
+            ],
+            editable: true
+        }).data("kendoGrid");
+
+        //重置数据源
+        _grid_.setDataSource(_dataSource_);
+
+    }
+
+
+    // 点击添加按钮弹出的商品选择页面控件
+    var selectProductWidget;
+
+    function closeSelectProductPage() {
+        selectProductWidget.close();
+    }
+
+
+    /**
+     * 商品选择页面点击选择按钮后调用
+     */
+    function chooseProducts(selections) {
+
+        closeSelectProductPage();
+
+        // 根据服务单ID查询服务单对应的全部服务单行
+        $.ajax({
+            type: 'GET',
+            // 根据服务单ID查询其对应的全部服务单行
+            url: "${base.contextPath}/hmall/as/serviceOrder/entries/query?serviceOrderId=" + service_order_id,
+            dataType: 'JSON',
+            // data: JSON.stringify(selections),
+            // contentType: 'application/json',
+            // async: false,
+            success: function (result) {
+                console.log("根据服务单ID[ " + service_order_id + " ]查询得到的服务单行");
+                console.log(result.rows);
+                // 将订单行表格数据重置为空
+                selectedOrderEntries = [];
+                for (var i in result.rows) {
+                    for (var j in selections) {
+                        if (true) { // TODO: 将if条件转换为   result.rows[i].productId == selections[j].productId
+                            selectedOrderEntries.push(result.rows[i]);
+                        }
+                    }
+                }
+                // 重置服务单行表格
+                refreshOrderEntryGrid();
+            },
+            error: function (data) {
+            }
+        });
+    }
+
+    /**
+     * 添加商品方法
+     * 点击添加按钮时被调用
+     */
+    function addProduct() {
+
+        var selectProductsPageUrl =
+            '${base.contextPath}/as/select_product.html?service_order_id=' + service_order_id
+            + '&order_id=' + order_id
+            + '&order_code=' + order_code;
+
+        selectProductWidget = $("#selectProductDiv").kendoWindow({
+            title: '商品选择',
+            //width: "680px",
+            //height :"380px",
+            width: "90%",
+            height: "90%",
+            content: selectProductsPageUrl,
+            actions: ["Close"],
+            modal: true,
+            visible: false,
+            iframe: true,
+            close: function () {
+                //window 关闭  刷新 本页面的  Grid
+                //$('#Grid').data('kendoGrid').dataSource.page(1);
+            }
+        }).data("kendoWindow");
+        selectProductWidget.center().open();
+    }
+
+    /**
+     * 删除选中的送货单行，点击删除按钮时触发
+     */
+    function removeDeliverOrderEntry() {
+
+        var newSelectedOrderEntries = [];
+
+        // 表格全部数据
+        var selectedEntries = $("#grid").data('kendoGrid')._data;
+        // 表格已选中数据（将要被删除的数据）
+        var deletedEntries = $("#grid").data('kendoGrid').selectedDataItems();
+
+        continue_flag:
+            for (var i in selectedEntries) {
+                for (var j in deletedEntries) {
+                    if (selectedEntries[i].serviceOrderEntryId == deletedEntries[j].serviceOrderEntryId) {
+                        continue continue_flag;
+                    }
+                }
+                newSelectedOrderEntries.push(selectedEntries[i]);
+            }
+        selectedOrderEntries = newSelectedOrderEntries;
+        // 重置服务单行表格
+        refreshOrderEntryGrid();
+    }
+
+    /**
+     * 保存送货单方法，点击保存按钮时触发
+     */
+    function saveDeliverOrder() {
+
+        console.log('送货单数据对象...');
+        console.log(viewModel.get('deliverOrder'));
+
+        // 获得送货单对象
+        var deliver_order = viewModel.get('deliverOrder');
+
+        // 将送货单行对象列表设置进送货单对象
+        deliver_order.deliverOrderEntries = $("#grid").data('kendoGrid')._data;
+        for (var i in deliver_order.deliverOrderEntries) {
+            // 由于送货单行是从服务单行ID复制，必须将其ID置为null，否则服务端执行insert时会出现主键冲突错误
+            deliver_order.deliverOrderEntries[i].serviceorderentryid = null;
+        }
+
+        // 调用Rest URL保存送货单对象
+        $.ajax({
+            type: 'POST',
+            // 保存送货单及相关送货单行（即服务单行）信息
+            url: "${base.contextPath}/hmall/as/deliverOrder/save",
+            dataType: 'JSON',
+            data: JSON.stringify(deliver_order),
+            contentType: 'application/json',
+            // async: false,
+            success: function (result) {
+                console.log("保存送货单 SUCCESS");
+                window.parent.$("#pickOrderDialogEdit").data("kendoWindow").close();
+            },
+            error: function (data) {
+                console.log("保存送货单 FAILED");
+            }
+        });
+
+    }
+
+</script>
+
+<div>
+    <div id="page-content">
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span id class="btn btn-primary" style="float:left;margin-right:5px;"
+                  onclick="saveDeliverOrder()">保存</span>
+            <span id class="btn btn-primary" style="float:left;margin-right:5px;"
+                  onclick="javascript: console.log('同步至Retail方法依赖的接口还未实现');">同步至Retail</span>
+        </div>
+
+        <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+
+            <div id="forms" style="padding-bottom: 20px">
+                <div class="row">
+                    <div class="condition_forms">
+                        <label>送货单单号:</label>
+                        <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text" style="background-color: #DDDDDD;"
+                               data-bind="value:deliverOrder.code" class="k-textbox" required readonly/>
+                        <label>单据类型:</label>
+                        <input class="equalChild" data-role="maskedtextbox" type="text" style="background-color: #DDDDDD;"
+                               data-bind="value:deliverOrder.receiptType" class="form-control" readonly/>
+                        <label>状态:</label>
+                        <input id='deliverOrderStatusSelect' class="equalChild" type="text"
+                               data-bind="value:deliverOrder.status" class="k-textbox" style="width: 200px"/>
+
+                        <script type="text/javascript">
+
+                            viewModel.set('deliverOrder.status', 'NEW');
+
+                            $("#deliverOrderStatusSelect").kendoDropDownList({
+                                    dataSource: [
+                                        {value: "NEW", desc: "新建"},
+                                        {value: "PROC", desc: "处理中"},
+                                        {value: "FINI", desc: "已完成"}
+                                    ],
+                                    dataTextField: "desc",
+                                    dataValueField: "value"
+                                }
+                            );
+
+                        </script>
+
+
+                        <script type="text/javascript">
+
+                        </script>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="condition_forms">
+                        <label>客服预约执行日期:</label>
+                        <input id="agreementExeDate" class="rangeChild" data-bind="value:deliverOrder.appointmentDate"
+                               style="width:200px"/>
+                        <label>实际送货日期:</label>
+                        <input id="actualDeliveryDate" class="rangeChild" data-bind="value:deliverOrder.executionDate"
+                               style="width:200px"/>
+                        <label>是否收费:</label>
+
+                        <input class="equalChild" id="deliver_order_is_charge" type="text"
+                               data-bind="value:deliverOrder.isCharge" class="k-textbox" style="width: 200px"/>
+
+                        <script type="text/javascript">
+
+                            viewModel.set('deliverOrder.isCharge', false);
+
+                            $("#deliver_order_is_charge").kendoDropDownList({
+                                    dataSource: [
+                                        {value: false, desc: "否"},
+                                        {value: true, desc: "是"}
+                                    ],
+                                    dataTextField: "desc",
+                                    dataValueField: "value"
+                                }
+                            );
+
+                        </script>
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="condition_forms">
+                        <label>客户ID:</label>
+                        <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text"
+                               data-bind="value:deliverOrder.userId" class="k-textbox"/>
+                        <label>客户组:</label>
+                        <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text"
+                               data-bind="value:deliverOrder.USER_GROUP" class="k-textbox"/> <!-- TODO: 应该关联取得客户组 -->
+                        <label>客户名称:</label>
+                        <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text"
+                               data-bind="value:deliverOrder.name" class="k-textbox"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="condition_forms">
+                        <label>手机号:</label>
+                        <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text"
+                               data-bind="value:deliverOrder.mobile" class="k-textbox"/>
+                        <label>客户地址:</label>
+                        <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text"
+                               data-bind="value:deliverOrder.address" class="k-textbox"/>
+                        <label>备注:</label>
+                        <input class="equalChild" data-role="maskedtextbox" placeholder='' type="text"
+                               data-bind="value:deliverOrder.note" class="k-textbox" style="width: 200px"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="condition_forms">
+                        <label>服务单单号:</label>
+                        <input class="equalChild" data-role="maskedtextbox" type="text" style="background-color: #DDDDDD;"
+                               data-bind="value:deliverOrder.linksCode" class="k-textbox" readonly/>
+                        <label>原销售订单单号:</label>
+                        <input class="equalChild" data-role="maskedtextbox" type="text" style="background-color: #DDDDDD;"
+                               data-bind="value:deliverOrder.salesCode" class="k-textbox" readonly/>
+                        <label>是否同步Retail:</label> <!-- TODO: 相关数据库表中没有表示是否同步Retail的字段 -->
+                        <input id="syncRetailYes" type="checkbox" data-bind="value:deliverOrder.syncRetailYes"/> 是
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input id="syncRetailNo" type="checkbox" data-bind="value:deliverOrder.syncRetailNo"/> 否
+
+                        <script type="text/javascript">
+                            $("#syncRetailYes").kendoCheckbox({
+                                checkedValue: 'Y',
+                                uncheckedValue: 'N',
+                                change: function () {
+                                    var thisValue = this.value();
+                                    if (thisValue == "Y") {
+//                                        viewModel.deliverOrder.syncRetailNo = "N";
+                                        viewModel.set('deliverOrder.syncRetailNo', 'N');
+                                    } else {
+
+                                    }
+                                }
+
+                            });
+
+                            $("#syncRetailNo").kendoCheckbox({
+                                checkedValue: 'Y',
+                                uncheckedValue: 'N',
+                                change: function () {
+                                    var thisValue = this.value();
+                                    if (thisValue == "Y") {
+//                                        viewModel.deliverOrder.syncRetailYes = "N";
+                                        viewModel.set('deliverOrder.syncRetailYes', 'N');
+                                    } else {
+
+                                    }
+                                }
+                            });
+                        </script>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <div style="clear:both;margin-top: -20px;height:50px;">
+            <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;"
+                  onclick="addProduct();" type="submit">添加</span>
+            <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;"
+                  onclick="removeDeliverOrderEntry()" type="reset">删除</span>
+            <!--<span class="panel-title">取回单行信息</span>-->
+        </div>
+    </div>
+
+    <!-- 送货单行表格 -->
+    <div>
+        <div id="grid"></div>
+    </div>
+</div>
+
+<!-- 点击添加按钮时弹出的商品选择页面 -->
+<div id="selectProductDiv" style="display:none;"></div>
+
+<script type="text/javascript">
+
+    /**
+     * 页面加载完成后立即执行
+     */
+    $(function () {
+
+//        <!-- 将多选框渲染成kendo组件 -->
+//        $("#syncRetailYes").kendoCheckbox({});
+//        $("#syncRetailNo").kendoCheckbox({});
+
+        // 页面表单的数据绑定
+        kendo.bind($('#page-content'), viewModel);
+
+        $("#agreementExeDate").kendoDateTimePicker({
+            animation: {
+                close: {
+                    effects: "fadeOut zoom:out",
+                    duration: 300
+                },
+                open: {
+                    effects: "fadeIn zoom:in",
+                    duration: 300
+                }
+            },
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+//            var creationStartTime = $("#creationStartTime").val();
+//            var creationEndTime = $("#creationEndTime").data("kendoDateTimePicker");
+//            creationEndTime.min(creationStartTime || new Date(1800, 0, 1));
+            }
+        });
+
+        $("#actualDeliveryDate").kendoDateTimePicker({
+            animation: {
+                close: {
+                    effects: "fadeOut zoom:out",
+                    duration: 300
+                },
+                open: {
+                    effects: "fadeIn zoom:in",
+                    duration: 300
+                }
+            },
+            format: "yyyy-MM-dd HH:mm:ss",
+            change: function () {
+//            var creationStartTime = $("#creationStartTime").val();
+//            var creationEndTime = $("#creationEndTime").data("kendoDateTimePicker");
+//            creationEndTime.min(creationStartTime || new Date(1800, 0, 1));
+            }
+        });
+
+        refreshOrderEntryGrid();
+
+    });
+
+</script>
+
+</body>
+</html>

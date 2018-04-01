@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.om.mapper.NoticeConfigMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.NoticeConfig">
+    <id column="CONFIG_ID" jdbcType="DECIMAL" property="configId" />
+    <result column="NOTIFICATION_TYPE" jdbcType="VARCHAR" property="notificationType" />
+    <result column="POSITION" jdbcType="DECIMAL" property="position" />
+    <result column="EMPLOYEE" jdbcType="DECIMAL" property="employee" />
+    <result column="employee_name" jdbcType="VARCHAR" property="employeeName" />
+    <result column="position_name" jdbcType="VARCHAR" property="positionName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    CONFIG_ID, NOTIFICATION_TYPE, POSITION, EMPLOYEE
+  </sql>
+
+  <select id="selectNoticeTypesOfEmployee" parameterType="java.lang.String" resultType="java.lang.String">
+    SELECT NC.NOTIFICATION_TYPE
+      FROM HMALL_OM_NOTICE_CONFIG NC
+      JOIN HR_EMPLOYEE EMP
+        ON NC.EMPLOYEE = EMP.EMPLOYEE_ID
+     WHERE EMP.EMPLOYEE_CODE = #{employeeCode}
+    UNION
+    SELECT NC.NOTIFICATION_TYPE
+      FROM HMALL_OM_NOTICE_CONFIG NC
+      JOIN HR_ORG_POSITION_B P
+        ON NC.POSITION = P.POSITION_ID
+      JOIN HR_EMPLOYEE_ASSIGN EA
+        ON EA.POSITION_ID = P.POSITION_ID
+      JOIN HR_EMPLOYEE EMP
+        ON EMP.EMPLOYEE_ID = EA.EMPLOYEE_ID
+     WHERE EMP.EMPLOYEE_CODE = #{employeeCode}
+  </select>
+
+  <select id="selectNoticeConfigList" parameterType="com.hand.hmall.om.dto.NoticeConfig" resultMap="BaseResultMap">
+        select config.config_id,
+       config.notification_type,
+       config.position,
+       config.employee,
+       he.name employee_name,
+       position.name position_name
+      from hmall_om_notice_config config
+      left join hr_employee he
+        on config.employee = he.employee_id
+      left join hr_org_position_b position
+        on config.position = position.position_id
+        where 1=1
+      <if test="notificationType !=null and notificationType !=''">
+        and  config.notification_type = #{notificationType}
+      </if>
+      <if test="position !=null and position !=''">
+        and  config.position = #{position}
+      </if>
+      <if test="employee !=null and employee !=''">
+        and  config.employee = #{employee}
+      </if>
+  </select>
+</mapper>

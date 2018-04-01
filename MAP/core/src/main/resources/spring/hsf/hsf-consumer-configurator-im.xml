@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:reference id="iImAtpBomSourceService" interface="com.hand.hap.im.service.IImAtpBomSourceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImAtpCapacityInterfaceService"
+                     interface="com.hand.hap.im.service.IImAtpCapacityInterfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImAtpInfaceService" interface="com.hand.hap.im.service.IImAtpInfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImAtpItemMakingInterfaceService"
+                     interface="com.hand.hap.im.service.IImAtpItemMakingInterfaceService" group="configurator-api-4w"
+                     version="1.0.0"/>
+
+    <dubbo:reference id="iImBomInfaceService" interface="com.hand.hap.im.service.IImBomInfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImBomInfaceTempService" interface="com.hand.hap.im.service.IImBomInfaceTempService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImImgCacheService" interface="com.hand.hap.im.service.IImImgCacheService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImInterfaceHistoryService" interface="com.hand.hap.im.service.IImInterfaceHistoryService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImItemInfaceService" interface="com.hand.hap.im.service.IImItemInfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImItemInfaceTempService" interface="com.hand.hap.im.service.IImItemInfaceTempService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImMdmHistoryService" interface="com.hand.hap.im.service.IImMdmHistoryService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImPartsInvInfaceService" interface="com.hand.hap.im.service.IImPartsInvInfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImPartsPoInfaceService" interface="com.hand.hap.im.service.IImPartsPoInfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImProductInvInfaceService" interface="com.hand.hap.im.service.IImProductInvInfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImResultInfaceService" interface="com.hand.hap.im.service.IImResultInfaceService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iSuitVCodeService" interface="com.hand.hap.im.service.ISuitVCodeService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iImageDownloadService" interface="com.hand.hap.im.service.IImageDownloadService"
+                     version="1.0.0" group="configurator-api-4w"/>
+
+</beans>

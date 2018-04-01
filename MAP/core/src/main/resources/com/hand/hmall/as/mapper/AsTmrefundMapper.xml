@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsTmrefundMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsTmrefund">
+        <result column="TMREFUND_ID" property="tmrefundId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="ALIPAY_NO" property="alipayNo" jdbcType="VARCHAR"/>
+        <result column="ORDER_PAYMENT_TIME" property="orderPaymentTime" jdbcType="DATE"/>
+        <result column="ORDERENTRY_ID" property="orderentryId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="REFUND_FINISH_TIME" property="refundFinishTime" jdbcType="DATE"/>
+        <result column="BUYER_NICK" property="buyerNick" jdbcType="VARCHAR"/>
+        <result column="ACTUAL_PAID_AMOUNT" property="actualPaidAmount" jdbcType="DECIMAL"/>
+        <result column="TITLE" property="title" jdbcType="VARCHAR"/>
+        <result column="REFUND_FEE" property="refundFee" jdbcType="DECIMAL"/>
+        <result column="MANUAL_OR_AUTO" property="manualOrAuto" jdbcType="VARCHAR"/>
+        <result column="HAS_GOOD_RETURN" property="hasGoodReturn" jdbcType="VARCHAR"/>
+        <result column="CREATED" property="created" jdbcType="DATE"/>
+        <result column="TIMEOUT" property="timeout" jdbcType="DATE"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="GOOD_STATUS" property="goodStatus" jdbcType="VARCHAR"/>
+        <result column="RETURN_LOGISTICS" property="returnLogistics" jdbcType="VARCHAR"/>
+        <result column="CONSIGNMENT_LOGISTICS" property="consignmentLogistics" jdbcType="VARCHAR"/>
+        <result column="CS_STATUS" property="csStatus" jdbcType="VARCHAR"/>
+        <result column="SELLER_NAME" property="sellerName" jdbcType="VARCHAR"/>
+        <result column="SELLER_ADDRESS" property="sellerAddress" jdbcType="VARCHAR"/>
+        <result column="SELLER_ZIP" property="sellerZip" jdbcType="VARCHAR"/>
+        <result column="SELLER_PHONE" property="sellerPhone" jdbcType="VARCHAR"/>
+        <result column="SELLER_MOBILE" property="sellerMobile" jdbcType="VARCHAR"/>
+        <result column="SID" property="sid" jdbcType="VARCHAR"/>
+        <result column="COMPANY_NAME" property="companyName" jdbcType="VARCHAR"/>
+        <result column="REASON" property="reason" jdbcType="VARCHAR"/>
+        <result column="REFUND_DESC" property="refundDesc" jdbcType="VARCHAR"/>
+        <result column="GOOD_RETURN_TIME" property="goodReturnTime" jdbcType="DATE"/>
+        <result column="RESPONSIBILITY_SIDE" property="responsibilitySide" jdbcType="VARCHAR"/>
+        <result column="REFUND_PHASE" property="refundPhase" jdbcType="VARCHAR"/>
+        <result column="SELLER_NOTE" property="sellerNote" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="REFUND_SCOPE" property="refundScope" jdbcType="VARCHAR"/>
+        <result column="AUDIT_PERSON" property="auditPerson" jdbcType="VARCHAR"/>
+        <result column="BURDEN_TIMEOUT" property="burdenTimeout" jdbcType="VARCHAR"/>
+        <result column="AUDIT_AUTO" property="auditAuto" jdbcType="VARCHAR"/>
+        <result column="REFUND_PERSON" property="refundPerson" jdbcType="VARCHAR"/>
+        <result column="CREATRETURN" property="creatreturn" jdbcType="VARCHAR"/>
+        <result column="RETURN_ID" property="returnId" jdbcType="DECIMAL"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_NAME" property="productName" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="receiver_name" property="receiverName" jdbcType="VARCHAR"/>
+        <result column="receiver_mobile" property="receiverMobile" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="line_number" property="lineNumber" jdbcType="VARCHAR"/>
+        <result column="parent_line" property="parentLine" jdbcType="DECIMAL"/>
+        <result column="quantity" property="quantity" jdbcType="DECIMAL"/>
+        <result column="unit" property="unit" jdbcType="VARCHAR"/>
+        <result column="base_price" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="is_gift" property="isGift" jdbcType="VARCHAR"/>
+        <result column="vproduct_code" property="vProductCode" jdbcType="VARCHAR"/>
+        <result column="suit_code" property="suitCode" jdbcType="VARCHAR"/>
+        <result column="internal_price" property="internalPrice" jdbcType="DECIMAL"/>
+
+    </resultMap>
+
+    <!--天猫退款单查询list-->
+    <select id="queryAsTmrefundList" parameterType="com.hand.hmall.as.dto.AsTmrefund" resultMap="BaseResultMap">
+        SELECT
+        tm.CODE,
+        tm.ALIPAY_NO,
+        tm.ORDER_PAYMENT_TIME,
+        tm.REFUND_FINISH_TIME,
+        tm.BUYER_NICK,
+        tm.ACTUAL_PAID_AMOUNT,
+        tm.TITLE,
+        tm.REFUND_FEE,
+        tm.MANUAL_OR_AUTO,
+        tm.HAS_GOOD_RETURN,
+        tm.CREATED,
+        tm.TIMEOUT,
+        tm.STATUS,
+        tm.GOOD_STATUS,
+        tm.RETURN_LOGISTICS,
+        tm.CONSIGNMENT_LOGISTICS,
+        tm.CS_STATUS,
+        tm.SELLER_NAME,
+        tm.SELLER_ADDRESS,
+        tm.SELLER_ZIP,
+        tm.SELLER_MOBILE,
+        tm.SELLER_PHONE,
+        tm.SID,
+        tm.COMPANY_NAME,
+        tm.REASON,
+        tm.REFUND_DESC,
+        tm.GOOD_RETURN_TIME,
+        tm.RESPONSIBILITY_SIDE,
+        tm.SELLER_NOTE,
+        tm.FINISH_TIME,
+        tm.REFUND_SCOPE,
+        tm.AUDIT_PERSON,
+        tm.BURDEN_TIMEOUT,
+        tm.AUDIT_AUTO,
+        tm.REFUND_PERSON,
+        tm.CREATRETURN,
+        tm.RETURN_ID,
+        tm.REFUND_PHASE,
+        o.ESC_ORDER_CODE,
+        p.CODE PRODUCT_CODE,
+        p.NAME PRODUCT_NAME
+        FROM HMALL_AS_TMREFUND tm
+        LEFT JOIN HMALL_OM_ORDER o ON tm.ORDER_ID = o.ORDER_ID
+        LEFT JOIN HMALL_MST_PRODUCT p ON tm.PRODUCT_ID = p.PRODUCT_ID
+        <where>
+            <if test="escOrderCode != null and escOrderCode!=''">
+                o.ESC_ORDER_CODE = #{escOrderCode}
+            </if>
+            <if test="code != null and code!=''">
+                AND tm.CODE = #{code}
+            </if>
+            <if test="creationStartTime !=null and creationStartTime!=''">
+                AND tm.CREATED>to_date(#{creationStartTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="creationEndTime !=null and creationEndTime!=''">
+                AND tm.CREATED &lt;to_date(#{creationEndTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="finishStartTime !=null and finishStartTime!=''">
+                AND tm.REFUND_FINISH_TIME>to_date(#{finishStartTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="finishEndTime !=null and finishEndTime!=''">
+                AND tm.REFUND_FINISH_TIME &lt;to_date(#{finishEndTime},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+        </where>
+    </select>
+
+    <!--根据code查询天猫退货单表-->
+    <select id="selectByCode" resultMap="BaseResultMap">
+    SELECT tmr.TMREFUND_ID
+    FROM HMALL_AS_TMREFUND tmr
+    WHERE tmr.code = #{code}
+</select>
+
+    <!--批量插入天猫退货单数据-->
+    <insert id="batchInsertAsTmrefund" parameterType="java.util.List">
+        insert into HMALL_AS_TMREFUND
+        (TMREFUND_ID,
+        ORDER_ID,
+        CODE,
+        ALIPAY_NO,
+        ORDER_PAYMENT_TIME,
+        ORDERENTRY_ID,
+        PRODUCT_ID,
+        REFUND_FINISH_TIME,
+        BUYER_NICK,
+        ACTUAL_PAID_AMOUNT,
+        TITLE,
+        REFUND_FEE,
+        MANUAL_OR_AUTO,
+        HAS_GOOD_RETURN,
+        CREATED,
+        TIMEOUT,
+        STATUS,
+        GOOD_STATUS,
+        RETURN_LOGISTICS,
+        CONSIGNMENT_LOGISTICS,
+        CS_STATUS,
+        SELLER_NAME,
+        SELLER_ADDRESS,
+        SELLER_ZIP,
+        SELLER_PHONE,
+        SELLER_MOBILE,
+        SID,
+        COMPANY_NAME,
+        REASON,
+        REFUND_DESC,
+        GOOD_RETURN_TIME,
+        RESPONSIBILITY_SIDE,
+        REFUND_PHASE,
+        SELLER_NOTE,
+        FINISH_TIME,
+        REFUND_SCOPE,
+        AUDIT_PERSON,
+        BURDEN_TIMEOUT,
+        AUDIT_AUTO,
+        REFUND_PERSON
+        )
+        (select HMALL_AS_TMREFUND_S.NEXTVAL,
+        cd.orderId,
+        cd.code,
+        cd.alipayNo,
+        cd.orderPaymentTime,
+        cd.orderentryId,
+        cd.productId,
+        cd.refundFinishTime,
+        cd.buyerNick,
+        cd.actualPaidAmount,
+        cd.title,
+        cd.refundFee,
+        cd.manualOrAuto,
+        cd.hasGoodReturn,
+        cd.created,
+        cd.timeout,
+        cd.status,
+        cd.goodStatus,
+        cd.returnLogistics,
+        cd.consignmentLogistics,
+        cd.csStatus,
+        cd.sellerName,
+        cd.sellerAddress,
+        cd.sellerZip,
+        cd.sellerPhone,
+        cd.sellerMobile,
+        cd.sid,
+        cd.companyName,
+        cd.reason,
+        cd.refundDesc,
+        cd.goodReturnTime,
+        cd.responsibilitySide,
+        cd.refundPhase,
+        cd.sellerNote,
+        cd.finishTime,
+        cd.refundScope,
+        cd.auditPerson,
+        cd.burdenTimeout,
+        cd.auditAuto,
+        cd.refundPerson
+        from(
+        <foreach collection="list" item="item" index="index" close=")" open="(" separator="union all">
+            select
+            <choose>
+                <when test="item.orderId !=null">
+                    #{item.orderId,jdbcType=DECIMAL} as orderId,
+                </when>
+                <otherwise>
+                    null as orderId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.code !=null and item.code != ''">
+                    #{item.code,jdbcType=VARCHAR} as code,
+                </when>
+                <otherwise>
+                    null as code,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.alipayNo !=null and item.alipayNo != ''">
+                    #{item.alipayNo,jdbcType=VARCHAR} as alipayNo,
+                </when>
+                <otherwise>
+                    null as alipayNo,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.orderPaymentTime !=null">
+                    #{item.orderPaymentTime,jdbcType=TIMESTAMP} as orderPaymentTime,
+                </when>
+                <otherwise>
+                    null as orderPaymentTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.orderentryId !=null">
+                    #{item.orderentryId,jdbcType=DECIMAL} as orderentryId,
+                </when>
+                <otherwise>
+                    null as orderentryId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.productId !=null and item.productId != ''">
+                    #{item.productId,jdbcType=VARCHAR} as productId,
+                </when>
+                <otherwise>
+                    null as productId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundFinishTime !=null">
+                    #{item.refundFinishTime,jdbcType=TIMESTAMP} as refundFinishTime,
+                </when>
+                <otherwise>
+                    null as refundFinishTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.buyerNick !=null and item.buyerNick != ''">
+                    #{item.buyerNick,jdbcType=VARCHAR} as buyerNick,
+                </when>
+                <otherwise>
+                    null as buyerNick,
+                </otherwise>
+            </choose>
+
+            <choose>
+                <when test="item.actualPaidAmount !=null">
+                    #{item.actualPaidAmount,jdbcType=DECIMAL} as actualPaidAmount,
+                </when>
+                <otherwise>
+                    null as actualPaidAmount,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.title !=null and item.title != ''">
+                    #{item.title,jdbcType=VARCHAR} as title,
+                </when>
+                <otherwise>
+                    null as title,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundFee !=null">
+                    #{item.refundFee,jdbcType=DECIMAL} as refundFee,
+                </when>
+                <otherwise>
+                    null as refundFee,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.manualOrAuto !=null and item.manualOrAuto != ''">
+                    #{item.manualOrAuto,jdbcType=VARCHAR} as manualOrAuto,
+                </when>
+                <otherwise>
+                    null as manualOrAuto,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.hasGoodReturn !=null and item.hasGoodReturn != ''">
+                    #{item.hasGoodReturn,jdbcType=VARCHAR} as hasGoodReturn,
+                </when>
+                <otherwise>
+                    null as hasGoodReturn,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.created !=null">
+                    #{item.created,jdbcType=TIMESTAMP} as created,
+                </when>
+                <otherwise>
+                    null as created,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.timeout !=null">
+                    #{item.timeout,jdbcType=TIMESTAMP} as timeout,
+                </when>
+                <otherwise>
+                    null as timeout,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.status !=null and item.status != ''">
+                    #{item.status,jdbcType=VARCHAR} as status,
+                </when>
+                <otherwise>
+                    null as status,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.goodStatus !=null and item.goodStatus != ''">
+                    #{item.goodStatus,jdbcType=VARCHAR} as goodStatus,
+                </when>
+                <otherwise>
+                    null as goodStatus,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.returnLogistics !=null and item.returnLogistics != ''">
+                    #{item.returnLogistics,jdbcType=VARCHAR} as returnLogistics,
+                </when>
+                <otherwise>
+                    null as returnLogistics,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.consignmentLogistics !=null and item.consignmentLogistics != ''">
+                    #{item.consignmentLogistics,jdbcType=VARCHAR} as consignmentLogistics,
+                </when>
+                <otherwise>
+                    null as consignmentLogistics,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.csStatus !=null and item.csStatus != ''">
+                    #{item.csStatus,jdbcType=VARCHAR} as csStatus,
+                </when>
+                <otherwise>
+                    null as csStatus,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerName !=null and item.sellerName != ''">
+                    #{item.sellerName,jdbcType=VARCHAR} as sellerName,
+                </when>
+                <otherwise>
+                    null as sellerName,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerAddress !=null and item.sellerAddress != ''">
+                    #{item.sellerAddress,jdbcType=VARCHAR} as sellerAddress,
+                </when>
+                <otherwise>
+                    null as sellerAddress,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerZip !=null and item.sellerZip != ''">
+                    #{item.sellerZip,jdbcType=VARCHAR} as sellerZip,
+                </when>
+                <otherwise>
+                    null as sellerZip,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerPhone !=null and item.sellerPhone != ''">
+                    #{item.sellerPhone,jdbcType=VARCHAR} as sellerPhone,
+                </when>
+                <otherwise>
+                    null as sellerPhone,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerMobile !=null">
+                    #{item.sellerMobile,jdbcType=DECIMAL} as sellerMobile,
+                </when>
+                <otherwise>
+                    null as sellerMobile,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sid !=null">
+                    #{item.sid,jdbcType=DECIMAL} as sid,
+                </when>
+                <otherwise>
+                    null as sid,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.companyName !=null">
+                    #{item.companyName,jdbcType=DECIMAL} as companyName,
+                </when>
+                <otherwise>
+                    null as companyName,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.reason !=null">
+                    #{item.reason,jdbcType=DECIMAL} as reason,
+                </when>
+                <otherwise>
+                    null as reason,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundDesc !=null and item.refundDesc != ''">
+                    #{item.refundDesc,jdbcType=VARCHAR} as refundDesc,
+                </when>
+                <otherwise>
+                    null as refundDesc,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.goodReturnTime !=null">
+                    #{item.goodReturnTime,jdbcType=TIMESTAMP} as goodReturnTime,
+                </when>
+                <otherwise>
+                    null as goodReturnTime,
+                </otherwise>
+            </choose>
+
+            <choose>
+                <when test="item.responsibilitySide !=null and item.responsibilitySide != ''">
+                    #{item.responsibilitySide,jdbcType=VARCHAR} as responsibilitySide,
+                </when>
+                <otherwise>
+                    null as responsibilitySide,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundPhase !=null and item.refundPhase != ''">
+                    #{item.refundPhase,jdbcType=VARCHAR} as refundPhase,
+                </when>
+                <otherwise>
+                    null as refundPhase,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerNote !=null and item.sellerNote != ''">
+                    #{item.sellerNote,jdbcType=VARCHAR} as sellerNote,
+                </when>
+                <otherwise>
+                    null as sellerNote,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.finishTime !=null">
+                    #{item.finishTime,jdbcType=TIMESTAMP} as finishTime,
+                </when>
+                <otherwise>
+                    null as finishTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundScope !=null and item.refundScope != ''">
+                    #{item.refundScope,jdbcType=VARCHAR} as refundScope,
+                </when>
+                <otherwise>
+                    null as refundScope,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.auditPerson !=null and item.auditPerson != ''">
+                    #{item.auditPerson,jdbcType=VARCHAR} as auditPerson,
+                </when>
+                <otherwise>
+                    null as auditPerson,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.burdenTimeout !=null and item.burdenTimeout != ''">
+                    #{item.burdenTimeout,jdbcType=VARCHAR} as burdenTimeout,
+                </when>
+                <otherwise>
+                    null as burdenTimeout,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.auditAuto !=null and item.auditAuto != ''">
+                    #{item.auditAuto,jdbcType=VARCHAR} as auditAuto,
+                </when>
+                <otherwise>
+                    null as auditAuto,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundPerson !=null and item.refundPerson != ''">
+                    #{item.refundPerson,jdbcType=VARCHAR} as refundPerson
+                </when>
+                <otherwise>
+                    null as refundPerson
+                </otherwise>
+            </choose>
+            from dual
+        </foreach>
+        ) cd)
+    </insert>
+
+    <!--TM退款单生成退货单的数据筛选 -->
+    <select id="selectDataForTmRefundToReturnJob" resultMap="BaseResultMap">
+        select refund.tmrefund_id,
+           o.order_id,
+           o.receiver_name,
+           o.receiver_mobile,
+           (select tl.region_name
+              from hmall_fnd_regions_b b
+              left join hmall_fnd_regions_tl tl
+                on b.region_id = tl.region_id
+             where o.receiver_state = b.region_code) || ' ' ||
+           (select tl.region_name
+              from hmall_fnd_regions_b b
+              left join hmall_fnd_regions_tl tl
+                on b.region_id = tl.region_id
+             where o.receiver_city = b.region_code) || ' ' ||
+           (select tl.region_name
+              from hmall_fnd_regions_b b
+              left join hmall_fnd_regions_tl tl
+                on b.region_id = tl.region_id
+             where o.receiver_district = b.region_code) || ' ' ||
+           o.receiver_address address,
+           refund.refund_finish_time,
+           refund.refund_fee,
+           refund.orderentry_id,
+           oe.line_number,
+           oe.parent_line,
+           oe.quantity,
+           oe.unit,
+           oe.base_price,
+           oe.is_gift,
+           oe.product_id,
+           oe.vproduct_code,
+           oe.suit_code,
+           oe.internal_price
+      from HMALL_AS_TMREFUND refund
+      left join hmall_om_order o
+        on refund.order_id = o.order_id
+      left join hmall_om_order_entry oe
+        on refund.orderentry_id = oe.order_entry_id
+        left join hmall_om_consignment con
+        on oe.consignment_id = con.consignment_id
+        where refund.creatreturn ='N' or refund.creatreturn is null
+        and refund.has_good_return='退款'
+        and con.status in ('WAIT_BUYER_CONFIRM','TRADE_BUYER_SIGNED')
+    </select>
+
+</mapper>

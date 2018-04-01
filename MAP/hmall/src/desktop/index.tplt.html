@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<title><%= htmlWebpackPlugin.options.title %></title>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="wb:webmaster" content="186109a626c42fd1" />
+<%= htmlWebpackPlugin.options.injection.api %>
+<%= htmlWebpackPlugin.options.injection.cms %>
+<%= htmlWebpackPlugin.options.injection.libs %>
+<%= htmlWebpackPlugin.options.injection.piwik %>
+</head>
+<body>
+ <!--[if lt IE 9]><p class="browsehappy" style="background: #ccc;color: #000;padding: 12px 36px;z-index: 9999;"><a style="float:right;" href="javascript:;" onclick="this.parentNode.parentNode.removeChild(this.parentNode);">点击关闭提示</a>您的浏览器实在 <strong>太旧了</strong>，请<a href="http://browsehappy.com/" target="_blank">升级您的浏览器</a>以获得更好的体验。</p><![endif]-->
+ <div id="hmall-container"></div>
+</body>
+</html>

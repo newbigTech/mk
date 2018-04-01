@@ -1,0 +1,94 @@
+<#include "../include/header.html">
+    <body>
+    <script>
+        viewModel = kendo.observable({
+            model            : {
+            	itemId : '${RequestParameters.itemId!}',
+            	parentItemId : '${RequestParameters.parentItemId!}',
+            	platformId : '${RequestParameters.platformId!}',
+            }
+        });
+    </script>
+    <div id="content-container">
+        <div id="page-content">
+            <div class="panel" style="padding:0px;">
+                <form class="form-horizontal">
+
+                    <div class="panel-body">
+                        <div class="row">
+                            <input type="file" name="file" id="importExcelFile">
+                            </div>
+                        </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <span id="errorMessage"></span>
+                        </div>
+                    </div>
+                    <div class="panel-footer text-right">
+                        <a class="btn btn-success" id="download" onclick="downloadExcel()"  type="submit">下载模板</a>
+                    </div>
+                    </form>
+                </div>
+        </div>
+
+        </div>
+    <script>
+        var crudServiceBaseUrl = "${base.contextPath}/hap/im/item/inface";
+        $("#importExcelFile").kendoUpload({
+            async:{
+                saveUrl: crudServiceBaseUrl+"/itemValueUploadExcel?${_csrf.parameterName}=${_csrf.token}",
+                autoUpload: false
+            },
+            showFileList: true,
+            localization: {
+                select: "请选择文件",
+                uploadSelectedFiles: "上传",
+                headerStatusUploading: "上传中...",
+                headerStatusUploaded: " "
+            },
+            multiple: false,
+            error:function (e) {
+                kendo.ui.showErrorDialog({
+                    title:'提示',
+                    message:'导入失败'
+                });
+            },
+            success:function (e) {
+                    if (e.response.success) {
+                        kendo.ui.showInfoDialog({
+                            title: '提示',
+                            message: '导入成功!'
+                        }).done(function () {
+                            window.parent.$("#excelWindow").data("kendoWindow").close();
+                        });
+                    } else {
+                        if (e.response.message) {
+                            var msg = "<h5>失败信息:</h5><br/>";
+                            msg += e.response.message + "<br/>";
+                            $("#errorMessage").html(msg);
+                        } else {
+                            var errors = e.response.rows;
+                            var errorMsg = '<h5>失败信息:</h5><br/>';
+                            for (var k in e.response.rows) {
+                                errorMsg += e.response.rows[k] + '<br/>';
+                            }
+                            $("#errorMessage").html(errorMsg);
+                        }
+
+                    }
+                }
+        });
+
+        function downloadExcel() {
+            var form = $("<form>");   //定义一个form表单
+            form.attr('style', 'display:none');   //在form表单中添加查询参数
+            form.attr('target', '');
+            form.attr('method', 'GET');
+            form.attr('action', crudServiceBaseUrl+"/itemValueDownloadExcel");
+            $('body').append(form);  //将表单放置在web中
+            form.submit();
+        }
+        Hap.autoResizeGrid("#errorConsole");
+    </script>
+    </body>
+    </html>

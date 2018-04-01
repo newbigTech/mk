@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.promotion.mapper.HmallMstBundlesMapper">
+    <resultMap id="BaseResultMap" type="com.hand.promotion.dto.MstBundles">
+        <id column="BUNDLES_ID" jdbcType="DECIMAL" property="bundlesId"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="STATUS" jdbcType="VARCHAR" property="status"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
+        <result column="PRICE" jdbcType="DECIMAL" property="price"/>
+        <result column="SYNC_FLAG" jdbcType="VARCHAR" property="syncFlag"/>
+        <result column="PROMOTION_CODE" jdbcType="VARCHAR" property="promotionCode"/>
+        <result column="PRIORITY" jdbcType="DECIMAL" property="priority"/>
+        <result column="IS_OVERLAY" jdbcType="VARCHAR" property="isOverlay"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        BUNDLES_ID, CODE, STATUS, NAME, DESCRIPTION, PRICE, SYNC_FLAG,
+        PROMOTION_CODE, PRIORITY, IS_OVERLAY
+    </sql>
+
+</mapper>

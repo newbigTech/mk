@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallMstUserMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.dto.HmallMstUser">
+    <id column="USER_ID" jdbcType="DECIMAL" property="userId" />
+    <result column="CUSTOMERID" jdbcType="VARCHAR" property="customerid" />
+    <result column="SEX" jdbcType="VARCHAR" property="sex" />
+    <result column="MOBILE_NUMBER" jdbcType="VARCHAR" property="mobileNumber" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="IS_BLACK_LIST" jdbcType="VARCHAR" property="isBlackList" />
+    <result column="LABEL" jdbcType="VARCHAR" property="label" />
+    <result column="REMARK" jdbcType="VARCHAR" property="remark" />
+    <result column="EMAIL" jdbcType="VARCHAR" property="email" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="COUNTRY" jdbcType="VARCHAR" property="country" />
+    <result column="REGION" jdbcType="VARCHAR" property="region" />
+    <result column="CITY" jdbcType="VARCHAR" property="city" />
+    <result column="DISTRICT" jdbcType="VARCHAR" property="district" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+    <result column="PASSWORD" jdbcType="VARCHAR" property="password" />
+    <result column="BIRTHDAY" jdbcType="TIMESTAMP" property="birthday" />
+    <result column="COUNTRY" jdbcType="VARCHAR" property="country" />
+    <result column="REGION" jdbcType="VARCHAR" property="region" />
+    <result column="CITY" jdbcType="VARCHAR" property="city" />
+    <result column="DISTRICT" jdbcType="VARCHAR" property="district" />
+    <result column="USER_LEVEL" jdbcType="VARCHAR" property="userLevel" />
+    <result column="WX_OPENID" jdbcType="VARCHAR" property="wxOpenId" />
+    <result column="QQ_OPENID" jdbcType="VARCHAR" property="qqOpenId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    USER_ID, CUSTOMERID, SEX, MOBILE_NUMBER, NAME, IS_BLACK_LIST, LABEL, REMARK, EMAIL,
+    SYNCFLAG, OBJECT_VERSION_NUMBER, CREATION_DATE, CREATED_BY, LAST_UPDATED_BY, LAST_UPDATE_DATE,
+    LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, PROGRAM_ID, PROGRAM_UPDATE_DATE, REQUEST_ID,
+    ATTRIBUTE_CATEGORY, PASSWORD, BIRTHDAY, COUNTRY, REGION, CITY, DISTRICT,USER_LEVEL,WX_OPENID,QQ_OPENID
+  </sql>
+
+
+
+  <!--通过电话号码查询-->
+  <select id="selectByMobile" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from HMALL_MST_USER
+    where MOBILE_NUMBER = #{mobileNumber,jdbcType=VARCHAR}
+  </select>
+
+
+
+  <!--通过CustomerId查询对象-->
+  <select id="selectByCustomerId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from HMALL_MST_USER
+    where CUSTOMERID = #{customerId,jdbcType=VARCHAR}
+  </select>
+
+  <!--查询范围外的用户-->
+  <select id="selectByNotIn" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    from HMALL_MST_USER
+    <where>
+      <if test="customerIds !=null and customerIds.size()>0">
+        CUSTOMERID NOT IN
+        <foreach collection="customerIds" index="index" open="(" separator="," close=")" item="item">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
+
+  <!--模糊查询用户-->
+  <select id="matchByCondition" parameterType="com.hand.hmall.dto.HmallMstUser" resultMap="BaseResultMap">
+    SELECT * FROM HMALL_MST_USER
+    <where>
+      <if test="user.customerid!=null">
+        CUSTOMERID LIKE  '%'||#{user.customerid}||'%'
+    </if>
+      <if test="user.name!=null">
+        and NAME LIKE  '%'||#{user.name}||'%'
+      </if>
+      <if test="user.userLevel!=null">
+        AND USER_LEVEL = #{user.userLevel}
+      </if>
+    </where>
+  </select>
+
+
+</mapper>

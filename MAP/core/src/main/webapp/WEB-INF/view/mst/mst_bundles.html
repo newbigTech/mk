@@ -1,0 +1,474 @@
+<#include "/include/header.html"/>
+<#--
+        * description: 捆绑套装页面
+        * author:heng.zhang04@hand-china.com
+        * 2017/08/30
+        * version: 0.1
+        *
+        -->
+    <body>
+    <script src="${base.contextPath}/common/code?saleStatus=HMALL.SALE_STATUS" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?YNData=SYS.YES_NO" type="text/javascript"></script>
+
+    <script>
+        var viewModel = Hap.createGridViewModel("#grid");
+    </script>
+
+
+    <div id="content-container">
+        <div id="page-content">
+            <div class="panel" style="padding: 0px;">
+
+                <div class="panel-footer text-left"  id="toolbar-btn" >
+                    <!-- 新建-->
+                    <span  data-bind="click:create" class="btn btn-primary" style="float:left;margin-right:5px;"><i class="fa fa-plus"></i> <@spring.message "hap.new"/></span>
+                    <!--保存-->
+                    <span class="btn btn-success k-grid-save-changes" data-bind="click:save" style="float:left;margin-right:5px;"><i class="fa  fa-check-circle"></i><@spring.message "hap.save"/></span>
+                    <!--导入-->
+                    <button  id="importExcel" onclick="importExcel()"  class="btn btn-success"><i class="fa  fa-check-circle" aria-hidden="true"></i>导入</button>
+                    <!--启用-->
+                    <button  id="startUsing" onclick="startUsing()"  class="btn btn-success"><i class="fa  fa-check-circle" aria-hidden="true"></i> 启用</button>
+                    <!--停用-->
+                    <button  id="endUsing" onclick="endUsing()"  class="btn btn-warning"><i class="fa fa-times-circle" aria-hidden="true"></i> 停用</button>
+                    <!-- 删除-->
+                    <button  id="deleteButton"  data-bind="click:remove"  class="btn btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> <@spring.message "hap.delete"/></button>
+                </div>
+                <form class="form-horizontal" id="query-form">
+                    <div class="panel-body">
+                        <div class="row">
+                            <!--套装编码-->
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label"><@spring.message "MstBundles.code"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="code"  type="text" placeholder="<@spring.message 'MstBundles.code'/>" style="width: 100%" data-bind="value:model.code"
+                                               class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <!--套装名称-->
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label"><@spring.message "MstBundles.name"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="name"  type="text" placeholder="<@spring.message 'MstBundles.name'/>" style="width: 100%" data-bind="value:model.name"
+                                               class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <!--启用状态-->
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label"><@spring.message "MstBundles.status"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="status"  type="text" placeholder="<@spring.message 'MstBundles.status'/>" style="width: 100%" data-bind="value:model.status"
+                                               class="k-textbox">
+                                        <script type="text/javascript">
+                                            $("#status").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                optionLabel: "--请选择--",
+                                                dataSource: saleStatus
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+                <div class="panel-footer text-left">
+                    <!--查询-->
+                    <span class="btn btn-success"  id="query" data-bind="click:query" type="submit" ><i class="fa fa-search"></i> <@spring.message "hap.query"/></span>
+                    <!--重置-->
+                    <span class="btn btn-primary" id="resetForm" onclick="resetForm()" type="button" ><i class="fa fa-refresh"></i> <@spring.message "hap.reset"/></span>
+                    <!--清空-->
+                    <span class="btn btn-primary" id="" onclick="clearForm()" type="button" ><i class="fa fa-refresh"></i> 清空</span>
+                </div>
+            </div>
+            <div id='grid-container'>
+                <div id="grid" style="clear: both;margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="editCouponWin">
+    </div>
+    <div id="excelWindow">
+    </div>
+    <script type="text/javascript">
+        kendo.bind($('#page-content'), viewModel);
+
+        Hap.initEnterQuery('#query-form', viewModel.query);
+        var BaseUrl = _basePath+"/hmall/mst/bundles";
+        dataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "/query",
+                    type: "POST",
+                    dataType: "json"
+                },
+                update: {
+                    url: BaseUrl + "/submit",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                destroy: {
+                    url: BaseUrl + "/remove",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                create: {
+                    url: BaseUrl + "/submit",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+                parameterMap: function (options, type) {
+                    if (type !== "read" && options.models) {
+                        var datas = Hap.prepareSubmitParameter(options, type)
+                        return kendo.stringify(datas);
+                    } else if (type === "read") {
+                        return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 10,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "bundlesId",
+                    fields: {
+                        status:{defaultValue:'ACTIVITY'}
+                    }
+                }
+            }
+        });
+        $("#grid").kendoGrid({
+            dataSource: dataSource,
+            resizable: true,
+            scrollable: true,
+            navigatable: true,
+            rownumber : true,
+            height: '560px',
+            selectable: 'multiple, rowbox',
+            dataBound: function () {
+                if (parent.autoResizeIframe) {
+                    parent.autoResizeIframe('${RequestParameters.functionCode!}')
+                }
+            },
+            pageable: {
+                pageSizes: ["ALL", 5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                /* 主键*/
+                /* {
+                 field: "bundlesId",
+                 title: '<@spring.message "MstBundles.bundlesId"/>',
+                 width: 120,
+                 },*/
+                {/*套装编码*/
+                    field: "code",
+                    title: '<@spring.message "MstBundles.code"/>',
+                    width: 120,
+                    headerAttributes:{
+                        style: "text-align:center"
+                    },
+                    attributes:{
+                        style: "text-align:center"
+                    },
+                    template:function(rowdate){
+                        return '<a style="text-decoration : underline;color : blue;cursor:pointer" onclick="openProductDetail(event)" ><font color="blue">'
+                                +rowdate.code
+                                + '</font></a>';
+                    }
+                },
+
+                {/*套装名称*/
+                    field: "name",
+                    title: '<@spring.message "MstBundles.name"/>',
+                    width: 120,
+                    headerAttributes:{
+                        style: "text-align:center"
+                    },
+                    attributes:{
+                        style: "text-align:center"
+                    },
+                },
+                {/*套装描述*/
+                    field: "description",
+                    title: '<@spring.message "MstBundles.description"/>',
+                    width: 120,
+                    headerAttributes:{
+                        style: "text-align:center"
+                    },
+                    attributes:{
+                        style: "text-align:center"
+                    },
+                },
+                {/*套装优先级*/
+                    field: "priority",
+                    title: '<@spring.message "hmall.mstBundles.priority"/>',
+                    width: 120,
+                    headerAttributes:{
+                        style: "text-align:center"
+                    },
+                    attributes:{
+                        style: "text-align:center"
+                    },
+                },
+                {/*套装是否叠加*/
+                    field: "isOverlay",
+                    title: '<@spring.message "hmall.mstBundles.isOverlay"/>',
+                    width: 120,
+                    headerAttributes:{
+                        style: "text-align:center"
+                    },
+                    attributes:{
+                        style: "text-align:center"
+                    },
+                    template:function (dataItem) {
+                        var v = dataItem.isOverlay || '';
+                        $.each(YNData, function (i, n) {
+                            if(n.value == v){
+                                v = n.meaning;
+                                return v;
+                            }
+                        })
+                        return v;
+                    },
+                    editor: function (container, options) {
+                        $('<input name="'+options.field+'" />')
+                            .appendTo(container)
+                            .kendoDropDownList({
+                                dataTextField: 'meaning',
+                                dataValueField: 'value',
+                                dataSource: YNData,
+                                valuePrimitive: true,
+                                index: 0
+                            })
+                    }
+                },
+                {/*套装价格*/
+                    field: "price",
+                    title: '<@spring.message "MstBundles.price"/>',
+                    width: 120,
+                    headerAttributes:{
+                        style: "text-align:center"
+                    },
+                    attributes:{
+                        style: "text-align:center"
+                    },
+                },
+                {/*启用状态*/
+                    field: "status",
+                    title: '<@spring.message "MstBundles.status"/>',
+                    width: 120,
+                    headerAttributes:{
+                        style: "text-align:center"
+                    },
+                    attributes:{
+                        style: "text-align:center"
+                    },
+                    template:function(dataItem){
+                        var v = dataItem.status;
+                        $.each(saleStatus,function(i,n){
+                            if(n.value == v){
+                                v = n.meaning;
+                                return v;
+                            }
+                        });
+                        return v;
+                    }
+                },
+
+            ],
+            editable: true
+        });
+
+
+        /*启用*/
+        function startUsing()
+        {
+            $('#startUsing').attr("disabled","true");
+            $('#startUsing').removeAttr("onclick");
+            var grid = $("#grid").data("kendoGrid");
+            if (!grid.selectedDataItems().length) {
+                kendo.ui.showInfoDialog({
+                    title: '提示信息',
+                    message: '你未选中任何要更新的项!'
+                });
+                $('#endUsing').removeAttr("disabled");
+                $('#endUsing').attr("onclick","endUsing()");
+                return ;
+            }
+            kendo.ui.showConfirmDialog({
+                title:'提示',
+                message: '确定要更新吗？'
+            }).done(function(event){
+
+                if(event.button == 'OK'){
+                    var data = grid.selectedDataItems();
+                    $.each(data,function(i,v){
+                        v.status = 'ACTIVITY';/*将状态改为启用 */
+                        v.__status='update';
+                    });
+                    $.ajax({
+                        url : BaseUrl + "/startUsing",
+                        contentType: "application/json",
+                        type : "POST",
+                        data:JSON.stringify(data),
+                        success:function (result) {
+                            if(result.success){
+
+                                kendo.ui.showInfoDialog({
+                                    title:'提示',
+                                    message:'更新成功!'
+                                }).done(function () {
+                                    $('#startUsing').removeAttr("disabled");
+                                    $('#startUsing').attr("onclick","startUsing()");
+                                    $('#grid').data('kendoGrid').dataSource.read();
+                                });
+                            }else{
+                                kendo.ui.showErrorDialog({
+                                    title:'错误',
+                                    message:result.message
+                                }).done(function (e) {
+                                    $('#startUsing').removeAttr("disabled");
+                                    $('#startUsing').attr("onclick","startUsing()");
+                                });
+                            }
+                        }
+                    });
+                }
+            })
+        }
+        /*停用*/
+        function endUsing()
+        {
+            $('#endUsing').attr("disabled","true");
+            $('#endUsing').removeAttr("onclick");
+            var grid = $("#grid").data("kendoGrid");
+            if (!grid.selectedDataItems().length) {
+                kendo.ui.showInfoDialog({
+                    title: '提示信息',
+                    message: '你未选中任何要更新的项!'
+                });
+                $('#endUsing').removeAttr("disabled");
+                $('#endUsing').attr("onclick","endUsing()");
+                return ;
+            }
+            kendo.ui.showConfirmDialog({
+                title:'提示',
+                message: '确定要更新吗？'
+            }).done(function(event){
+
+                if(event.button == 'OK'){
+                    var data = grid.selectedDataItems();
+                    $.each(data,function(i,v){
+                        v.status = 'INACTIVE';/*将状态改为停用 */
+                        v.__status='update';
+                    });
+                    $.ajax({
+                        url : BaseUrl + "/endUsing",
+                        contentType: "application/json",
+                        type : "POST",
+                        data:JSON.stringify(data),
+                        success:function (result) {
+                            if(result.success){
+
+                                kendo.ui.showInfoDialog({
+                                    title:'提示',
+                                    message:'更新成功!'
+                                }).done(function (e) {
+                                    $('#endUsing').removeAttr("disabled");
+                                    $('#endUsing').attr("onclick","endUsing()");
+                                    $('#grid').data('kendoGrid').dataSource.read();
+                                });
+                            }else{
+                                kendo.ui.showErrorDialog({
+                                    title:'错误',
+                                    message:result.message
+                                }).done(function (e) {
+                                    $('#endUsing').removeAttr("disabled");
+                                    $('#endUsing').attr("onclick","endUsing()");
+                                });
+                            }
+                        }
+                    });
+                }
+            })
+        }
+        /*重置所有选项并查询所有*/
+        function resetForm(){
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+        /*清空查询条件*/
+        function clearForm(){
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+        }
+        /*打开套装组成*/
+        function openProductDetail(event){
+            var data = $('#grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+            if(data.bundlesId){
+                window.parent.parent.openTab("BUNDLE"+data.bundlesId,"套装组成："+data.code, "${base.contextPath}/mst/mst_bundles_mapping.html?bundlesId="+data.bundlesId);
+            }else{
+                kendo.ui.showInfoDialog({
+                    title: '提示信息',
+                    message: '请先保存！'
+                });
+            }
+
+        }
+
+        //导入套裝excel
+        function importExcel(){
+            var excelWindow = $("#excelWindow").kendoWindow({
+                title: '捆绑套装数据导入',
+                content:"${base.contextPath}/mst/mst_bundles_excel.html",
+                actions: [
+                    "Pin",
+                    "Close"
+                ],
+                width: "680px",
+                height :"380px",
+                modal:true,
+                visible:false,
+                iframe:true,
+                close: function() {
+                    //window 关闭  刷新 本页面的  grid
+                    $('#grid').data('kendoGrid').dataSource.page(1);
+                }
+            }).data("kendoWindow");
+            excelWindow.center().open();
+            //最大化
+            //excelWindow.toggleMaximization();
+        }
+        /*校验编码是否重复*/
+        /*function checkData(event){
+         var data = $('#grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+         if(data.bundlesId){
+         /!*如果数据已保存，需要更新*!/
+         alert("数据校验111111");
+         }else{
+         alert("数据校验");
+         }
+         }*/
+    </script>
+    </body>
+    </html>

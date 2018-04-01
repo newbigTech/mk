@@ -1,0 +1,101 @@
+<#--
+        * description: 商品类别详情-超类别 子类别新增页面
+        * author:zhangmeng01@markor.com.cn
+        * 2017/6/2
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script type="text/javascript">
+            /*接受商品类别页面传递过来的数据*/
+            var categoryId="${RequestParameters.categoryId}";
+            var flag = "${RequestParameters.flag}";
+            var viewModel = kendo.observable({
+                model: {
+                    flag : flag,
+                    categoryId : categoryId
+                }
+            });
+            var BaseUrl = _basePath;
+            //类别保存
+            function saveCategory(){
+                var data = viewModel.model.toJSON();
+                $.ajax({
+                    url : BaseUrl+"/mst/product/category/saveCategoryByFlag?flag="+flag,
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify(data),
+                    success: function (data) {
+                        window.parent.$("#categorydialogEdit").data("kendoWindow").close();
+                    }
+                });
+            }
+            //版本目录数据
+            var catalogData = new Array();
+            $.ajax({
+                url : '${base.contextPath}/hmall/mst/catalogversion/selectCatalog',
+                type : 'POST',
+                contentType : "application/json;charset=utf-8",
+                cache : false,
+                dataType : 'json',
+                async : false,
+                success : function(data) {
+                    catalogData = data.rows;
+                }
+            });
+        </script>
+        <div class="pull-left" id="toolbar-btn" style="width: 100%;margin-right:10px;padding-bottom:10px;margin-top:10px;margin-left:5px">
+            <span onclick="saveCategory()" class="btn btn-success" style="float:left;margin-right:5px;"><i class="fa fa-plus-square"></i><@spring.message "hap.save"/></span>
+        </div>
+        <div id="page-content" style="height: 320px;">
+                <form class="form-horizontal" id="myForm">
+                    <input type="hidden" name="categoryId" id="categoryId" data-bind="value:model.categoryId">
+                    <div class="panel-body" style="margin-top: 10px;">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.categorycode"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='categoryCode' type="text"  style="width: 100%" name="categoryCode" data-bind="value:model.categoryCode" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.categoryname"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="categoryName" type="text"  style="width: 100%" name="categoryName"data-bind="value:model.categoryName" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left"><@spring.message "hmall.productcategory.catalogversion"/></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" style="width:100%" name="catalogVersion" id="catalogVersion" data-bind="value:model.catalogVersion">
+                                        <script type="text/javascript">
+                                            $("#catalogVersion").kendoDropDownList({
+                                                dataTextField: "catalogName",
+                                                dataValueField: "catalogversionId",
+                                                valuePrimitive: true,
+                                                dataSource: catalogData,
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" style="text-align:left">级别</label>
+                                    <div class="col-sm-8">
+                                        <input id="categoryLevel" type="text" style="width: 100%" name="categoryLevel" data-bind="value:model.categoryLevel" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+        </div>
+        <script>kendo.bind($('#page-content'), viewModel);</script>

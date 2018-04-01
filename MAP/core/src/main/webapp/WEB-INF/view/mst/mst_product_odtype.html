@@ -1,0 +1,50 @@
+<#include "../include/header.html">
+    <body>
+    <script>
+        var viewModel = kendo.observable({
+            model: {},
+        });
+    </script>
+    <div id="page-content" class="panel">
+       <div class="panel-body">
+           <div class="row">
+               <span class="btn btn-primary" style="width:120px;" onclick="selects(this)" id="main">主商品</span>
+               <span class="btn btn-primary" style="width:120px;" onclick="selects(this)" id="normal">普通定制商品</span>
+               <span class="btn btn-primary" style="width:120px;" onclick="selects(this)" id="super">超级定制商品</span>
+           </div>
+           <input id="product_type" hidden>
+           <script>kendo.bind($('#product_type'), viewModel)</script>
+       </div>
+    </div>
+
+    <script type="text/javascript">
+        var btnType = '${RequestParameters.btnType!0}';
+        function selects(btn){
+            if($(btn).attr("id") == 'main'){
+                viewModel.model.product_type = "main";
+            }else if($(btn).attr("id") == 'normal'){
+                viewModel.model.product_type = "normal";
+            }else if($(btn).attr("id") == 'super'){
+                viewModel.model.product_type = "super";
+            }
+            submitFun();
+        }
+
+        function submitFun() {
+            if(btnType != null && btnType != 0){
+                if(btnType == 'onSale'){
+                    window.parent.onSale(viewModel.model.product_type);
+                }else if(btnType == 'offSale'){
+                    window.parent.offSale(viewModel.model.product_type);
+                }else if(btnType == 'autoOnSale'){
+                    window.parent.autoOnSale(viewModel.model.product_type);
+                }else if(btnType == 'autoOffSale'){
+                    window.parent.autoOffSale(viewModel.model.product_type);
+                }
+            }
+            window.parent.$('#editWin').data("kendoWindow").close();
+        }
+
+    </script>
+    </body>
+    </html>

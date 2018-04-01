@@ -1,0 +1,612 @@
+<#include "../include/header.html">
+<script></script>
+<script src="${base.contextPath}/common/code?paymentTypeData=HMALL.PAYMENT_TYPE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?isOrderDetails=SYS.YES_NO" type="text/javascript"></script>
+
+<script type="text/javascript">
+    var accountId = '${RequestParameters.accountId!0}';
+    var amount = '${RequestParameters.amount!0}';
+    var escOrderCode = '${RequestParameters.escOrderCode!0}';
+    var financialType = '${RequestParameters.financialType!0}'
+
+    var payinfoViewModel = kendo.observable({
+        model: {
+            'isOrderDetails': 'Y'
+        },
+        query: function (e) {
+            $("#paymentInfoGrid").data('kendoGrid').dataSource.page(1);
+        }
+    });
+    var refundinfoViewModel = kendo.observable({
+        model: {
+            'isOrderDetails': 'Y'
+        },
+        query: function (e) {
+            $("#refundInfoGrid").data('kendoGrid').dataSource.page(1);
+        }
+    });
+
+    function reback() {
+        var url = BaseUrl + "/om/om_balance_accounts.html";
+        location.href = url;
+    }
+</script>
+<body>
+<div id="page-content">
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+        <span class="btn btn-primary" style="float:left;margin-right:5px;" onclick="reback()">返回上一级</span>
+        <span class="btn btn-primary" style="float:left;margin-right:5px;" onclick="confirmFun()" type="submit"><@spring.message "确定"/></span>
+        <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" data-bind="click:query"
+              type="submit"><@spring.message "hap.query"/></span>
+    </div>
+    <script>kendo.bind($('#toolbar-btn'), payinfoViewModel);</script>
+    <div id="queryCondition" style="margin-top: 10px;">
+        <div class="row col-sm-12" style="margin-bottom: 10px">
+            <div class="col-sm-3">
+                <label>支付方式</label>
+                <input id="payMode" data-bind="value:model.payMode" type="text">
+            </div>
+            <script>
+                $('#payMode').kendoDropDownList({
+                    optionLabel: "支付方式",
+                    dataTextField: 'meaning',
+                    dataValueField: 'value',
+                    valuePrimitive: true,
+                    dataSource: paymentTypeData
+                });
+            </script>
+            <div class="col-sm-3">
+                <label>支付金额</label>
+                <input id="payAmount" data-bind="value:model.payAmount" class="k-textbox">
+            </div>
+            <div class="col-sm-3">
+                <label>支付时间从</label>
+                <input id="payTimeStart" data-bind="value:model.payTimeStart">
+            </div>
+            <script>
+                $('#payTimeStart').kendoDatePicker({
+                    start: "year",
+                    depth: 'month',
+                    format: "yyyy-MM-dd"
+                });
+            </script>
+            <div class="col-sm-3">
+                <label>支付时间至</label>
+                <input id="payTimeTo" data-bind="value:model.payTimeTo">
+            </div>
+            <script>
+                $('#payTimeTo').kendoDatePicker({
+                    start: "year",
+                    depth: 'month',
+                    format: "yyyy-MM-dd"
+                });
+            </script>
+        </div>
+        <div class="row col-sm-12" style="margin-bottom: 10px">
+            <div class="col-sm-4">
+                <label>是否对应订单明细</label>
+                <input id="payOrderDetails" data-bind="value:model.isOrderDetails" type="text">
+            </div>
+            <script>
+                $(document).ready(function () {
+                    $('#payOrderDetails').data('kendoDropDownList').select(1);
+                });
+                $('#payOrderDetails').kendoDropDownList({
+                    dataTextField: 'meaning',
+                    dataValueField: 'value',
+                    valuePrimitive: true,
+                    dataSource: isOrderDetails
+                });
+            </script>
+        </div>
+    </div>
+    <script>kendo.bind($('#queryCondition'), payinfoViewModel);</script>
+    <div style="clear:both; height: 300px;">
+        <div id="paymentInfoGrid"></div>
+    </div>
+    <script>kendo.bind($('#paymentInfoGrid'), payinfoViewModel);</script>
+    <div id="page-content-refund">
+        <div class="pull-left" id="toolbar-btn-refund" style="padding-bottom:10px;">
+                <span class="btn btn-primary" style="float:left;width:70px;margin-right:5px;" data-bind="click:query"
+                      type="submit"><@spring.message "hap.query"/></span>
+            <span class="btn btn-primary" style="float:left;" onclick="affirmFun()" type="submit"><@spring.message "确定"/></span>
+        </div>
+        <script>kendo.bind($('#toolbar-btn-refund'), refundinfoViewModel);</script>
+        <div id="query-condition-refund" style="margin-top: 10px;">
+            <div class="row col-sm-12" style="margin-bottom: 10px">
+                <div class="col-sm-3">
+                    <label>支付方式</label>
+                    <input id="transientPayModel" data-bind="value:model.transientPayModel" type="text">
+                </div>
+                <script>
+                    $('#transientPayModel').kendoDropDownList({
+                        optionLabel: "支付方式",
+                        dataTextField: 'meaning',
+                        dataValueField: 'value',
+                        valuePrimitive: true,
+                        dataSource: paymentTypeData
+                    });
+                </script>
+                <div class="col-sm-3">
+                    <label>请求退款金额</label>
+                    <input id="requestSum" data-bind="value:model.requestSum" class="k-textbox">
+                </div>
+                <div class="col-sm-3">
+                    <label>退款时间从</label>
+                    <input id="refundTimeStart" data-bind="value:model.refundTimeStart" type="text">
+                </div>
+                <script>
+                    $('#refundTimeStart').kendoDatePicker({
+                        start: "year",
+                        depth: 'month',
+                        format: "yyyy-MM-dd"
+                    });
+                </script>
+                <div class="col-sm-3">
+                    <label>退款时间至</label>
+                    <input id="refundTimeTo" data-bind="value:model.refundTimeTo" type="text">
+                </div>
+                <script>
+                    $('#refundTimeTo').kendoDatePicker({
+                        start: "year",
+                        depth: 'month',
+                        format: "yyyy-MM-dd"
+                    });
+                </script>
+                <div class="row col-sm-12" style="margin-bottom: 10px">
+                    <div class="col-sm-4">
+                        <label>是否对应订单明细</label>
+                        <input id="refundOrderDetails" data-bind="value:model.isOrderDetails" type="text">
+                    </div>
+                    <script>
+                        $(document).ready(function () {
+                            $('#refundOrderDetails').data('kendoDropDownList').select(1);
+//                                refundinfoViewModel.model.set("isOrderDetails", 'Y');
+                        });
+                        $('#refundOrderDetails').kendoDropDownList({
+                            dataTextField: 'meaning',
+                            dataValueField: 'value',
+                            valuePrimitive: true,
+                            dataSource: isOrderDetails
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+        <script>kendo.bind($('#query-condition-refund'), refundinfoViewModel);</script>
+        <div style="clear:both; height: 300px;">
+            <div id="refundInfoGrid"></div>
+        </div>
+        <script>kendo.bind($('#refundInfoGrid'), refundinfoViewModel);</script>
+    </div>
+
+    <script type="text/javascript">
+        var BaseUrl = _basePath;
+
+        paymentInfoDataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "/hmall/om/paymentinfo/getInfoForBalance?escOrderCode=" + escOrderCode,
+                    type: "POST",
+                    dataType: "json"
+                },
+                parameterMap: function (options, type) {
+                    if (type === "read") {
+                        var endDate = $('#payTimeTo').val();
+                        if (null != endDate && $.trim(endDate) != '') {
+                            payinfoViewModel.model.set('payTimeTo', endDate + " 23:59:59");
+                        }
+                        return Hap.prepareQueryParameter(payinfoViewModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 5,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "accountsId",
+                    fields: {},
+                }
+            }
+        });
+
+        $("#paymentInfoGrid").kendoGrid({
+            dataSource: paymentInfoDataSource,
+            height: '100%',
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            reorderable: true,
+            sortable: true,
+            selectable: 'multiple, rowbox',
+            dataBound: function () {
+                if (parent.autoResizeIframe) {
+                    parent.autoResizeIframe('${RequestParameters.functionCode!}')
+                }
+            },
+            pageable: {
+                pageSizes: [5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                {
+                    field: "",
+                    title: '订单收款',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 100,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: "<span class='row-number'></span>"
+                }, {
+                    field: "numberCode",
+                    title: '第三方业务单据号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 260,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "escOrderCode",
+                    title: '商城订单号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 260,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "code",
+                    title: '中台订单号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 260,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "outTradeNo",
+                    title: '<@spring.message "商城拼接号"/>',
+                    width: 300,
+                    attributes: {style: "text-align:center"},
+                    headerAttributes: {style: "text-align:center"}
+                }, {
+                    field: "payMode",
+                    title: '支付方式',
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: function (dataItem) {
+                        if (dataItem.payMode != null && dataItem.payMode != '') {
+                            var v = dataItem.payMode;
+                            $.each(paymentTypeData, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                }
+                            })
+                            return v;
+                        }
+                        return "";
+                    }
+                }, {
+                    field: "payAmount",
+                    title: '收款金额',
+                    attributes: {style: "text-align:center"},
+                    width: 100,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "payTime",
+                    title: '支付时间',
+                    attributes: {style: "text-align:center"},
+                    width: 180,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                },
+            ],
+            editable: false,
+            dataBound: function () {
+                var rows = this.items();
+                var page = this.pager.page() - 1;
+                var pagesize = this.pager.pageSize();
+                $(rows).each(
+                    function () {
+                        var index = $(this).index() + 1 + page * pagesize;
+                        var rowLabel = $(this).find(".row-number");
+                        $(rowLabel).html(index);
+                    });
+            }
+        });
+
+        refundnfoDataSource = new kendo.data.DataSource({
+            transport: {
+                read: {
+                    url: BaseUrl + "/hmall/as/refundinfo/getInfoForBalance?escOrderCode=" + escOrderCode,
+                    type: "POST",
+                    dataType: "json"
+                },
+                parameterMap: function (options, type) {
+                    if (type === "read") {
+                        var endDate = $('#refundTimeTo').val();
+                        if (null != endDate && $.trim(endDate) != '') {
+                            refundinfoViewModel.model.set('refundTimeTo', endDate + " 23:59:59");
+                        }
+                        return Hap.prepareQueryParameter(refundinfoViewModel.model.toJSON(), options)
+                    }
+                }
+            },
+            batch: true,
+            serverPaging: true,
+            pageSize: 5,
+            schema: {
+                data: 'rows',
+                total: 'total',
+                model: {
+                    id: "",
+                    fields: {},
+                }
+            }
+        });
+
+        $("#refundInfoGrid").kendoGrid({
+            dataSource: refundnfoDataSource,
+            height: '100%',
+            resizable: true,
+            scrollable: true,
+            navigatable: false,
+            reorderable: true,
+            sortable: true,
+            selectable: 'multiple, rowbox',
+            dataBound: function () {
+                if (parent.autoResizeIframe) {
+                    parent.autoResizeIframe('${RequestParameters.functionCode!}')
+                }
+            },
+            pageable: {
+                pageSizes: [5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 5
+            },
+            columns: [
+                {
+                    field: "",
+                    title: '订单退款',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 100,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: "<span class='row-number'></span>"
+                }, {
+                    field: "numberCode",
+                    title: '第三方业务单据号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 260,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "escOrderCode",
+                    title: '商城订单号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 260,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "code",
+                    title: '中台订单号',
+                    attributes: {
+                        style: "text-align:center"
+                    },
+                    width: 260,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "outTradeNo",
+                    title: '<@spring.message "商城拼接号"/>',
+                    width: 300,
+                    attributes: {style: "text-align:center"},
+                    headerAttributes: {style: "text-align:center"}
+                }, {
+                    field: "transientPayModel",
+                    title: '支付方式',
+                    attributes: {style: "text-align:center"},
+                    width: 90,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    },
+                    template: function (dataItem) {
+                        if (dataItem.transientPayModel != null && dataItem.transientPayModel != '') {
+                            var v = dataItem.transientPayModel;
+                            $.each(paymentTypeData, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                }
+                            })
+                            return v;
+                        }
+                        return "";
+                    }
+                }, {
+                    field: "requestSum",
+                    title: '请求退款金额',
+                    attributes: {style: "text-align:center"},
+                    width: 100,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                }, {
+                    field: "actualSum",
+                    title: '<@spring.message "实际退款金额"/>',
+                    width: 100,
+                    attributes: {style: "text-align:center"},
+                    headerAttributes: {style: "text-align:center"}
+                }, {
+                    field: "refundTime",
+                    title: '退款时间',
+                    attributes: {style: "text-align:center"},
+                    width: 180,
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: center"
+                    }
+                },
+            ],
+            editable: false,
+            dataBound: function () {
+                var rows = this.items();
+                var page = this.pager.page() - 1;
+                var pagesize = this.pager.pageSize();
+                $(rows).each(
+                    function () {
+                        var index = $(this).index() + 1 + page * pagesize;
+                        var rowLabel = $(this).find(".row-number");
+                        $(rowLabel).html(index);
+                    });
+            }
+        });
+
+        function confirmFun() {
+            var checked = $("#paymentInfoGrid").data("kendoGrid").selectedDataItems();
+            if (checked.length != 1) {
+                kendo.ui.showInfoDialog({
+                    message: '请选择一条数据'
+                })
+                return;
+            }
+            if (checked[0].payAmount != null && amount != null && checked[0].payAmount == amount) {
+                if (accountId == null || accountId == '' || checked[0].paymentinfoId == null || checked[0].paymentinfoId == '') {
+                    kendo.ui.showInfoDialog({
+                        message: '手工对账选择数据信息有误'
+                    })
+                    return;
+                }
+                //验证财务类型是否一致
+                if (financialType != '1') {
+                    kendo.ui.showInfoDialog({
+                        message: '选择匹配订单信息与所选对账信息财务类型不一致'
+                    })
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: BaseUrl + "/hmall/om/balance/addBalance?accountId=" + accountId + "&infoId=" + checked[0].paymentinfoId + "&type=" + "1",
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (data) {
+                        if (data.success) {
+                            kendo.ui.showInfoDialog({
+                                message: data.message
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    location.href = BaseUrl + '/om/om_balance.html';
+                                }
+                            })
+                        } else {
+                            kendo.ui.showErrorDialog({
+                                message: data.message
+                            })
+                        }
+                    }
+                })
+            } else {
+                kendo.ui.showInfoDialog({
+                    message: '选择的数据金额不一致'
+                })
+                return;
+            }
+        }
+
+        function affirmFun() {
+            var checked = $("#refundInfoGrid").data("kendoGrid").selectedDataItems();
+            if (checked.length != 1) {
+                kendo.ui.showInfoDialog({
+                    message: '请选择一条数据'
+                })
+                return;
+            }
+
+            if (checked[0].requestSum != null && amount != null && checked[0].requestSum == amount) {
+                if (accountId == null || accountId == '' || checked[0].refundinfoId == null || checked[0].refundinfoId == '') {
+                    kendo.ui.showInfoDialog({
+                        message: '手工对账选择数据信息有误'
+                    })
+                    return;
+                }
+                //验证财务类型是否一致
+                if (financialType != '2') {
+                    kendo.ui.showInfoDialog({
+                        message: '选择匹配订单信息与所选对账信息财务类型不一致'
+                    })
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: BaseUrl + "/hmall/om/balance/addBalance?accountId=" + accountId + "&infoId=" + checked[0].refundinfoId + "&type=" + "2",
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (data) {
+                        if (data.success) {
+                            kendo.ui.showInfoDialog({
+                                message: data.message
+                            }).done(function (event) {
+                                if (event.button == 'OK') {
+                                    location.href = BaseUrl + '/om/om_balance.html';
+                                }
+                            })
+                        } else {
+                            kendo.ui.showErrorDialog({
+                                message: data.message
+                            })
+                        }
+                    }
+                })
+            } else {
+                kendo.ui.showInfoDialog({
+                    message: '选择的数据金额不一致'
+                })
+                return;
+            }
+
+        }
+
+    </script>
+</body>
+</html>

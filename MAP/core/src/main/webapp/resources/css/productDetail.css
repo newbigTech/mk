@@ -1,0 +1,12 @@
+#tabstrip {margin-top: 30px;}
+
+#proDetail_bottom {position: relative;}
+
+#tabstrip_div {position: absolute;top: 60px;left: 10px;}
+
+#tabstrip_div ul {padding-left: 0px;} 
+
+#tabstrip_div ul li {float: left;list-style: none;margin-left: 20px;color: black;margin-bottom: 10px;}
+
+.pro_lable {}
+

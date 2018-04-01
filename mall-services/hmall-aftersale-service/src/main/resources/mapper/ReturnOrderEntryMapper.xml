@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.hmall.mapper.ReturnOrderEntryMapper">
+
+    <resultMap id="ReturnOrderEntryMap" type="com.hand.hmall.dto.ReturnOrderEntry">
+        <result column="AS_RETURN_ENTRY_ID" property="asReturnEntryId" jdbcType="DECIMAL"/>
+        <result column="AS_RETURN_ID" property="asReturnId" jdbcType="VARCHAR"/>
+        <!--<result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>-->
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+        <result column="PARENT_LINE" property="parentLine" jdbcType="VARCHAR"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="BASE_PRICE" property="basePrice" jdbcType="DECIMAL"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="IS_GIFT" property="isGift" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="VARCHAR"/>
+        <result column="VPRODUCT" property="vproduct" jdbcType="VARCHAR"/>
+        <result column="SUIT_CODE" property="suitCode" jdbcType="VARCHAR"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON1" property="returnReason1" jdbcType="VARCHAR"/>
+        <result column="RETURN_REASON2" property="returnReason2" jdbcType="VARCHAR"/>
+        <result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="RETURN_FLAG" property="returnFlag" jdbcType="VARCHAR"/>
+        <result column="EXCHANGE_FLAG" property="exchangeFlag" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATED_BY" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="LAST_UPDATE_LOGIN" property="lastUpdateLogin" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_APPLICATION_ID" property="programApplicationId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_ID" property="programId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_UPDATE_DATE" property="programUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="REQUEST_ID" property="requestId" jdbcType="DECIMAL"/>
+        <result column="ATTRIBUTE_CATEGORY" property="attributeCategory" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <sql id="target_table_columns">
+
+		tgtbl.AS_RETURN_ENTRY_ID,
+		tgtbl.AS_RETURN_ID,
+		tgtbl.SERVICE_ORDER_ID,
+		tgtbl.LINE_NUMBER,
+		tgtbl.PARENT_LINE,
+		tgtbl.QUANTITY,
+		tgtbl.UNIT,
+		tgtbl.BASE_PRICE,
+		tgtbl.IS_GIFT,
+		tgtbl.PRODUCT_ID,
+		tgtbl.VPRODUCT,
+		tgtbl.SUIT_CODE,
+		tgtbl.PIN,
+		tgtbl.SHIPPING_TYPE,
+		tgtbl.NOTE,
+		tgtbl.RETURN_REASON1,
+		tgtbl.RETURN_REASON2,
+		tgtbl.OBJECT_VERSION_NUMBER,
+		tgtbl.RETURN_FLAG,
+		tgtbl.EXCHANGE_FLAG,
+		tgtbl.CREATION_DATE,
+		tgtbl.CREATED_BY,
+		tgtbl.LAST_UPDATED_BY,
+		tgtbl.LAST_UPDATE_DATE,
+		tgtbl.LAST_UPDATE_LOGIN,
+		tgtbl.PROGRAM_APPLICATION_ID,
+		tgtbl.PROGRAM_ID,
+		tgtbl.PROGRAM_UPDATE_DATE,
+		tgtbl.REQUEST_ID,
+		tgtbl.ATTRIBUTE_CATEGORY
+    </sql>
+
+    <!--
+    /**
+     * 查询退货单对应的退货单行信息
+     * @param returnOrder - 退货单
+     * @return
+     */
+    List<ReturnOrderEntry> selectByReturnOrder(ReturnOrder returnOrder);
+    -->
+    <select id="selectByReturnOrder" parameterType="com.hand.hmall.dto.ReturnOrder" resultMap="ReturnOrderEntryMap">
+        SELECT
+        <include refid="target_table_columns"/>
+        FROM HMALL_AS_RETURN_ENTRY tgtbl WHERE tgtbl.AS_RETURN_ID = #{asReturnId}
+    </select>
+
+</mapper>

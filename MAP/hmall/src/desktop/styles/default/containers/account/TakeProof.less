@@ -1,0 +1,114 @@
+.takeProof {
+  padding-top: 20px;
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-bottom: 200px;
+  .h-form-group{
+    margin-top: auto;
+    label {
+      margin-right: 10px;
+    }
+    ul {
+      display: block;
+      margin-left: 3px;
+    }
+    .span-click {
+      cursor: pointer;
+      color: #3366ff;
+    }
+    button {
+      font-size: 12px;
+    }
+  }
+  >.proof-table {
+    margin-top: 50px;
+    padding-top: 15px;
+    text-align: center;
+    p {
+      font-size: 13px;
+      font-weight: bold;
+      text-align: left;
+      border-bottom: 1px solid #dadada;
+      padding-bottom: 15px;
+      margin-top: 50px;
+    }
+      >table {
+        margin-top: 25px;
+        color: #333333;
+        border-collapse: collapse;
+        font-size: 13px;
+        thead {
+          background-color: #d7d7d7;
+          tr {
+            height: 30px;
+            td {
+              border: 1px solid #c9c9c9;
+              &:nth-child(1){
+                width: 200px;
+              }
+              &:nth-child(2){
+                width: 200px;
+              }
+              &:nth-child(3){
+                width: 220px
+              }
+              &:nth-child(4){
+                width: 330px;
+              }
+            }
+          }
+        }
+        tbody {
+          tr {
+            height: 60px;
+            td {
+              border: 1px solid #c9c9c9;
+
+              &:nth-child(1){
+              &:nth-child(3){
+                text-align: left;
+                span {
+                  &:nth-child(1){
+                    margin-left: 0px;
+                  }
+                  &:nth-child(2){
+                    margin-left: 50px;
+                  }
+                }
+              }
+              }
+              &:nth-child(2){
+                position: relative;
+                .div-in {
+                  z-index: 100;
+                  position: absolute;
+                  margin-left: 75px;
+                  margin-top: -20px;
+                  img {
+                    &:nth-child(1){
+                      width: 45px;
+                      cursor: pointer;
+                    }&:nth-child(2){
+                       width: 150px;
+                       cursor: pointer;
+
+                     }
+                  }
+                }
+                .div-out {
+                  position: absolute;
+                  margin-left: 75px;
+                  margin-top: -20px;
+                  img {
+                    width: 45px;
+                    opacity: 0.3;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+  }
+}

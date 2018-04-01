@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsRefundMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsRefund">
+        <result column="AS_REFUND_ID" property="asRefundId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="TIMESTAMP"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="PAY_STATUS" property="payStatus" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="REFOUND_SUM" property="refoundSum" jdbcType="DECIMAL"/>
+        <result column="RETURN_REASON" property="returnReason" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="REFERENCE_SUM" property="referenceSum" jdbcType="DECIMAL"/>
+        <result column="RETURN_ID" property="returnId" jdbcType="DECIMAL"/>
+        <result column="RETURN_FEE" property="returnFee" jdbcType="DECIMAL"/>
+        <result column="SERVICE_CODE" property="serviceCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_CODE" property="orderCode" jdbcType="VARCHAR"/>
+        <result column="CUSTOMERID" property="customerid" jdbcType="VARCHAR"/>
+        <result column="REFUND_SCENARIO" property="refundScenario" jdbcType="VARCHAR"/>
+        <result column="PAY_MODE" property="payMode" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="ACCOUNT" property="account" jdbcType="VARCHAR"/>
+        <result column="COULD_AMOUNT" property="couldAmount" jdbcType="DECIMAL"/>
+        <result column="PAY_AMOUNT" property="payAmount" jdbcType="DECIMAL"/>
+        <result column="CHANGE_REASON" property="changeReason" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getReferenceSumByOrderId" parameterType="java.lang.Long" resultType="java.math.BigDecimal">
+        SELECT sum(ar.REFERENCE_SUM) FROM HMALL_AS_REFUND ar
+        WHERE upper(ar.STATUS) != 'CANC'
+        AND ar.ORDER_ID = #{orderId}
+    </select>
+
+    <select id="getRefundInfoByCondition" parameterType="com.hand.hmall.as.dto.AsRefund" resultMap="BaseResultMap">
+        SELECT ar.AS_REFUND_ID, ar.CODE, ar.STATUS, ar.SERVICE_ORDER_ID, ar.ORDER_ID, ar.NOTE, ar.MOBILE, ar.ADDRESS, ar.CS, ar.FINISH_TIME, ar.SYNCFLAG, ar.PAY_STATUS,
+        ar.NAME, ar.REFOUND_SUM, ar.RETURN_REASON, ar.REFUND_SCENARIO
+        FROM hmall_as_refund ar
+        WHERE 1 = 1
+        <if test="asRefundId != nul">
+            AND ar.AS_REFUND_ID = #{asRefundId}
+        </if>
+        <if test="code != nul">
+            AND ar.CODE = #{code}
+        </if>
+        <if test="serviceOrderId != nul">
+            AND ar.SERVICE_ORDER_ID = #{serviceOrderId}
+        </if>
+    </select>
+
+    <select id="getRefundOrderInfo" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT ar.as_refund_id, ar.code, ar.status, asv.code serviceCode, oo.code orderCode, ar.note, ar.mobile, ar.address,ar.reference_sum,
+        ar.cs, ar.finish_time, ar.creation_date, ar.syncflag, ar.pay_status, ar.name, ar.refound_sum, ar.return_reason, ar.REFUND_SCENARIO,
+        ar.return_id, ar.return_fee
+        FROM hmall_as_refund ar
+        left join hmall_as_serviceorder asv
+        on asv.service_order_id = ar.service_order_id
+        left join hmall_om_order oo
+        on oo.order_id = ar.order_id
+        WHERE 1 = 1
+        <if test="_parameter != null">
+            AND ar.as_refund_id = #{_parameter}
+        </if>
+    </select>
+
+    <!--根据订单ID查询退款单信息-->
+    <select id="queryRefundOrderByOrderId" parameterType="com.hand.hmall.as.dto.AsRefund" resultMap="BaseResultMap">
+        SELECT * from hmall_as_refund
+        WHERE 1 = 1
+        <if test="orderId != null">
+            AND ORDER_ID = #{orderId}
+        </if>
+        AND STATUS != 'CANC'
+        AND (RETURN_ID IS NULL
+        OR RETURN_ID = 0)
+    </select>
+
+    <!--根据退货单ID查询退款单信息-->
+    <select id="queryRefundOrderByReturnId" parameterType="com.hand.hmall.as.dto.AsRefund" resultMap="BaseResultMap">
+        SELECT * from hmall_as_refund
+        WHERE 1 = 1
+        <if test="returnId != null">
+            AND RETURN_ID = #{returnId}
+        </if>
+        AND STATUS = 'CANC'
+    </select>
+    <!--
+        /**
+         * 订单确认前，新建退款单时的【建议退款金额】计算规则
+         * @return
+         */
+        BigDecimal calculateReferenceSumBeforeConfirm();
+    -->
+    <select id="calculateReferenceSumBeforeConfirm" resultType="java.math.BigDecimal" parameterType="com.hand.hmall.om.dto.Order">
+        select avg(oo.payment_amount) - avg(oo.order_amount) - sum(rf.reference_sum) REFUND_REFERENCE_SUM from hmall_om_order oo join hmall_as_refund rf on oo.order_id = rf.order_id
+           where oo.code = #{code} and rf.node = 'BECONFIRM' and rf.status <![CDATA[ <> ]]> 'CANC' and (rf.RETURN_ID= null or rf.RETURN_ID= 0 )
+    </select>
+
+    <!--
+        /**
+         * 订单确认后，新建退款单时的【建议退款金额】计算规则
+         * @return
+         */
+        BigDecimal calculateReferenceSumAfterConfirm();
+    -->
+    <select id="calculateReferenceSumAfterConfirm" resultType="java.math.BigDecimal" parameterType="com.hand.hmall.om.dto.Order">
+        select sum(rf.reference_sum) REFUND_REFERENCE_SUM from hmall_om_order oo join hmall_as_refund rf on oo.order_id = rf.order_id
+          where oo.code = #{code} and  rf.status !='CANC' and (rf.RETURN_ID= null or rf.RETURN_ID= 0 )
+    </select>
+
+
+    <!--订单确认后reference_fee的计算规则-->
+    <select id="calculateReferenceFee" resultType="java.math.BigDecimal" parameterType="com.hand.hmall.om.dto.Order">
+        select sum(return.reference_fee) from HMALL_AS_RETURN return where return.ORDER_ID=#{orderId} and return.STATUS !='CANC'
+    </select>
+    <!--
+        /**
+         * 更新状态位
+         * @return
+         */
+        void updateStatus(AsRefund asRefund);
+    -->
+    <update id="updateStatus" parameterType="com.hand.hmall.as.dto.AsRefund">
+        UPDATE HMALL_AS_REFUND SET STATUS = #{status} WHERE AS_REFUND_ID = #{asRefundId}
+    </update>
+
+
+    <update id="finishRefund" parameterType="com.hand.hmall.as.dto.AsRefund">
+        UPDATE HMALL_AS_REFUND SET STATUS = 'FINI', FINISH_TIME = sysdate WHERE AS_REFUND_ID = #{asRefundId}
+    </update>
+
+    <!--查询退款单列表-->
+    <select id="selectRufundList" resultMap="BaseResultMap">
+        select refund.code,
+        serviceOrder.SERVICE_ORDER_ID,
+        serviceOrder.code serviceCode,
+        o.ORDER_ID,
+        o.code orderCode,
+        u.CUSTOMERID,
+        refund.REFERENCE_SUM,
+        refund.AS_REFUND_ID,
+        refund.RETURN_ID,
+        refund.mobile,
+        refund.status,
+        refund.cs,
+        refund.CREATION_DATE,
+        refund.FINISH_TIME,
+        refund.REFOUND_SUM,
+        refund.REFUND_SCENARIO,
+        refund.RETURN_REASON,
+        refund.NOTE,
+        entry.PAY_MODE,
+        entry.ACCOUNT,
+        entry.COULD_AMOUNT,
+        entry.PAY_AMOUNT,
+        entry.CHANGE_REASON,
+        entry.PAY_STATUS
+        from HMALL_AS_REFUND refund
+        left join HMALL_AS_REFUND_ENTRY entry
+        on refund.AS_REFUND_ID = entry.AS_REFUND_ID
+        left join HMALL_AS_SERVICEORDER serviceOrder
+        on refund.SERVICE_ORDER_ID = serviceOrder.SERVICE_ORDER_ID
+        left join HMALL_OM_ORDER o
+        on refund.ORDER_ID = o.ORDER_ID
+        left join HMALL_MST_USER u
+        on o.USER_ID=u.USER_ID
+        <where>
+            1=1
+            <if test="code !=null and code!=''and code!='undefined'">
+                and refund.CODE like CONCAT('%',CONCAT(#{code},'%') )
+            </if>
+            <if test="serviceCode !=null and serviceCode!=''and code!='undefined'">
+                and serviceOrder.CODE like CONCAT('%',CONCAT(#{serviceCode},'%') )
+            </if>
+            <if test="orderCode !=null and orderCode!=''and orderCode!='undefined'">
+                and o.CODE like CONCAT('%',CONCAT(#{orderCode},'%') )
+            </if>
+            <if test="mobile !=null and mobile!=''and mobile!='undefined'">
+                and refund.MOBILE like CONCAT('%',CONCAT(#{mobile},'%') )
+            </if>
+            <if test="customerid !=null and customerid!=''and customerid!='undefined'">
+                and u.CUSTOMERID like CONCAT('%',CONCAT(#{customerid},'%') )
+            </if>
+            <if test="strRefundStatus != null and strRefundStatus.length != 0">
+                and(
+                <foreach collection="strRefundStatus" item="item" index="index" open="" separator="or" close="">
+                    refund.status = #{item}
+                </foreach>
+                )
+            </if>
+            <if test="strRefundScenario != null and strRefundScenario.length != 0">
+                and(
+                <foreach collection="strRefundScenario" item="item" index="index" open="" separator="or" close="">
+                    refund.REFUND_SCENARIO = #{item}
+                </foreach>
+                )
+            </if>
+            <if test="strRefundReason != null and strRefundReason.length != 0">
+                and(
+                <foreach collection="strRefundReason" item="item" index="index" open="" separator="or" close="">
+                    refund.RETURN_REASON = #{item}
+                </foreach>
+                )
+            </if>
+            <if test="creationDateStart !=null and creationDateStart!=''and creationDateStart!='undefined'">
+                and to_char(refund.CREATION_DATE, 'yyyy-mm-dd hh24:mi:ss')&gt;#{creationDateStart}
+            </if>
+            <if test="creationDateEnd !=null and creationDateEnd!=''and creationDateEnd!='undefined'">
+                and to_char(refund.CREATION_DATE, 'yyyy-mm-dd hh24:mi:ss')&lt;#{creationDateEnd}
+            </if>
+            <if test="finishTimeStart !=null and finishTimeStart!=''and finishTimeStart!='undefined'">
+                and to_char(refund.FINISH_TIME, 'yyyy-mm-dd hh24:mi:ss')&gt;#{finishTimeStart}
+            </if>
+            <if test="finishTimeEnd !=null and finishTimeEnd!=''and finishTimeEnd!='undefined'">
+                and to_char(refund.FINISH_TIME, 'yyyy-mm-dd hh24:mi:ss')&lt;#{finishTimeEnd}
+            </if>
+        </where>
+        ORDER BY refund.CREATION_DATE DESC
+    </select>
+</mapper>

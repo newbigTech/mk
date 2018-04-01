@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.hr.mapper.MarkorEmployeeMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.hr.dto.MarkorEmployee">
+        <result column="EMPLOYEE_ID" property="employeeId" jdbcType="DECIMAL" />
+        <result column="EMPLOYEE_CODE" property="employeeCode" jdbcType="VARCHAR" />
+        <result column="NAME" property="name" jdbcType="VARCHAR" />
+        <result column="BORN_DATE" property="bornDate" jdbcType="DATE" />
+        <result column="EMAIL" property="email" jdbcType="VARCHAR" />
+        <result column="MOBIL" property="mobil" jdbcType="VARCHAR" />
+        <result column="JOIN_DATE" property="joinDate" jdbcType="DATE" />
+        <result column="GENDER" property="gender" jdbcType="VARCHAR" />
+        <result column="CERTIFICATE_ID" property="certificateId" jdbcType="VARCHAR" />
+
+
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+    <!-- List<Map> queryByCodeOrName(@Param("codeOrName") String codeOrName); -->
+    <select id="queryByCodeOrName" parameterType="java.lang.String" resultType="java.util.Map">
+        select e.EMPLOYEE_ID, e.EMPLOYEE_CODE, NAME from HR_EMPLOYEE e join SYS_USER u on e.EMPLOYEE_ID = u.EMPLOYEE_ID
+        where ( e.EMPLOYEE_CODE like '%' || #{codeOrName} || '%' or e.NAME like '%' || #{codeOrName} || '%' )
+        <if test="sysUserId != null">
+            and u.USER_ID = #{sysUserId}
+        </if>
+    </select>
+
+    <!--
+        根据当前员工的user id查询岗位代码
+        @param employeeUserId - 当前员工的USER ID
+        @return
+        String queryEmployeePosition(@Param("employeeUserId") Long employeeUserId);
+    -->
+    <!--<select id="queryEmployeePosition" resultType="java.lang.String" parameterType="java.lang.Long">
+        select p.position_code from sys_user u join hr_employee e on u.employee_id = e.employee_id
+            join hr_employee_assign ea on e.employee_id = ea.employee_id
+            join hr_org_position_b p on ea.position_id = p.position_id
+          where u.user_id = #{employeeUserId}
+    </select>-->
+
+    <!--
+        根据当前登录着ID查询其岗位信息(可能具有多个岗位)
+        @param userId - 当前登录者ID
+        Map queryEmployeePositionInfo(@Param("userId") Long userId);
+    -->
+    <select id="queryEmployeePositionInfo" parameterType="java.lang.Long" resultType="java.util.Map">
+        select p.* from sys_user u join hr_employee e on u.employee_id = e.employee_id
+            join hr_employee_assign ea on e.employee_id = ea.employee_id
+            join hr_org_position_b p on ea.position_id = p.position_id
+            where u.user_id = #{userId}
+    </select>
+
+    <select id="selectByPostionCode" resultType="java.util.Map" parameterType="java.lang.String">
+        SELECT
+        e.*
+        FROM
+        hr_employee e join hr_employee_assign ea on e.employee_id = ea.employee_id
+        join hr_org_position_b p on ea.position_id = p.position_id
+        WHERE upper(p.position_code) = upper(#{positionCode})
+    </select>
+
+    <!--
+        根据当前登录着ID查询其岗位信息列表
+        List<Map> queryCurrentPositions(@Param("userId") Long userId);
+    -->
+    <select id="queryCurrentPositions" parameterType="java.lang.Long" resultType="java.util.Map">
+        select p.POSITION_ID, p.POSITION_CODE, p.NAME from sys_user u join hr_employee e on u.employee_id = e.employee_id
+        join hr_employee_assign ea on e.employee_id = ea.employee_id
+        join hr_org_position_b p on ea.position_id = p.position_id
+        where u.user_id = #{userId}
+    </select>
+
+</mapper>

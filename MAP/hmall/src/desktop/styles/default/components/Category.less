@@ -1,0 +1,39 @@
+/*商品分类界面*/
+.h-category{
+  width: 270px;
+  overflow: hidden;
+  >ul {
+    line-height: 30px;
+    text-indent: 25px;
+    >li {
+      a{
+        cursor: pointer;
+        &.active {
+          font-weight: bold;
+        }
+      }
+      &.submenu {
+        i {
+          display: inline-block;
+          content: '';
+          height: 14px;
+          width: 14px;
+          background-image: url(../images/good_zhankai.png);
+          margin-left: -16px;
+          margin-right: 5px;
+          vertical-align: text-top;
+          cursor: pointer;
+          transition: all 0.1s;
+        }
+        &.collapse {
+          i {
+            transform: rotate(-90deg);
+          }
+          ul {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}

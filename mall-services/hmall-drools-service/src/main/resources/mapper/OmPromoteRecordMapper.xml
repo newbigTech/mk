@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.OmPromoteRecordMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.dto.OmPromoteRecord">
+        <result column="RECORD_ID" property="recordId" jdbcType="DECIMAL" />
+        <result column="PROMO_ID" property="promoId" jdbcType="DECIMAL" />
+        <result column="USER_ID" property="userId" jdbcType="DECIMAL" />
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="LOGISTICS_NO" property="logisticsNo" jdbcType="VARCHAR" />
+        <result column="COUPON_ID" property="couponId" jdbcType="VARCHAR" />
+    </resultMap>
+
+
+
+    <select id="countByConditon" resultType="java.lang.Integer" parameterType="com.hand.hmall.dto.OmPromoteRecord">
+
+        SELECT COUNT (1) FROM HMALL_OM_PROMO_RECORD WHERE 1 = 1
+            <if test="promoId != null">
+                AND PROMO_ID = #{promoId,jdbcType=DECIMAL}
+            </if>
+            <if test="userId != null">
+                AND USER_ID = #{userId,jdbcType=DECIMAL}
+            </if>
+    </select>
+
+
+    <insert id="createRecord" parameterType="com.hand.hmall.dto.OmPromoteRecord">
+        <selectKey keyProperty="recordId" resultType="long" order="BEFORE">
+            select HMALL_OM_PROMO_RECORD_S.NEXTVAL from dual
+        </selectKey>
+        INSERT INTO HMALL_OM_PROMO_RECORD(RECORD_ID,PROMO_ID,USER_ID,ORDER_ID,STATUS,LOGISTICS_NO,COUPON_ID) VALUES (${recordId},#{promoId
+        },#{userId},#{orderId},#{status},#{logisticsNo},#{couponId})
+    </insert>
+
+    <select id="selectByCondition" parameterType="com.hand.hmall.dto.OmPromoteRecord" resultMap="BaseResultMap">
+        SELECT * FROM HMALL_OM_PROMO_RECORD WHERE ORDER_ID = #{orderId}
+    </select>
+
+   
+
+</mapper>

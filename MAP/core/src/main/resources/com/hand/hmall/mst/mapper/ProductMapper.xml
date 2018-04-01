@@ -1,0 +1,1372 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.ProductMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Product">
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId"
+                jdbcType="DECIMAL"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus"
+                jdbcType="VARCHAR"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="IMAGE_URL_ID" property="imageUrlId" jdbcType="DECIMAL"/>
+        <result column="IMAGEURL" property="imageUrl" jdbcType="DECIMAL"/>
+        <result column="THUMBNIL_URL_ID" property="thumbnilUrlId"
+                jdbcType="DECIMAL"/>
+        <result column="BASE_PRODUCT_ID" property="baseProductId"
+                jdbcType="DECIMAL"/>
+        <result column="VARIANT_PRODUCT_ID" property="variantProductId"
+                jdbcType="DECIMAL"/>
+        <result column="PRODUCT_TYPE" property="productType" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_TYPE" property="customType" jdbcType="VARCHAR"/>
+        <result column="IS_SUIT" property="isSuit" jdbcType="VARCHAR"/>
+        <result column="IS_SIN_SALE" property="isSinSale" jdbcType="VARCHAR"/>
+        <result column="SALE_STATUS" property="saleStatus" jdbcType="VARCHAR"/>
+        <result column="BRAND_ID" property="brandId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_STATUS" property="productStatus"
+                jdbcType="VARCHAR"/>
+        <result column="LISTING_TIME" property="listingTime" jdbcType="DATE"/>
+        <result column="DELISTING_TIME" property="delistingTime"
+                jdbcType="DATE"/>
+        <result column="IS_SPE_SALE" property="isSpeSale" jdbcType="VARCHAR"/>
+        <result column="ORIGIN_COUNTRY" property="originCountry"
+                jdbcType="VARCHAR"/>
+        <result column="SOURCE_PLACE" property="sourcePlace" jdbcType="VARCHAR"/>
+        <result column="MINI_ORDER_QUANTITY" property="miniOrderQuantity"
+                jdbcType="DECIMAL"/>
+        <result column="RATE" property="rate" jdbcType="DECIMAL"/>
+        <result column="STYPE" property="stype" jdbcType="VARCHAR"/>
+        <result column="DESIGN_TYPE" property="designType" jdbcType="VARCHAR"/>
+        <result column="P_LONG" property="pLong" jdbcType="DECIMAL"/>
+        <result column="P_WIDE" property="pWide" jdbcType="DECIMAL"/>
+        <result column="P_HIGH" property="pHigh" jdbcType="DECIMAL"/>
+        <result column="SIZE_SPECIFICATION" property="sizeSpecification"
+                jdbcType="VARCHAR"/>
+        <result column="SIZE_UNIT" property="sizeUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_LONG" property="packingLong" jdbcType="DECIMAL"/>
+        <result column="PACKING_WIDE" property="packingWide" jdbcType="DECIMAL"/>
+        <result column="PACKING_HIGH" property="packingHigh" jdbcType="DECIMAL"/>
+        <result column="PACKING_UNIT" property="packingUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_VOLUME" property="packingVolume"
+                jdbcType="DECIMAL"/>
+        <result column="PACKING_VOL_UNIT" property="packingVolUnit"
+                jdbcType="VARCHAR"/>
+        <result column="GROSS_WEIGHT" property="grossWeight" jdbcType="DECIMAL"/>
+        <result column="NET_WEIGHT" property="netWeight" jdbcType="DECIMAL"/>
+        <result column="WEIGHT_UNIT" property="weightUnit" jdbcType="VARCHAR"/>
+        <result column="SHAPE" property="shape" jdbcType="VARCHAR"/>
+        <result column="TEXTURE" property="texture" jdbcType="VARCHAR"/>
+        <result column="TEXTURE_SPECIFICATION" property="textureSpecification"
+                jdbcType="VARCHAR"/>
+        <result column="MAINTAIN_SPECIFICATION" property="maintainSpecification"
+                jdbcType="VARCHAR"/>
+        <result column="IS_RESIN" property="isResin" jdbcType="VARCHAR"/>
+        <result column="NET_CAPACITY" property="netCapacity" jdbcType="DECIMAL"/>
+        <result column="NET_CAPACITY_UNIT" property="netCapacityUnit"
+                jdbcType="VARCHAR"/>
+        <result column="QGP" property="qgp" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="catalogName" property="catalogversion" jdbcType="VARCHAR"/>
+        <result column="v_product_code" property="vProductCode" jdbcType="VARCHAR"/>
+        <result column="NAME_EN" property="nameEn" jdbcType="VARCHAR"/>
+        <result column="PLATFORM_CODE" property="platformCode" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION" property="versionCode" jdbcType="VARCHAR"/>
+        <result column="versionProductId" property="versionProductId" jdbcType="DECIMAL"/>
+        <result column="catalog" property="catalog" jdbcType="DECIMAL"/>
+        <result column="MTART" property="mtart" jdbcType="VARCHAR"/>
+        <result column="MATKL" property="matkl" jdbcType="VARCHAR"/>
+        <result column="Reward_Product" property="rewardProduct" jdbcType="VARCHAR"/>
+        <result column="default_delivery" property="defaultDelivery" jdbcType="VARCHAR"/>
+        <result column="is_pre_sale" property="isPreSale" jdbcType="VARCHAR"/>
+        <result column="main_color" property="mainColor" jdbcType="VARCHAR"/>
+        <result column="is_packaging" property="isPackaging" jdbcType="VARCHAR"/>
+        <result column="add_function1" property="addFunction1" jdbcType="VARCHAR"/>
+        <result column="add_function2" property="addFunction2" jdbcType="VARCHAR"/>
+        <result column="add_function3" property="addFunction3" jdbcType="VARCHAR"/>
+        <result column="is_storage" property="isStorage" jdbcType="VARCHAR"/>
+        <result column="sofa_combining_form" property="sofaCombiningForm" jdbcType="VARCHAR"/>
+        <result column="is_washable" property="isWashable" jdbcType="VARCHAR"/>
+        <result column="filler1" property="filler1" jdbcType="VARCHAR"/>
+        <result column="filler2" property="filler2" jdbcType="VARCHAR"/>
+        <result column="filler3" property="filler3" jdbcType="VARCHAR"/>
+        <result column="suitable_users" property="suitableUsers" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts1" property="woodenCrafts1" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts2" property="woodenCrafts2" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts3" property="woodenCrafts3" jdbcType="VARCHAR"/>
+        <result column="design_element1" property="designElement1" jdbcType="VARCHAR"/>
+        <result column="design_element2" property="designElement2" jdbcType="VARCHAR"/>
+        <result column="design_element3" property="designElement3" jdbcType="VARCHAR"/>
+        <result column="leather_range1" property="leatherRange1" jdbcType="VARCHAR"/>
+        <result column="leather_range2" property="leatherRange2" jdbcType="VARCHAR"/>
+        <result column="leather_range3" property="leatherRange3" jdbcType="VARCHAR"/>
+        <result column="leather_Craft1" property="leatherCraft1" jdbcType="VARCHAR"/>
+        <result column="leather_Craft2" property="leatherCraft2" jdbcType="VARCHAR"/>
+        <result column="leather_Craft3" property="leatherCraft3" jdbcType="VARCHAR"/>
+        <result column="is_Soft_Cushion" property="isSoftCushion" jdbcType="VARCHAR"/>
+        <result column="is_Wheel" property="isWheel" jdbcType="VARCHAR"/>
+        <result column="drawer_Rail_Num" property="drawerRailNum" jdbcType="VARCHAR"/>
+        <result column="is_Damping" property="isDamping" jdbcType="VARCHAR"/>
+        <result column="paint_Craft" property="paintCraft" jdbcType="VARCHAR"/>
+        <result column="drawer_Number" property="drawerNumber" jdbcType="VARCHAR"/>
+        <result column="backrest_Length" property="backrestLength" jdbcType="VARCHAR"/>
+        <result column="is_Rotate" property="isRotate" jdbcType="VARCHAR"/>
+        <result column="material" property="material" jdbcType="VARCHAR"/>
+        <result column="series_Name" property="seriesName" jdbcType="VARCHAR"/>
+        <result column="introduction" property="introduction" jdbcType="VARCHAR"/>
+        <result column="salepoint" property="salepoint" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_SUPPORT_TYPE" property="customSupportType" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_CHANNEL_SOURCE" property="customChannelSource" jdbcType="VARCHAR"/>
+        <result column="normal_approval_status" property="normalApproveStatus" jdbcType="VARCHAR"/>
+        <result column="super_approval_status" property="superApproveStatus" jdbcType="VARCHAR"/>
+        <result column="FETCH_IMAGE_FLAG" property="fetchImageFlag" jdbcType="VARCHAR"/>
+        <result column="WAREHOUSE" property="warehouse" jdbcType="VARCHAR"/>
+        <result column="ESC_NAME" property="escName" jdbcType="VARCHAR"/>
+        <result column="HASCUSTOM" property="hascustom"/>
+    </resultMap>
+
+    <!-- 定义推送至商城接口的商品对象dto映射-->
+    <resultMap id="productMap" type="com.hand.hmall.mst.dto.ProductDto">
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus" jdbcType="VARCHAR"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="IMAGE_URL_ID" property="imageUrlId" jdbcType="DECIMAL"/>
+        <result column="THUMBNIL_URL_ID" property="thumbnilUrlId" jdbcType="DECIMAL"/>
+        <result column="BASE_PRODUCT_ID" property="baseProductId" jdbcType="DECIMAL"/>
+        <result column="VARIANT_PRODUCT_ID" property="variantProductId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_TYPE" property="productType" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_TYPE" property="customType" jdbcType="VARCHAR"/>
+        <result column="IS_SUIT" property="isSuit" jdbcType="VARCHAR"/>
+        <result column="IS_SIN_SALE" property="isSinSale" jdbcType="VARCHAR"/>
+        <result column="SALE_STATUS" property="saleStatus" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_STATUS" property="productStatus"
+                jdbcType="VARCHAR"/>
+        <result column="LISTING_TIME" property="listingTime" jdbcType="DATE"/>
+        <result column="DELISTING_TIME" property="delistingTime"
+                jdbcType="DATE"/>
+        <result column="IS_SPE_SALE" property="isSpeSale" jdbcType="VARCHAR"/>
+        <result column="ORIGIN_COUNTRY" property="originCountry"
+                jdbcType="VARCHAR"/>
+        <result column="SOURCE_PLACE" property="sourcePlace" jdbcType="VARCHAR"/>
+        <result column="MINI_ORDER_QUANTITY" property="miniOrderQuantity"
+                jdbcType="DECIMAL"/>
+        <result column="RATE" property="rate" jdbcType="DECIMAL"/>
+        <result column="STYPE" property="style" jdbcType="VARCHAR"/>
+        <result column="DESIGN_TYPE" property="designType" jdbcType="VARCHAR"/>
+        <result column="P_LONG" property="pLong" jdbcType="DECIMAL"/>
+        <result column="P_WIDE" property="pWide" jdbcType="DECIMAL"/>
+        <result column="P_HIGH" property="pHigh" jdbcType="DECIMAL"/>
+        <result column="SIZE_SPECIFICATION" property="sizeSpecification"
+                jdbcType="VARCHAR"/>
+        <result column="SIZE_UNIT" property="sizeUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_LONG" property="packingLong" jdbcType="DECIMAL"/>
+        <result column="PACKING_WIDE" property="packingWide" jdbcType="DECIMAL"/>
+        <result column="PACKING_HIGH" property="packingHigh" jdbcType="DECIMAL"/>
+        <result column="PACKING_UNIT" property="packingUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_VOLUME" property="packingVolume"
+                jdbcType="DECIMAL"/>
+        <result column="PACKING_VOL_UNIT" property="packingVolUnit"
+                jdbcType="VARCHAR"/>
+        <result column="GROSS_WEIGHT" property="grossWeight" jdbcType="DECIMAL"/>
+        <result column="NET_WEIGHT" property="netWeight" jdbcType="DECIMAL"/>
+        <result column="WEIGHT_UNIT" property="weightUnit" jdbcType="VARCHAR"/>
+        <result column="SHAPE" property="shape" jdbcType="VARCHAR"/>
+        <result column="TEXTURE" property="texture" jdbcType="VARCHAR"/>
+        <result column="TEXTURE_SPECIFICATION" property="textureSpecification"
+                jdbcType="VARCHAR"/>
+        <result column="MAINTAIN_SPECIFICATION" property="maintainSpecification"
+                jdbcType="VARCHAR"/>
+        <result column="IS_RESIN" property="isResin" jdbcType="VARCHAR"/>
+        <result column="NET_CAPACITY" property="netCapacity" jdbcType="DECIMAL"/>
+        <result column="NET_CAPACITY_UNIT" property="netCapacityUnit"
+                jdbcType="VARCHAR"/>
+        <result column="QGP" property="qgp" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="v_product_code" property="vProductCode" jdbcType="VARCHAR"/>
+        <result column="NAME_EN" property="nameEn" jdbcType="VARCHAR"/>
+        <result column="PLATFORM_CODE" property="platformCode" jdbcType="VARCHAR"/>
+        <result column="mtart" property="mtart" jdbcType="VARCHAR"/>
+        <result column="matkl" property="matkl" jdbcType="VARCHAR"/>
+        <result column="Reward_Product" property="rewardProduct" jdbcType="VARCHAR"/>
+        <result column="default_delivery" property="defaultDelivery" jdbcType="VARCHAR"/>
+        <result column="is_pre_sale" property="isPreSale" jdbcType="VARCHAR"/>
+        <result column="main_color" property="mainColor" jdbcType="VARCHAR"/>
+        <result column="is_packaging" property="isPackaging" jdbcType="VARCHAR"/>
+        <result column="is_storage" property="isStorage" jdbcType="VARCHAR"/>
+        <result column="sofa_combining_form" property="sofaCombiningForm" jdbcType="VARCHAR"/>
+        <result column="is_washable" property="isWashable" jdbcType="VARCHAR"/>
+        <result column="suitable_users" property="suitableUsers" jdbcType="VARCHAR"/>
+        <result column="design_element1" property="designElement1" jdbcType="VARCHAR"/>
+        <result column="design_element2" property="designElement2" jdbcType="VARCHAR"/>
+        <result column="design_element3" property="designElement3" jdbcType="VARCHAR"/>
+        <result column="is_Soft_Cushion" property="isSoftCushion" jdbcType="VARCHAR"/>
+        <result column="is_Wheel" property="isWheel" jdbcType="VARCHAR"/>
+        <result column="drawer_Rail_Num" property="drawerRailNum" jdbcType="VARCHAR"/>
+        <result column="is_Damping" property="isDamping" jdbcType="VARCHAR"/>
+        <result column="paint_Craft" property="paintCraft" jdbcType="VARCHAR"/>
+        <result column="drawer_Number" property="drawerNumber" jdbcType="VARCHAR"/>
+        <result column="backrest_Length" property="backrestLength" jdbcType="VARCHAR"/>
+        <result column="is_Rotate" property="isRotate" jdbcType="VARCHAR"/>
+        <result column="material" property="material" jdbcType="VARCHAR"/>
+        <result column="series_Name" property="seriesName" jdbcType="VARCHAR"/>
+        <result column="introduction" property="introduction" jdbcType="VARCHAR"/>
+        <result column="salepoint" property="salepoint" jdbcType="VARCHAR"/>
+        <result column="add_function1" property="addFunction1" jdbcType="VARCHAR"/>
+        <result column="add_function2" property="addFunction2" jdbcType="VARCHAR"/>
+        <result column="add_function3" property="addFunction3" jdbcType="VARCHAR"/>
+        <result column="filler1" property="filler1" jdbcType="VARCHAR"/>
+        <result column="filler2" property="filler2" jdbcType="VARCHAR"/>
+        <result column="filler3" property="filler3" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts1" property="woodenCrafts1" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts2" property="woodenCrafts2" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts3" property="woodenCrafts3" jdbcType="VARCHAR"/>
+        <result column="leather_range1" property="leatherRange1" jdbcType="VARCHAR"/>
+        <result column="leather_range2" property="leatherRange2" jdbcType="VARCHAR"/>
+        <result column="leather_range3" property="leatherRange3" jdbcType="VARCHAR"/>
+        <result column="leather_Craft1" property="leatherCraft1" jdbcType="VARCHAR"/>
+        <result column="leather_Craft2" property="leatherCraft2" jdbcType="VARCHAR"/>
+        <result column="leather_Craft3" property="leatherCraft3" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_SUPPORT_TYPE" property="customSupportType" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_CHANNEL_SOURCE" property="customChannelSource" jdbcType="VARCHAR"/>
+        <result column="WAREHOUSE" property="warehouse" jdbcType="VARCHAR"/>
+        <result column="BRAND_CODE" property="brandId" jdbcType="VARCHAR"/>
+        <result column="ESC_NAME" property="escName" jdbcType="VARCHAR"/>
+        <result column="HASCUSTOM" property="hascustom"  ></result>
+    </resultMap>
+
+
+    <resultMap id="productCodeResultMap" type="com.hand.hmall.mst.dto.ProductCodeDto">
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="value" property="value" jdbcType="VARCHAR"/>
+        <result column="meaning" property="meaning" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--导出库存实体类-->
+    <resultMap id="AtpProductInvInfoExportMap" type="com.hand.hmall.mst.dto.AtpProductInvInfoExport">
+        <result column="AVAILABLE_QUANTITY" property="availableQuantity" jdbcType="DECIMAL"/>
+        <result column="MATNR" property="matnr" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="IS_SUIT" property="isSuit" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="product_column">
+        pd.PRODUCT_ID,
+        pd.CODE,
+        pd.NAME,
+        pd.CATALOGVERSION_ID,
+        pd.APPROVAL_STATUS,
+        pd.UNIT,
+        pd.IMAGE_URL_ID,
+        pd.THUMBNIL_URL_ID,
+        pd.BASE_PRODUCT_ID,
+        pd.VARIANT_PRODUCT_ID,
+        pd.PRODUCT_TYPE,
+        pd.CUSTOM_TYPE,
+        pd.IS_SUIT,
+        pd.IS_SIN_SALE,
+        pd.BRAND_ID,
+        pd.SALE_STATUS,
+        pd.PRODUCT_STATUS,
+        pd.LISTING_TIME,
+        pd.DELISTING_TIME,
+        pd.IS_SPE_SALE,
+        pd.ORIGIN_COUNTRY,
+        pd.SOURCE_PLACE,
+        pd.MINI_ORDER_QUANTITY,
+        pd.RATE,
+        pd.STYPE,
+        pd.DESIGN_TYPE,
+        pd.P_LONG,
+        pd.P_WIDE,
+        pd.P_HIGH,
+        pd.SIZE_SPECIFICATION,
+        pd.SIZE_UNIT,
+        pd.PACKING_LONG,
+        pd.PACKING_WIDE,
+        pd.PACKING_HIGH,
+        pd.PACKING_UNIT,
+        pd.PACKING_VOLUME,
+        pd.PACKING_VOL_UNIT,
+        pd.GROSS_WEIGHT,
+        pd.NET_WEIGHT,
+        pd.WEIGHT_UNIT,
+        pd.SHAPE,
+        pd.TEXTURE,
+        pd.TEXTURE_SPECIFICATION,
+        pd.MAINTAIN_SPECIFICATION,
+        pd.IS_RESIN,
+        pd.NET_CAPACITY,
+        pd.NET_CAPACITY_UNIT,
+        pd.QGP,
+        pd.SYNCFLAG,
+        pd.NAME_EN,
+        pd.V_PRODUCT_CODE,
+        pd.CREATION_DATE,
+        pd.custom_support_type,
+        pd.FETCH_IMAGE_FLAG,
+        pd.WAREHOUSE,
+        pd.hascustom
+    </sql>
+
+    <!--  商品从master同步到staged时指定的同步字段 -->
+    <resultMap id="ResultInfoForStaged" type="com.hand.hmall.mst.dto.Product">
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_TYPE" property="productType" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_TYPE" property="customType" jdbcType="VARCHAR"/>
+        <result column="IS_SUIT" property="isSuit" jdbcType="VARCHAR"/>
+        <result column="IS_SIN_SALE" property="isSinSale" jdbcType="VARCHAR"/>
+        <result column="BRAND_ID" property="brandId" jdbcType="DECIMAL"/>
+        <result column="SALE_STATUS" property="saleStatus" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_STATUS" property="productStatus" jdbcType="VARCHAR"/>
+        <result column="LISTING_TIME" property="listingTime" jdbcType="DATE"/>
+        <result column="DELISTING_TIME" property="delistingTime" jdbcType="DATE"/>
+        <result column="IS_SPE_SALE" property="isSpeSale" jdbcType="VARCHAR"/>
+        <result column="ORIGIN_COUNTRY" property="originCountry" jdbcType="VARCHAR"/>
+        <result column="SOURCE_PLACE" property="sourcePlace" jdbcType="VARCHAR"/>
+        <result column="MINI_ORDER_QUANTITY" property="miniOrderQuantity" jdbcType="DECIMAL"/>
+        <result column="RATE" property="rate" jdbcType="DECIMAL"/>
+        <result column="STYPE" property="style" jdbcType="VARCHAR"/>
+        <result column="DESIGN_TYPE" property="designType" jdbcType="VARCHAR"/>
+        <result column="P_LONG" property="pLong" jdbcType="DECIMAL"/>
+        <result column="P_WIDE" property="pWide" jdbcType="DECIMAL"/>
+        <result column="P_HIGH" property="pHigh" jdbcType="DECIMAL"/>
+        <result column="SIZE_SPECIFICATION" property="sizeSpecification" jdbcType="VARCHAR"/>
+        <result column="SIZE_UNIT" property="sizeUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_LONG" property="packingLong" jdbcType="DECIMAL"/>
+        <result column="PACKING_WIDE" property="packingWide" jdbcType="DECIMAL"/>
+        <result column="PACKING_HIGH" property="packingHigh" jdbcType="DECIMAL"/>
+        <result column="PACKING_UNIT" property="packingUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_VOLUME" property="packingVolume" jdbcType="DECIMAL"/>
+        <result column="PACKING_VOL_UNIT" property="packingVolUnit" jdbcType="VARCHAR"/>
+        <result column="GROSS_WEIGHT" property="grossWeight" jdbcType="DECIMAL"/>
+        <result column="NET_WEIGHT" property="netWeight" jdbcType="DECIMAL"/>
+        <result column="WEIGHT_UNIT" property="weightUnit" jdbcType="VARCHAR"/>
+        <result column="SHAPE" property="shape" jdbcType="VARCHAR"/>
+        <result column="TEXTURE" property="texture" jdbcType="VARCHAR"/>
+        <result column="TEXTURE_SPECIFICATION" property="textureSpecification" jdbcType="VARCHAR"/>
+        <result column="MAINTAIN_SPECIFICATION" property="maintainSpecification" jdbcType="VARCHAR"/>
+        <result column="IS_RESIN" property="isResin" jdbcType="VARCHAR"/>
+        <result column="NET_CAPACITY" property="netCapacity" jdbcType="DECIMAL"/>
+        <result column="NET_CAPACITY_UNIT" property="netCapacityUnit" jdbcType="VARCHAR"/>
+        <result column="QGP" property="qgp" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="NAME_EN" property="nameEn" jdbcType="VARCHAR"/>
+        <!--商品V码master到staged版本去除-->
+        <result column="CUSTOM_SUPPORT_TYPE" property="customSupportType" jdbcType="VARCHAR"/>
+        <result column="mtart" property="mtart" jdbcType="VARCHAR"/>
+        <result column="matkl" property="matkl" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus" jdbcType="VARCHAR"/>
+        <result column="WAREHOUSE" property="warehouse" jdbcType="VARCHAR"/>
+        <result column="SUPPLIER" property="supplier" jdbcType="VARCHAR"/>
+        <result column="PLATFORM_CODE" property="platformCode" jdbcType="VARCHAR"/>
+        <result column="ESC_NAME" property="escName" jdbcType="VARCHAR"/>
+    </resultMap>
+    <!--  商品从master同步到staged时指定的同步字段 -->
+    <sql id="StagedSpecified">
+        mp.CODE,
+        mp.NAME,
+        mp.CATALOGVERSION_ID,
+        mp.UNIT,
+        mp.PRODUCT_TYPE,
+        mp.CUSTOM_TYPE,
+        mp.IS_SUIT,
+        mp.IS_SIN_SALE,
+        mp.BRAND_ID,
+        mp.SALE_STATUS,
+        mp.PRODUCT_STATUS,
+        mp.LISTING_TIME,
+        mp.DELISTING_TIME,
+        mp.IS_SPE_SALE,
+        mp.ORIGIN_COUNTRY,
+        mp.SOURCE_PLACE,
+        mp.MINI_ORDER_QUANTITY,
+        mp.RATE,
+        mp.STYPE,
+        mp.DESIGN_TYPE,
+        mp.P_LONG,
+        mp.P_WIDE,
+        mp.P_HIGH,
+        mp.SIZE_SPECIFICATION,
+        mp.SIZE_UNIT,
+        mp.PACKING_LONG,
+        mp.PACKING_WIDE,
+        mp.PACKING_HIGH,
+        mp.PACKING_UNIT,
+        mp.PACKING_VOLUME,
+        mp.PACKING_VOL_UNIT,
+        mp.GROSS_WEIGHT,
+        mp.NET_WEIGHT,
+        mp.WEIGHT_UNIT,
+        mp.SHAPE,
+        mp.TEXTURE,
+        mp.PLATFORM_CODE,
+        mp.TEXTURE_SPECIFICATION,
+        mp.MAINTAIN_SPECIFICATION,
+        mp.IS_RESIN,
+        mp.NET_CAPACITY,
+        mp.NET_CAPACITY_UNIT,
+        mp.QGP,
+        mp.SYNCFLAG,
+        mp.NAME_EN,
+        mp.CUSTOM_SUPPORT_TYPE,
+        mp.mtart,
+        mp.matkl,
+        mp.APPROVAL_STATUS,
+        mp.warehouse,
+        mp.SUPPLIER,
+        mp.PLATFORM_CODE
+    </sql>
+    <!--  商品从master同步到staged时,指定的同步字段. -->
+    <select id="selectStagedSpecifiedById" resultMap="ResultInfoForStaged" parameterType="java.lang.Long">
+        SELECT
+        <include refid="StagedSpecified"></include>
+        FROM hmall_mst_product mp
+        WHERE 1 = 1
+        AND mp.product_id = #{productId}
+    </select>
+
+    <!--  根据商品V码查询商品商品信息（SAP码） -->
+    <select id="getProductByVcode" resultMap="ResultInfoForStaged" parameterType="java.util.Map">
+        SELECT
+        <include refid="StagedSpecified"></include>
+        from hmall_mst_catalogs hmc
+        left join hmall_mst_catalogversion hmcv
+        on hmcv.catalog = hmc.catalogs_id
+        left join hmall_mst_product mp
+        on mp.catalogversion_id = hmcv.catalogversion_id
+        where mp.v_product_code = #{vProductCode}
+        and hmc.code = #{catalogsCode}
+        and hmcv.catalogversion = #{catalogversionCode}
+    </select>
+
+    <!--  商品从staged同步到online时指定的同步字段 -->
+    <resultMap id="ResultInfoForOnline" type="com.hand.hmall.mst.dto.Product">
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_TYPE" property="productType" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_TYPE" property="customType" jdbcType="VARCHAR"/>
+        <result column="IS_SUIT" property="isSuit" jdbcType="VARCHAR"/>
+        <result column="IS_SIN_SALE" property="isSinSale" jdbcType="VARCHAR"/>
+        <result column="BRAND_ID" property="brandId" jdbcType="DECIMAL"/>
+        <result column="SALE_STATUS" property="saleStatus" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_STATUS" property="productStatus" jdbcType="VARCHAR"/>
+        <result column="LISTING_TIME" property="listingTime" jdbcType="DATE"/>
+        <result column="DELISTING_TIME" property="delistingTime" jdbcType="DATE"/>
+        <result column="IS_SPE_SALE" property="isSpeSale" jdbcType="VARCHAR"/>
+        <result column="ORIGIN_COUNTRY" property="originCountry" jdbcType="VARCHAR"/>
+        <result column="SOURCE_PLACE" property="sourcePlace" jdbcType="VARCHAR"/>
+        <result column="MINI_ORDER_QUANTITY" property="miniOrderQuantity" jdbcType="DECIMAL"/>
+        <result column="RATE" property="rate" jdbcType="DECIMAL"/>
+        <result column="STYPE" property="style" jdbcType="VARCHAR"/>
+        <result column="DESIGN_TYPE" property="designType" jdbcType="VARCHAR"/>
+        <result column="P_LONG" property="pLong" jdbcType="DECIMAL"/>
+        <result column="P_WIDE" property="pWide" jdbcType="DECIMAL"/>
+        <result column="P_HIGH" property="pHigh" jdbcType="DECIMAL"/>
+        <result column="SIZE_SPECIFICATION" property="sizeSpecification" jdbcType="VARCHAR"/>
+        <result column="SIZE_UNIT" property="sizeUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_LONG" property="packingLong" jdbcType="DECIMAL"/>
+        <result column="PACKING_WIDE" property="packingWide" jdbcType="DECIMAL"/>
+        <result column="PACKING_HIGH" property="packingHigh" jdbcType="DECIMAL"/>
+        <result column="PACKING_UNIT" property="packingUnit" jdbcType="VARCHAR"/>
+        <result column="PACKING_VOLUME" property="packingVolume" jdbcType="DECIMAL"/>
+        <result column="PACKING_VOL_UNIT" property="packingVolUnit" jdbcType="VARCHAR"/>
+        <result column="GROSS_WEIGHT" property="grossWeight" jdbcType="DECIMAL"/>
+        <result column="NET_WEIGHT" property="netWeight" jdbcType="DECIMAL"/>
+        <result column="WEIGHT_UNIT" property="weightUnit" jdbcType="VARCHAR"/>
+        <result column="SHAPE" property="shape" jdbcType="VARCHAR"/>
+        <result column="TEXTURE" property="texture" jdbcType="VARCHAR"/>
+        <result column="TEXTURE_SPECIFICATION" property="textureSpecification" jdbcType="VARCHAR"/>
+        <result column="MAINTAIN_SPECIFICATION" property="maintainSpecification" jdbcType="VARCHAR"/>
+        <result column="IS_RESIN" property="isResin" jdbcType="VARCHAR"/>
+        <result column="NET_CAPACITY" property="netCapacity" jdbcType="DECIMAL"/>
+        <result column="NET_CAPACITY_UNIT" property="netCapacityUnit" jdbcType="VARCHAR"/>
+        <result column="QGP" property="qgp" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="NAME_EN" property="nameEn" jdbcType="VARCHAR"/>
+        <result column="v_product_code" property="vProductCode" jdbcType="VARCHAR"/>
+        <result column="APPROVAL_STATUS" property="approvalStatus" jdbcType="VARCHAR"/>
+        <result column="IMAGE_URL_ID" property="imageUrlId" jdbcType="DECIMAL"/>
+        <result column="THUMBNIL_URL_ID" property="thumbnilUrlId" jdbcType="DECIMAL"/>
+        <result column="BASE_PRODUCT_ID" property="baseProductId" jdbcType="DECIMAL"/>
+        <result column="VARIANT_PRODUCT_ID" property="variantProductId" jdbcType="DECIMAL"/>
+        <result column="PLATFORM_CODE" property="platformCode" jdbcType="VARCHAR"/>
+        <result column="Reward_Product" property="rewardProduct" jdbcType="VARCHAR"/>
+        <result column="default_delivery" property="defaultDelivery" jdbcType="VARCHAR"/>
+        <result column="is_pre_sale" property="isPreSale" jdbcType="VARCHAR"/>
+        <result column="main_color" property="mainColor" jdbcType="VARCHAR"/>
+        <result column="is_packaging" property="isPackaging" jdbcType="VARCHAR"/>
+        <result column="is_storage" property="isStorage" jdbcType="VARCHAR"/>
+        <result column="sofa_combining_form" property="sofaCombiningForm" jdbcType="VARCHAR"/>
+        <result column="is_washable" property="isWashable" jdbcType="VARCHAR"/>
+        <result column="suitable_users" property="suitableUsers" jdbcType="VARCHAR"/>
+        <result column="is_Wheel" property="isWheel" jdbcType="VARCHAR"/>
+        <result column="drawer_Rail_Num" property="drawerRailNum" jdbcType="VARCHAR"/>
+        <result column="is_Damping" property="isDamping" jdbcType="VARCHAR"/>
+        <result column="paint_Craft" property="paintCraft" jdbcType="VARCHAR"/>
+        <result column="drawer_Number" property="drawerNumber" jdbcType="VARCHAR"/>
+        <result column="backrest_Length" property="backrestLength" jdbcType="VARCHAR"/>
+        <result column="is_Rotate" property="isRotate" jdbcType="VARCHAR"/>
+        <result column="mtart" property="mtart" jdbcType="VARCHAR"/>
+        <result column="matkl" property="matkl" jdbcType="VARCHAR"/>
+        <result column="material" property="material" jdbcType="VARCHAR"/>
+        <result column="series_Name" property="seriesName" jdbcType="VARCHAR"/>
+        <result column="introduction" property="introduction" jdbcType="VARCHAR"/>
+        <result column="salepoint" property="salepoint" jdbcType="VARCHAR"/>
+        <result column="STYPE" property="style" jdbcType="VARCHAR"/>
+        <result column="IS_MAIN" property="isMain" jdbcType="VARCHAR"/>
+        <result column="add_function1" property="addFunction1" jdbcType="VARCHAR"/>
+        <result column="add_function2" property="addFunction2" jdbcType="VARCHAR"/>
+        <result column="add_function3" property="addFunction3" jdbcType="VARCHAR"/>
+        <result column="filler1" property="filler1" jdbcType="VARCHAR"/>
+        <result column="filler2" property="filler2" jdbcType="VARCHAR"/>
+        <result column="filler3" property="filler3" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts1" property="woodenCrafts1" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts2" property="woodenCrafts2" jdbcType="VARCHAR"/>
+        <result column="wooden_crafts3" property="woodenCrafts3" jdbcType="VARCHAR"/>
+        <result column="leather_range1" property="leatherRange1" jdbcType="VARCHAR"/>
+        <result column="leather_range2" property="leatherRange2" jdbcType="VARCHAR"/>
+        <result column="leather_range3" property="leatherRange3" jdbcType="VARCHAR"/>
+        <result column="leather_Craft1" property="leatherCraft1" jdbcType="VARCHAR"/>
+        <result column="leather_Craft2" property="leatherCraft2" jdbcType="VARCHAR"/>
+        <result column="leather_Craft3" property="leatherCraft3" jdbcType="VARCHAR"/>
+        <result column="design_element1" property="designElement1" jdbcType="VARCHAR"/>
+        <result column="design_element2" property="designElement2" jdbcType="VARCHAR"/>
+        <result column="design_element3" property="designElement3" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_SUPPORT_TYPE" property="customSupportType" jdbcType="VARCHAR"/>
+        <result column="CUSTOM_CHANNEL_SOURCE" property="customChannelSource" jdbcType="VARCHAR"/>
+        <result column="is_Soft_Cushion" property="isSoftCushion" jdbcType="VARCHAR"/>
+        <result column="PROPERTY" property="property" jdbcType="VARCHAR"/>
+        <result column="SUPPLIER" property="supplier" jdbcType="VARCHAR"/>
+        <result column="SPECIAL_PRICE" property="specialPrice" jdbcType="VARCHAR"/>
+        <result column="WAREHOUSE" property="warehouse" jdbcType="VARCHAR"/>
+        <result column="ESC_NAME" property="escName" jdbcType="VARCHAR"/>
+        <result column="HASCUSTOM" property="hascustom"></result>
+    </resultMap>
+    <!--  商品从staged同步到online时指定的同步字段 -->
+    <sql id="OnlineSpecified">
+        mp.CODE,
+        mp.NAME,
+        mp.CATALOGVERSION_ID,
+        mp.UNIT,
+        mp.PRODUCT_TYPE,
+        mp.CUSTOM_TYPE,
+        mp.IS_SUIT,
+        mp.IS_SIN_SALE,
+        mp.BRAND_ID,
+        mp.SALE_STATUS,
+        mp.PRODUCT_STATUS,
+        mp.LISTING_TIME,
+        mp.DELISTING_TIME,
+        mp.IS_SPE_SALE,
+        mp.ORIGIN_COUNTRY,
+        mp.SOURCE_PLACE,
+        mp.MINI_ORDER_QUANTITY,
+        mp.RATE,
+        mp.STYPE,
+        mp.DESIGN_TYPE,
+        mp.P_LONG,
+        mp.P_WIDE,
+        mp.P_HIGH,
+        mp.SIZE_SPECIFICATION,
+        mp.SIZE_UNIT,
+        mp.PACKING_LONG,
+        mp.PACKING_WIDE,
+        mp.PACKING_HIGH,
+        mp.PACKING_UNIT,
+        mp.PACKING_VOLUME,
+        mp.PACKING_VOL_UNIT,
+        mp.GROSS_WEIGHT,
+        mp.NET_WEIGHT,
+        mp.WEIGHT_UNIT,
+        mp.SHAPE,
+        mp.TEXTURE,
+        mp.TEXTURE_SPECIFICATION,
+        mp.MAINTAIN_SPECIFICATION,
+        mp.IS_RESIN,
+        mp.NET_CAPACITY,
+        mp.NET_CAPACITY_UNIT,
+        mp.QGP,
+        mp.SYNCFLAG,
+        mp.NAME_EN,
+        mp.v_product_code,
+        mp.APPROVAL_STATUS,
+        mp.IMAGE_URL_ID,
+        mp.THUMBNIL_URL_ID,
+        mp.BASE_PRODUCT_ID,
+        mp.VARIANT_PRODUCT_ID,
+        mp.PLATFORM_CODE,
+        mp.Reward_Product,
+        mp.default_delivery,
+        mp.is_pre_sale,
+        mp.main_color,
+        mp.is_packaging,
+        mp.is_storage,
+        mp.sofa_combining_form,
+        mp.is_washable,
+        mp.suitable_users,
+        mp.is_Wheel,
+        mp.drawer_Rail_Num,
+        mp.is_Damping,
+        mp.paint_Craft,
+        mp.drawer_Number,
+        mp.backrest_Length,
+        mp.is_Rotate,
+        mp.mtart,
+        mp.matkl,
+        mp.material,
+        mp.series_Name,
+        mp.introduction,
+        mp.salepoint,
+        mp.STYPE,
+        mp.IS_MAIN,
+        mp.add_function1,
+        mp.add_function2,
+        mp.add_function3,
+        mp.filler1,
+        mp.filler2,
+        mp.filler3,
+        mp.wooden_crafts1,
+        mp.wooden_crafts2,
+        mp.wooden_crafts3,
+        mp.leather_range1,
+        mp.leather_range2,
+        mp.leather_range3,
+        mp.leather_Craft1,
+        mp.leather_Craft2,
+        mp.leather_Craft3,
+        mp.design_element1,
+        mp.design_element2,
+        mp.design_element3,
+        mp.CUSTOM_SUPPORT_TYPE,
+        mp.CUSTOM_CHANNEL_SOURCE,
+        mp.is_Soft_Cushion,
+        mp.PROPERTY,
+        mp.SUPPLIER,
+        mp.SPECIAL_PRICE,
+        mp.warehouse,
+        mp.ESC_NAME,
+        mp.HASCUSTOM
+    </sql>
+    <!--  商品从staged同步到online时指定的同步字段 -->
+    <select id="selectOnlineSpecifiedById" resultMap="ResultInfoForOnline" parameterType="java.lang.Long">
+        SELECT
+        <include refid="OnlineSpecified"></include>
+        FROM hmall_mst_product mp
+        WHERE 1 = 1
+        AND mp.product_id = #{productId}
+    </select>
+
+    <select id="selectBatchSyncProduct" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Catalogversion">
+        select
+        <include refid="product_column"></include>
+        from hmall_mst_product pd
+        left join hmall_mst_catalogversion mcg
+        on mcg.catalogversion_id = pd.catalogversion_id
+        left join hmall_mst_catalogs mc
+        on mc.catalogs_id = mcg.catalog
+        where mc.code = #{catalogName}
+        and mcg.catalogversion = #{catalogversion}
+    </select>
+
+    <!-- 查询全量同步时的商品信息，当从staged到online版本时，需要限制为非checked商品 -->
+    <select id="selectBatchSyncProductCase1" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Catalogversion">
+        select DISTINCT
+        <include refid="product_column"></include>
+        from hmall_mst_product pd
+        left join hmall_mst_catalogversion mcg
+        on mcg.catalogversion_id = pd.catalogversion_id
+        left join hmall_mst_catalogs mc
+        on mc.catalogs_id = mcg.catalog
+        LEFT JOIN HMALL_MST_ODTYPE od on od.PRODUCT_ID = pd.PRODUCT_ID
+        where mc.code = #{catalogName}
+        and mcg.catalogversion = #{catalogversion}
+        <if test="catalogName == 'markor'.toString() and catalogversion == 'staged'.toString()">
+            and (pd.APPROVAL_STATUS = 'APPROVED' OR od.APPROVAL_STATUS = 'APPROVED')
+        </if>
+        and (pd.custom_support_type is null
+        or pd.custom_support_type in ('5','6','3'))
+    </select>
+
+    <!-- 查询全量同步时的商品信息，当从staged到online版本时，需要限制为非checked商品 -->
+    <select id="selectBatchSyncProductCase2" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Catalogversion">
+        select DISTINCT
+        <include refid="product_column"></include>
+        from hmall_mst_product pd
+        left join hmall_mst_catalogversion mcg
+        on mcg.catalogversion_id = pd.catalogversion_id
+        left join hmall_mst_catalogs mc
+        on mc.catalogs_id = mcg.catalog
+        LEFT JOIN HMALL_MST_ODTYPE od on od.PRODUCT_ID = pd.PRODUCT_ID
+        where mc.code = #{catalogName}
+        and mcg.catalogversion = #{catalogversion}
+        <if test="catalogName == 'markor'.toString() and catalogversion == 'staged'.toString()">
+            and (pd.APPROVAL_STATUS = 'APPROVED' OR od.APPROVAL_STATUS = 'APPROVED')
+        </if>
+        and pd.custom_support_type = '2'
+    </select>
+
+    <!-- 查询全量同步时的商品信息，当从staged到online版本时，需要限制为非checked商品 -->
+    <select id="selectBatchSyncProductCase3" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Catalogversion">
+        select DISTINCT
+        <include refid="product_column"></include>
+        from hmall_mst_product pd
+        left join hmall_mst_catalogversion mcg
+        on mcg.catalogversion_id = pd.catalogversion_id
+        left join hmall_mst_catalogs mc
+        on mc.catalogs_id = mcg.catalog
+        LEFT JOIN HMALL_MST_ODTYPE od on od.PRODUCT_ID = pd.PRODUCT_ID
+        where mc.code = #{catalogName}
+        and mcg.catalogversion = #{catalogversion}
+        <if test="catalogName == 'markor'.toString() and catalogversion == 'staged'.toString()">
+            and (pd.APPROVAL_STATUS = 'APPROVED' OR od.APPROVAL_STATUS = 'APPROVED')
+        </if>
+        and pd.custom_support_type = '1'
+    </select>
+
+    <!-- 商品相关块码推送 -->
+    <select id="selectProductCode" resultMap="productCodeResultMap">
+        select scb.code,
+        scb.description,
+        scvb.value,
+        scvb.meaning
+        from sys_code_b  scb
+        left join sys_code_value_b scvb
+        on scb.code_id = scvb.code_id
+        where scb.code in (SELECT scvb.value FROM sys_code_b scb
+            left join sys_code_value_b scvb
+            on scb.code_id = scvb.code_id
+            WHERE scb.code = 'HMALL.STORE_CODE')
+        order by scb.code DESC
+    </select>
+
+    <!-- 推送syncFlag为N的商品信息到商城中 -->
+    <select id="selectPushingProduct" resultMap="productMap">
+		select HASCUSTOM,PRODUCT_ID,HMP.CODE,hmp.NAME,hmp.CATALOGVERSION_ID,APPROVAL_STATUS,UNIT,IMAGE_URL_ID,THUMBNIL_URL_ID,BASE_PRODUCT_ID,VARIANT_PRODUCT_ID,
+               hmp.PRODUCT_TYPE,CUSTOM_TYPE,IS_SUIT,IS_SIN_SALE,SALE_STATUS,PRODUCT_STATUS,LISTING_TIME,DELISTING_TIME,IS_SPE_SALE,
+               ORIGIN_COUNTRY,SOURCE_PLACE,MINI_ORDER_QUANTITY,RATE,STYPE,DESIGN_TYPE,P_LONG,P_WIDE,P_HIGH,SIZE_SPECIFICATION,SIZE_UNIT,
+               PACKING_LONG,PACKING_WIDE,PACKING_HIGH,PACKING_UNIT,PACKING_VOLUME,PACKING_VOL_UNIT,GROSS_WEIGHT,NET_WEIGHT,
+               WEIGHT_UNIT,SHAPE,TEXTURE,TEXTURE_SPECIFICATION,MAINTAIN_SPECIFICATION,IS_RESIN,NET_CAPACITY,NET_CAPACITY_UNIT,
+               QGP,v_product_code,name_en,PLATFORM_CODE,brand.code brand_code,MTART,MATKL,REWARD_PRODUCT,DEFAULT_DELIVERY,IS_PRE_SALE,
+               MAIN_COLOR,IS_PACKAGING,IS_STORAGE,SOFA_COMBINING_FORM,SUITABLE_USERS,DESIGN_ELEMENT1,DESIGN_ELEMENT2,DESIGN_ELEMENT3,
+               IS_SOFT_CUSHION,IS_WHEEL,DRAWER_RAIL_NUM,IS_DAMPING,PAINT_CRAFT,DRAWER_NUMBER,FILLER1,FILLER2,FILLER3,WOODEN_CRAFTS1,WOODEN_CRAFTS2,WOODEN_CRAFTS3,
+               BACKREST_LENGTH,IS_ROTATE,MATERIAL,SERIES_NAME,INTRODUCTION,SALEPOINT,ADD_FUNCTION1,ADD_FUNCTION2,ADD_FUNCTION3,LEATHER_RANGE1,LEATHER_RANGE2,LEATHER_RANGE3,LEATHER_CRAFT1,LEATHER_CRAFT2,LEATHER_CRAFT3,
+               CUSTOM_SUPPORT_TYPE,CUSTOM_CHANNEL_SOURCE,WAREHOUSE,ESC_NAME
+          from HMALL_MST_PRODUCT        HMP,
+               HMALL_MST_CATALOGVERSION HMC,
+               HMALL_MST_CATALOGS       catalogs,
+               hmall_mst_brand          brand
+         where HMP.CATALOGVERSION_ID = HMC.CATALOGVERSION_ID
+           and hmp.brand_id = brand.brand_id
+           AND HMC.CATALOG = catalogs.catalogs_id
+           AND HMP.SYNCFLAG = 'N'
+           AND HMC.CATALOGVERSION = 'online'
+           AND catalogs.code = 'markor'
+
+	</select>
+
+    <!--更新商品接口推送标志-->
+    <update id="updateProductSyncflag" parameterType="java.util.List">
+        UPDATE hmall_mst_product
+        <set>
+            SYNCFLAG ='Y'
+        </set>
+        <where>
+            PRODUCT_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.productId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+
+    <!--
+        根据订单ID查询其对应的全部商品
+        #{orderId} - 订单ID
+    -->
+    <select id="queryProductsByOrderId" resultMap="BaseResultMap">
+
+        SELECT
+
+        <include refid="product_column"></include>,
+        catalogs.NAME_ZH || '-' || catalog.CATALOGVERSION catalogName,
+
+        media.URL IMAGEURL,
+        catalog.CATALOGVERSION,
+        catalog.catalog
+
+        FROM HMALL_MST_PRODUCT pd LEFT JOIN HMALL_MST_CATALOGVERSION catalog ON pd.CATALOGVERSION_ID =
+        catalog.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON catalogs.CATALOGS_ID = catalog.CATALOG
+        LEFT JOIN HMALL_MST_MEDIA media
+        ON pd.IMAGE_URL_ID = media.MEDIA_ID
+
+        WHERE pd.PRODUCT_ID in (
+        SELECT p.PRODUCT_ID from HMALL_OM_ORDER o JOIN HMALL_OM_ORDER_ENTRY oe
+        ON o.ORDER_ID = oe.ORDER_ID
+        JOIN HMALL_MST_PRODUCT p on p.PRODUCT_ID = oe.PRODUCT_ID
+        WHERE o.ORDER_ID = #{orderId} GROUP BY p.PRODUCT_ID
+        )
+
+    </select>
+
+    <!-- 查询商品列表 -->
+    <select id="selectProductList" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Product">
+        select * from (
+        SELECT
+        <include refid="product_column"></include>,
+        catalogs.NAME_ZH || '-' || catalog.CATALOGVERSION catalogName,
+        catalog.CATALOGVERSION,
+        catalog.catalog,
+        (select media.path
+        from hmall_mst_media media
+        where pd.product_id = media.product_id
+        and rownum = 1
+        and media.image_group = 'SM_IMAGE'
+        and media.IS_HANDLE = 'Y'
+        ) IMAGEURL,
+        (select approval_status
+        from hmall_mst_odtype type
+        where pd.product_id = type.product_id
+        and type.cust_chan_src = 1) normal_approval_status,
+        (select approval_status
+        from hmall_mst_odtype type
+        where pd.product_id = type.product_id
+        and type.cust_chan_src = 2) super_approval_status
+        FROM HMALL_MST_PRODUCT pd LEFT JOIN HMALL_MST_CATALOGVERSION catalog ON pd.CATALOGVERSION_ID =
+        catalog.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON catalogs.CATALOGS_ID = catalog.CATALOG
+        ) pd
+        <where>
+            <if test="code !=null and code!=''and code!='undefined'">
+
+                and upper(pd.CODE) LIKE upper('%'||#{code}||'%')
+            </if>
+            <if test="name !=null and name!=''and name!='undefined'">
+
+                and pd.NAME LIKE '%'||#{name}||'%'
+            </if>
+            <if test="catalogversionId !=null and catalogversionId!=''">
+
+                and pd.CATALOGVERSION_ID = #{catalogversionId}
+            </if>
+            <if test="approvalStatus !=null and approvalStatus!=''">
+
+                and (pd.APPROVAL_STATUS = #{approvalStatus} OR pd.normal_approval_status = #{approvalStatus} OR pd.super_approval_status = #{approvalStatus})
+            </if>
+            <if test="saleStatus !=null and saleStatus!=''">
+
+                and pd.SALE_STATUS = #{saleStatus}
+            </if>
+            <if test="catalogversion !=null and catalogversion!=''and catalogversion!='undefined'">
+                and catalogs.NAME_ZH LIKE CONCAT(CONCAT('%',#{catalogversion}),'%')
+            </if>
+            <if test="creationDateFrom !=null and creationDateFrom!=''and creationDateFrom!='undefined'">
+
+                and pd.CREATION_DATE>to_date(#{creationDateFrom},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="creationDateTo !=null and creationDateTo!=''and creationDateTo!='undefined'">
+
+                and pd.CREATION_DATE &lt;to_date(#{creationDateTo},'yyyy-mm-dd hh24:mi:ss')
+            </if>
+            <if test="customSupportType !=null and customSupportType!=''">
+
+                and pd.custom_support_type = #{customSupportType}
+            </if>
+            <if test='hascustom!=null and hascustom!="" and hascustom!="null"'>
+                and pd.hascustom=#{hascustom}
+            </if>
+            <if test='hascustom=="null"'>
+                and pd.hascustom is null
+        </if>
+        </where>
+    </select>
+    <!-- 根据服务单号查询商品列表 -->
+    <select id="selectProductListByServiceCode" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Product">
+        SELECT
+        <include refid="product_column"></include>
+        FROM HMALL_MST_PRODUCT pd
+        <where>
+            pd.PRODUCT_ID IN (SELECT se.PRODUCT_ID FROM HMALL_AS_SERVICEORDER_ENTRY se WHERE se.SERVICE_ORDER_ID =#{serviceOrderId}
+            <if test="excludeProductIds!=null">
+                and se.PRODUCT_ID not IN
+                <foreach item="excludeProductId" index="index" collection="excludeProductIds"
+                         open="(" separator="," close=")">
+                    #{excludeProductId}
+                </foreach>
+            </if>
+            )
+            <if test="code !=null and code!=''and code!='undefined'">
+
+                and upper(pd.CODE) LIKE upper('%'||#{code}||'%')
+            </if>
+            <if test="name !=null and name!=''and name!='undefined'">
+
+                and pd.NAME LIKE '%'||#{name}||'%'
+            </if>
+        </where>
+
+    </select>
+    <!-- 查询当前商品可选补件 -->
+    <select id="selectPatchProduct" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Product">
+        SELECT
+        product.PRODUCT_ID,
+        product.CODE,
+        product.NAME,
+        product.APPROVAL_STATUS,
+        product.CATALOGVERSION_ID,
+        product.CREATION_DATE,
+        product.IS_SIN_SALE,
+        product.SALE_STATUS,
+        media.URL IMAGEURL
+        FROM HMALL_MST_PRODUCT product LEFT JOIN HMALL_MST_CATALOGVERSION catalog ON product.CATALOGVERSION_ID =
+        catalog.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_MEDIA media
+        ON product.IMAGE_URL_ID = media.MEDIA_ID
+        <where>
+            product.PRODUCT_ID not in
+            (select t.patch_line_id from
+            HMALL_MST_PATCHLINE_MAPPING t
+            where t.product_id=#{productId})
+            <if test="code !=null and code!=''and code!='undefined'">
+                and upper(product.CODE) LIKE upper('%'||#{code}||'%')
+            </if>
+            <if test="name !=null and name!=''and name!='undefined'">
+                and upper(product.NAME) LIKE upper('%'||#{name}||'%')
+            </if>
+            <if test="catalogversionId !=null and catalogversionId!=''">
+                and product.CATALOGVERSION_ID = #{catalogversionId}
+            </if>
+            <if test="approvalStatus !=null and approvalStatus!=''and approvalStatus!='undefined'">
+                and product.APPROVAL_STATUS = #{approvalStatus}
+            </if>
+            <if test="saleStatus !=null and saleStatus!=''and saleStatus!='undefined'">
+                and product.SALE_STATUS = #{saleStatus}
+            </if>
+        </where>
+
+
+    </select>
+
+    <!-- 查询当前商品可选套件 -->
+    <select id="selectSuitProduct" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Product">
+        SELECT
+        product.PRODUCT_ID,
+        product.CODE,
+        product.NAME,
+        product.APPROVAL_STATUS,
+        product.CATALOGVERSION_ID,
+        product.CREATION_DATE,
+        product.IS_SIN_SALE,
+        product.SALE_STATUS,
+        media.URL IMAGEURL
+        FROM HMALL_MST_PRODUCT product LEFT JOIN HMALL_MST_CATALOGVERSION catalog ON product.CATALOGVERSION_ID =
+        catalog.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_MEDIA media
+        ON product.IMAGE_URL_ID = media.MEDIA_ID
+        <where>
+            product.PRODUCT_ID not in
+            (select t.COMPONENT_ID from
+            HMALL_MST_SUITLINE_MAPPING t
+            where t.PRODUCT_HEAD_ID=#{productId})
+            <if test="code !=null and code!=''and code!='undefined'">
+                and upper(product.CODE) LIKE upper('%'||#{code}||'%')
+            </if>
+            <if test="name !=null and name!=''and name!='undefined'">
+                and upper(product.NAME) LIKE upper('%'||#{name}||'%')
+            </if>
+            <if test="catalogversionId !=null and catalogversionId!=''">
+                and product.CATALOGVERSION_ID = #{catalogversionId}
+            </if>
+            <if test="approvalStatus !=null and approvalStatus!=''and approvalStatus!='undefined'">
+                and product.APPROVAL_STATUS = #{approvalStatus}
+            </if>
+            <if test="saleStatus !=null and saleStatus!=''and saleStatus!='undefined'">
+                and product.SALE_STATUS = #{saleStatus}
+            </if>
+        </where>
+    </select>
+
+    <!--商品失效-->
+    <update id="unabledProduct">
+        UPDATE HMALL_MST_PRODUCT
+        SET APPROVAL_STATUS = 'unapproved'
+        <where>
+            <if test="productId != null and productId.length != 0">
+                and
+                <foreach collection="productId" item="productId" index="index" open="" separator="or" close="">
+                    PRODUCT_ID = #{productId}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <!-- 查询商品信息的LOV -->
+    <select id="selectProductLov" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Product">
+
+        select product.PRODUCT_ID,
+        product.CODE,
+        product.NAME,
+        product.product_type,
+        product.CATALOGVERSION_ID,
+        catalogs.name_zh || '-' || version.catalogversion catalogName
+        from HMALL_MST_PRODUCT product,
+        hmall_mst_catalogs catalogs,
+        hmall_mst_catalogversion version
+        where product.catalogversion_id = version.catalogversion_id
+        and version.catalog = catalogs.catalogs_id
+        <if test="code !=null and code!=''and code!='undefined'">
+            and product.CODE LIKE '%'||#{code}||'%'
+        </if>
+        <if test="name !=null and name!=''and name!='undefined'">
+            and product.NAME LIKE '%'||#{name}||'%'
+        </if>
+        <if test="productId !=null and productId !=''">
+            and product.PRODUCT_ID = #{productId}
+        </if>
+        <if test="catalogversionId !=null and catalogversionId !=''">
+            and product.CATALOGVERSION_ID = #{catalogversionId}
+        </if>
+    </select>
+
+    <!-- 查询ZMALLonline版本商品信息的LOV -->
+    <select id="selectZmallOnlineProductLov" resultMap="BaseResultMap" parameterType="com.hand.hmall.mst.dto.Product">
+
+        select product.PRODUCT_ID,
+        product.CODE,
+        product.NAME,
+        product.product_type,
+        product.CATALOGVERSION_ID,
+        catalogs.name_zh || '-' || version.catalogversion catalogName,
+        product.CUSTOM_SUPPORT_TYPE
+        from HMALL_MST_PRODUCT product,
+        hmall_mst_catalogs catalogs,
+        hmall_mst_catalogversion version
+        where product.catalogversion_id = version.catalogversion_id
+        and version.catalog = catalogs.catalogs_id
+        AND catalogs.code = 'markor' AND catalogversion = 'online'
+        <if test="code !=null and code!=''and code!='undefined'">
+            and product.CODE LIKE '%'||#{code}||'%'
+        </if>
+        <if test="name !=null and name!=''and name!='undefined'">
+            and product.NAME LIKE '%'||#{name}||'%'
+        </if>
+        <if test="productId !=null and productId !=''">
+            and product.PRODUCT_ID = #{productId}
+        </if>
+        <if test="catalogversionId !=null and catalogversionId !=''">
+            and product.CATALOGVERSION_ID = #{catalogversionId}
+        </if>
+    </select>
+
+    <!--新增商品和修改商品时确定商品编码和版本目录唯一性 -->
+    <select id="selectByCodeAndCatalogVersion" parameterType="com.hand.hmall.mst.dto.Product" resultMap="BaseResultMap">
+        select product.PRODUCT_ID,
+        product.CODE,
+        product.NAME,
+        product.CATALOGVERSION_ID
+        from HMALL_MST_PRODUCT product
+        where 1=1
+        <if test="code !=null and code!=''and code!='undefined'">
+            and product.CODE = #{code}
+        </if>
+        <if test="catalogversionId !=null">
+            and product.CATALOGVERSION_ID = #{catalogversionId}
+        </if>
+    </select>
+
+    <!-- 删除基础商品和变体商品之间的联系 -->
+    <update id="deleteRelation" parameterType="com.hand.hmall.mst.dto.Product">
+        update hmall_mst_product
+        <set>
+            BASE_PRODUCT_ID = #{baseProductId}
+        </set>
+        <where>
+            PRODUCT_ID=#{productId}
+        </where>
+    </update>
+
+    <!--根据基础商品Id查询商品列表-->
+    <select id="queryProductList" parameterType="Long" resultMap="BaseResultMap">
+        SELECT * FROM hmall_mst_product WHERE BASE_PRODUCT_ID = #{baseProductId}
+    </select>
+
+    <!-- 同步之前查询改记录的目录版本是否存在-->
+    <select id="selectCountByCodeAndVersion" parameterType="com.hand.hmall.mst.dto.Product"
+            resultType="java.lang.Integer">
+        select count(*) from
+        hmall_mst_product pd left join HMALL_MST_CATALOGVERSION mc
+        on pd.catalogversion_id = mc.catalogversion_id
+        where pd.code = #{code}
+        and mc.catalogversion = #{versionCode}
+    </select>
+
+    <select id="selectProductByCodeAndVersion" parameterType="com.hand.hmall.mst.dto.Product" resultMap="BaseResultMap">
+        select pd.product_id,pd.last_update_date,pd.custom_support_type from
+        hmall_mst_product pd
+        where pd.code = #{code}
+        and pd.catalogversion_id = #{catalogversionId}
+    </select>
+
+    <select id="selectIdByCodeAndVersion" parameterType="com.hand.hmall.mst.dto.Product"
+            resultType="java.lang.Long">
+        select pd.product_id from
+        hmall_mst_product pd
+        where pd.code = #{code}
+        and pd.catalogversion_id = #{catalogversionId}
+    </select>
+
+    <!--查询可同步商品-->
+    <select id="selectJobData" parameterType="com.hand.hmall.mst.dto.Product" resultMap="BaseResultMap">
+        SELECT
+        <include refid="product_column"></include>
+        FROM hmall_mst_product pd
+        WHERE pd.catalogversion_id = (select mcv.catalogversion_id from
+        hmall_mst_catalogversion mcv,
+        hmall_mst_catalogs mcl
+        where mcv.catalog = mcl.catalogs_id
+        and lower(mcl.code) = 'master'
+        and lower(mcv.catalogversion) = 'staged')
+        AND pd.last_update_date > #{syncData}
+
+
+    </select>
+
+    <!-- 促销界面LOV -->
+    <select id="selectCodeLov" resultMap="BaseResultMap">
+        select p.code,p.name from
+        hmall_mst_product p,
+        hmall_mst_catalogversion mc
+        where p.catalogversion_id = mc.catalogversion_id
+        and mc.catalogversion = 'online'
+        <if test="code != null and code !='' and code != 'undefined'">
+            AND p.CODE LIKE '%' || #{code} || '%'
+        </if>
+        <if test="name != null and name !='' and name != 'undefined'">
+            AND p.NAME LIKE '%' || #{name} || '%'
+        </if>
+    </select>
+
+    <select id="selectProductByOptionMap" parameterType="Map" resultMap="BaseResultMap">
+        SELECT product.CODE,product.NAME,product.NAME_EN
+        FROM HMALL_MST_PRODUCT product
+        JOIN HMALL_MST_CATALOGVERSION catalogVersion ON product.CATALOGVERSION_ID = catalogVersion.CATALOGVERSION_ID
+        JOIN HMALL_MST_CATALOGS catalogs ON catalogs.CATALOGS_ID=catalogVersion.CATALOG
+        <where>
+            <if test="paramMap.catalog != null">
+                AND catalogs.CODE=#{paramMap.catalog}
+            </if>
+            <if test="paramMap.catalogVersion != null">
+                AND catalogVersion.CATALOGVERSION=#{paramMap.catalogVersion}
+            </if>
+            <if test="paramMap.approval_status != null">
+                AND product.APPROVAL_STATUS=#{paramMap.approval_status}
+            </if>
+            <if test="paramMap.customType != null and paramMap.customType.size > 0">
+                AND product.CUSTOM_TYPE IN
+                <foreach collection="paramMap.customType" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectCustomByCode" resultMap="BaseResultMap">
+        select *
+          from hmall_mst_product p
+         where p.custom_type != 'A4'
+           and p.code = #{code, jdbcType=VARCHAR}
+           and p.catalogversion_id = #{catalogversionId, jdbcType=DECIMAL}
+    </select>
+
+    <select id="selectProductWithMediaUpdated" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="product_column"/>
+        from hmall_mst_product pd
+        where exists (select 1
+        from hmall_mst_media m
+        where m.product_id = pd.product_id
+        and m.update_flag != 'N'
+        and m.syncflag = 'N'
+        and m.IS_HANDLE = 'Y'
+        and m.catalogversion_id = #{catalogversionId, jdbcType=DECIMAL})
+    </select>
+
+    <!-- 推送ZMALL商品基础关联关系 -->
+    <resultMap id="ProductRelationForZmallResultMap" type="com.hand.hmall.mst.dto.ProductDto">
+        <result jdbcType="DECIMAL" property="productId" column="PRODUCT_ID"/>
+        <result jdbcType="VARCHAR" property="code" column="CODE"/>
+        <collection property="variantPrdLst" javaType="list" ofType="com.hand.hmall.mst.dto.ProductDto">
+            <result column="SUBCODE" property="code" jdbcType="VARCHAR"/>
+            <result column="PROPERTY" property="property" jdbcType="VARCHAR"/>
+            <result column="IS_MAIN" property="isMain" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryProductRelationForZmall" resultMap="ProductRelationForZmallResultMap" parameterType="java.util.List">
+        SELECT
+        t.PRODUCT_ID,
+        t.CODE,
+        tt.CODE AS SUBCODE,
+        tt.PROPERTY,
+        CASE WHEN TT.IS_MAIN IS NULL
+        THEN '1'
+        ELSE TT.IS_MAIN END AS IS_MAIN
+        FROM HMALL_MST_PRODUCT t
+        LEFT JOIN HMALL_MST_PRODUCT tt
+        ON tt.BASE_PRODUCT_ID = t.PRODUCT_ID
+        WHERE t.PRODUCT_ID IN
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+            #{item.productId}
+        </foreach>
+        AND tt.BASE_PRODUCT_ID IS NOT NULL
+        AND t.CATALOGVERSION_ID = (
+        SELECT CATALOGVERSION_ID
+        FROM HMALL_MST_CATALOGVERSION
+        WHERE CATALOGVERSION = 'online'
+        AND CATALOG = (
+        SELECT CATALOGS_ID
+        FROM HMALL_MST_CATALOGS
+        WHERE CODE = 'markor'))
+    </select>
+
+    <!--根据CODE字段查询版本状态为markor-online的商品-->
+    <select id="selectProductByCode" resultMap="BaseResultMap">
+        SELECT product.* from HMALL_MST_PRODUCT product
+        left join HMALL_MST_CATALOGVERSION catalogversion
+        on product.CATALOGVERSION_ID = catalogversion.CATALOGVERSION_ID
+        left join HMALL_MST_CATALOGS catalogs
+        on catalogversion.CATALOG  = catalogs.CATALOGS_ID
+        where catalogs.code='markor'
+        and catalogversion.CATALOGVERSION='online'
+        and product.code=#{code,jdbcType=VARCHAR}
+    </select>
+
+    <!--获取图片按钮，筛选满足条件的商品-->
+    <select id="selectProductForFetchMedia" resultMap="BaseResultMap">
+        select p.product_id, p.code
+        from hmall_mst_product p
+        left join hmall_mst_catalogversion catalogversion
+        on p.catalogversion_id = catalogversion.catalogversion_id
+        left join hmall_mst_catalogs catelogs
+        on catalogversion.catalog = catelogs.catalogs_id
+        where catelogs.code = 'markor'
+            and catalogversion.catalogversion = 'staged'
+            and p.custom_type is not null
+            and p.fetch_image_flag = 'N'
+    </select>
+
+    <!--根据CODE字段查询商品ID-->
+    <select id="selectProByCode" resultMap="BaseResultMap">
+    SELECT product.PRODUCT_ID from HMALL_MST_PRODUCT product
+    WHERE product.code=#{code}
+    </select>
+
+    <select id="queryInfo" resultMap="BaseResultMap">
+        SELECT product.PRODUCT_ID,
+        product.IMAGE_URL_ID,
+        product.CODE,
+        product.CATALOGVERSION_ID,
+        product.NAME,
+        product.UNIT,
+        product.APPROVAL_STATUS,
+        product.SALE_STATUS,
+        product.IS_SIN_SALE,
+        product.CREATION_DATE,
+        catalogs.NAME_ZH || '-' || ca.CATALOGVERSION catalogName
+        FROM HMALL_MST_PRODUCT product
+        LEFT JOIN hmall_mst_catalogversion ca
+        ON product.catalogversion_id = ca.catalogversion_id
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON catalogs.CATALOGS_ID = ca.CATALOG
+        <where>
+            <if test="code != null">
+                AND product.CODE like CONCAT('%',CONCAT(#{code,jdbcType=VARCHAR},'%') )
+            </if>
+            <if test="name != null">
+                AND product.NAME like CONCAT('%',CONCAT(#{name,jdbcType=VARCHAR},'%') )
+            </if>
+        </where>
+    </select>
+
+    <!--查询可单独销售的商品code-->
+    <select id="selectIsSinSaleCode" resultMap="AtpProductInvInfoExportMap">
+         SELECT
+          a.CODE MATNR,
+          a.NAME,
+          a.PRODUCT_ID,
+          a.IS_SUIT
+        FROM HMALL_MST_PRODUCT a
+          LEFT JOIN HMALL_MST_CATALOGVERSION c ON c.CATALOGVERSION_ID = a.CATALOGVERSION_ID
+          LEFT JOIN HMALL_MST_CATALOGS catalogs ON c.CATALOG = catalogs.CATALOGS_ID
+        WHERE a.IS_SIN_SALE = 'Y' AND catalogs.code = 'markor' AND c.CATALOGVERSION = 'online'
+        ORDER BY PRODUCT_ID DESC
+    </select>
+
+    <!--查询可单独销售的商品在套件表中的套件商品-->
+    <select id="selectInfoByProductHeadId" parameterType="com.hand.hmall.mst.dto.AtpProductInvInfoExport" resultMap="AtpProductInvInfoExportMap">
+       SELECT
+        su.COMPONENT_ID PRODUCT_ID,
+        p1.CODE MATNR
+      FROM HMALL_MST_PRODUCT p
+        LEFT JOIN HMALL_MST_SUITLINE_MAPPING su ON p.PRODUCT_ID = su.PRODUCT_HEAD_ID
+        LEFT JOIN HMALL_MST_PRODUCT p1 ON p1.PRODUCT_ID = su.COMPONENT_ID
+        LEFT JOIN HMALL_MST_CATALOGVERSION c
+          ON c.CATALOGVERSION_ID = p.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON c.CATALOG = catalogs.CATALOGS_ID
+      WHERE catalogs.code = 'markor'
+            AND c.CATALOGVERSION = 'online' AND p.PRODUCT_ID = #{productId}
+    </select>
+
+    <!--查询库存表中是否有商品库存-->
+    <select id="selectProcuctInvInfoByMatnr" parameterType="com.hand.hmall.mst.dto.AtpProductInvInfoExport" resultMap="AtpProductInvInfoExportMap">
+       SELECT * FROM HAP_ATP_PRODUCT_RESERVED_V WHERE MATNR = #{matnr}
+    </select>
+
+    <!--查询可用库存-->
+    <select id="selectProcuctInvInfo" resultMap="AtpProductInvInfoExportMap" parameterType="com.hand.hmall.mst.dto.AtpProductInvInfoExport">
+  SELECT sum(inv.AVAILABLE_QUANTITY) AVAILABLE_QUANTITY
+FROM HAP_ATP_PRODUCT_RESERVED_V inv
+  LEFT JOIN HMALL_MST_PRODUCT pro ON inv.MATNR = pro.CODE
+  LEFT JOIN HMALL_MST_CATALOGVERSION c ON c.CATALOGVERSION_ID = pro.CATALOGVERSION_ID
+  LEFT JOIN HMALL_MST_CATALOGS catalogs ON c.CATALOG = catalogs.CATALOGS_ID
+WHERE catalogs.code = 'markor'
+      AND c.CATALOGVERSION = 'online'
+      AND inv.MATNR IN (SELECT DISTINCT i.MATNR
+                        FROM HAP_ATP_PRODUCT_RESERVED_V i
+                          RIGHT JOIN (SELECT
+                                        su.COMPONENT_ID PRODUCT_ID,
+                                        p1.CODE
+                                      FROM HMALL_MST_PRODUCT p
+                                        LEFT JOIN HMALL_MST_SUITLINE_MAPPING su ON p.PRODUCT_ID = su.PRODUCT_HEAD_ID
+                                        LEFT JOIN HMALL_MST_PRODUCT p1 ON p1.PRODUCT_ID = su.COMPONENT_ID
+                                        LEFT JOIN HMALL_MST_CATALOGVERSION c
+                                          ON c.CATALOGVERSION_ID = p.CATALOGVERSION_ID
+                                        LEFT JOIN HMALL_MST_CATALOGS catalogs ON c.CATALOG = catalogs.CATALOGS_ID
+                                      WHERE catalogs.code = 'markor'
+                                            AND c.CATALOGVERSION = 'online' AND p.PRODUCT_ID = #{productId}
+                                     )a
+                            ON a.CODE = i.MATNR)
+GROUP BY inv.MATNR, pro.NAME
+ORDER BY AVAILABLE_QUANTITY ASC
+    </select>
+
+    <!--更新是否定制字段为空-->
+    <update id="updateSetHascustomIsNull" parameterType="java.lang.Long">
+        UPDATE HMALL_MST_PRODUCT SET HASCUSTOM=NULL  WHERE product_id=#{productId}
+    </update>
+</mapper>

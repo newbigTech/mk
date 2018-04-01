@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallMstInstallationMapper">
+  <resultMap id="BaseResultMap" type="HmallMstInstallation">
+    <id column="INSTALLATION_ID" jdbcType="DECIMAL" property="installationId" />
+    <result column="CATEGORY_ID" jdbcType="DECIMAL" property="categoryId" />
+    <result column="INSTALLATION_FEE" jdbcType="DECIMAL" property="installationFee" />
+    <result column="STATUS" jdbcType="VARCHAR" property="status" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+
+  </resultMap>
+  <sql id="Base_Column_List">
+    INSTALLATION_ID, CATEGORY_ID, INSTALLATION_FEE, STATUS, OBJECT_VERSION_NUMBER
+  </sql>
+  <select id="getInstallationByCategoryIdAndStatus"  resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from HMALL_MST_INSTALLATION
+    where CATEGORY_ID = #{0,jdbcType=DECIMAL} AND STATUS=#{1}
+  </select>
+</mapper>

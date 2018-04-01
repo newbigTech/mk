@@ -1,0 +1,358 @@
+<#include "../include/header.html">
+    <script src="${base.contextPath}/common/code?promoStatus=HMALL.OM_ED_PROMO.STATUS" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?promoChannel=HMALL.OM_ED_PROMO.CHANNEL" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?promoStore=HMALL.OM_ED_PROMO.STORE" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?promoWebsite=HMALL.OM_ED_PROMO.WEBSITE" type="text/javascript"></script>
+    <script type="text/javascript">
+        //事后促销规则ID
+        var promoId = "${RequestParameters.promoId!0}";
+
+        var viewModel = kendo.observable({
+            model: {}
+        });
+    </script>
+    <body>
+    <div id="page-content">
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="savePromo()"><@spring.message "保存并启用"/></span>
+            <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="removePromo()"><@spring.message "清空优惠券"/></span>
+        </div>
+        <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+        <script>kendo.bind($('#query-form'), viewModel);</script>
+        <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+            <form id="forms" style="padding-bottom: 20px">
+                <div class="panel-body" style="margin-top: 10px;border:1px solid #2F617F;">
+                    <div>
+                        <label>规则编辑</label>
+                    </div>
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">规则ID:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;" data-bind="value:model.promoId" class="k-textbox" readonly/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">规则名称:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;" data-bind="value:model.name" class="k-textbox" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">规则编码:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%" data-bind="value:model.code" class="k-textbox" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">规则描述:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;" data-bind="value:model.description" class="k-textbox" required/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">订单金额:</label>
+                                <div class="col-sm-8">
+                                    <input id="orderAmount" type="text" style="width: 100%;" data-bind="value:model.orderAmount" required>
+                                    <script>
+                                        $("#orderAmount").kendoNumericTextBox({
+                                            min: 0,
+                                            step: 1,
+                                            format: "0.00"
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">名额:</label>
+                                <div class="col-sm-8">
+                                    <input id="space" type="text" style="width: 100%" data-bind="value:model.space" required>
+                                    <script>
+                                        $("#space").kendoNumericTextBox({
+                                            min: 0,
+                                            step: 1,
+                                            format: "0"
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">订单开始时间:</label>
+                                <div class="col-sm-8">
+                                    <input id="orderStartTime" type="text" style="width: 100%;" data-role="datetimepicker" data-bind="value:model.orderStartTime" required/>
+                                    <script>
+                                        $("#orderStartTime").kendoDateTimePicker({
+                                            animation: {
+                                                close: {
+                                                    effects: "fadeOut zoom:out",
+                                                    duration: 300
+                                                },
+                                                open: {
+                                                    effects: "fadeIn zoom:in",
+                                                    duration: 300
+                                                }
+                                            },
+                                            format: "yyyy-MM-dd HH:mm:ss"
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">订单结束时间:</label>
+                                <div class="col-sm-8">
+                                    <input id="orderEndTime" type="text" style="width: 100%;" data-role="datetimepicker" data-bind="value:model.orderEndTime" required>
+                                    <script>
+                                        $("#orderEndTime").kendoDateTimePicker({
+                                            animation: {
+                                                close: {
+                                                    effects: "fadeOut zoom:out",
+                                                    duration: 300
+                                                },
+                                                open: {
+                                                    effects: "fadeIn zoom:in",
+                                                    duration: 300
+                                                }
+                                            },
+                                            format: "yyyy-MM-dd HH:mm:ss"
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">单人最高名额:</label>
+                                <div class="col-sm-8">
+                                    <input id="max" type="text" style="width: 100%" data-bind="value:model.max">
+                                    <script>
+                                        $("#max").kendoNumericTextBox({
+                                            min: 0,
+                                            step: 1,
+                                            format: "0"
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">优先级:</label>
+                                <div class="col-sm-8">
+                                    <input id="priority" type="text" style="width: 100%" data-bind="value:model.priority" required>
+                                    <script>
+                                        $("#priority").kendoNumericTextBox({
+                                            min: 0,
+                                            step: 1,
+                                            format: "0"
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">获得资格提示信息:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%;" data-bind="value:model.info" class="k-textbox"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">状态:</label>
+                                <div class="col-sm-8">
+                                    <input id="status" type="text" style="width: 100%;" disabled="disabled" data-bind="value:model.status" readonly/>
+                                    <script type="text/javascript">
+                                        $("#status").kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: promoStatus
+                                        }).data("kendoDropDownList");
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">渠道:</label>
+                                <div class="col-sm-8">
+                                    <input id="channel" type="text" style="width: 100%;" data-bind="value:model.channel" required/>
+                                    <script type="text/javascript">
+                                        $("#channel").kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: promoChannel
+                                        }).data("kendoDropDownList");
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">网站:</label>
+                                <div class="col-sm-8">
+                                    <input id="website" type="text" style="width: 100%" data-bind="value:model.website" required/>
+                                    <script type="text/javascript">
+                                        $("#website").kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: promoWebsite
+                                        }).data("kendoDropDownList");
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">店铺:</label>
+                                <div class="col-sm-8">
+                                    <input id="store" type="text" style="width: 100%;" data-bind="value:model.store" required/>
+                                    <script type="text/javascript">
+                                        $("#store").kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            valuePrimitive: true,
+                                            dataSource: promoStore
+                                        }).data("kendoDropDownList");
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom: 10px">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">关联优惠券:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" id="coupon" style="width: 100%;" data-bind="value:model.coupon" onclick="selectCoupon()" class="k-textbox" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="margin-top:5px;">赠品信息:</label>
+                                <div class="col-sm-8">
+                                    <input type="text" style="width: 100%" data-bind="value:model.gift" class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        kendo.bind($('#page-content'), viewModel);
+
+        if (promoId != 0) {
+            $.ajax({
+                type: 'POST',
+                url: '${base.contextPath}/hmall/om/ed/promo/selectOmEdPromo?promoId=' + promoId,
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    if (data.success) {
+                        var a0 = data.rows[0] || {};
+                        for (var k in a0) {
+                            viewModel.model.set(k, a0[k]);
+                        }
+                    } else {
+                        kendo.ui.showInfoDialog({
+                            message: data.message
+                        });
+                    }
+                }
+            });
+        }
+
+        //清空优惠券
+        function removePromo() {
+            $('#coupon').val('');
+            viewModel.model.set('coupon', '');
+        }
+
+        //保存
+        function savePromo() {
+            var coupon = viewModel.model.coupon;
+            var gift = viewModel.model.gift;
+            if ((gift == null || gift == '') && (coupon == null || coupon == '')) {
+                kendo.ui.showInfoDialog({
+                    message: '优惠券、赠品信息不能为空'
+                });
+                return;
+            }
+            var data = {};
+            data = viewModel.model.toJSON();
+            var validator = $("#forms").kendoValidator().data("kendoValidator");
+            if (validator.validate()) {
+                $.ajax({
+                    url: "${base.contextPath}/hmall/om/ed/promo/saveOmEdPromo",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify([data]),
+                    error: function (request) {
+                        alert("Connection error");
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0];
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                            }
+                            kendo.ui.showInfoDialog({
+                                message: "<@spring.message 'hap.tip.success'/>",
+                            });
+                        } else {
+                            kendo.ui.showInfoDialog({
+                                message: data.message
+                            });
+                        }
+                    }
+                });
+            }
+        }
+        //关联优惠券
+        function selectCoupon() {
+            var dialog = $("#couponDialog").kendoWindow({
+                width: 800,
+                height: 450,
+                title: '关联优惠券',
+                visible: false,
+                iframe: true,
+                modal: true,
+                content: "${base.contextPath}/om/om_ed_promo_rule_coupon.html"
+            }).data("kendoWindow");
+            dialog.center();
+            dialog.open();
+        }
+    </script>
+    <div id="couponDialog" style="display: none"></div>
+    </body>
+    </html>

@@ -1,0 +1,1324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hand.hmall.om.mapper.OrderMapper">
+
+    <resultMap id="orderMap" type="com.hand.hmall.om.dto.Order">
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="LOCKED" property="locked" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_STATUS" property="orderStatus" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="orderSta" jdbcType="VARCHAR"/>
+        <result column="USER_ID" property="userId" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_NAME" property="receiverName" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_MOBILE" property="receiverMobile" jdbcType="VARCHAR"/>
+        <result column="PAYMENT_AMOUNT" property="paymentAmount" jdbcType="VARCHAR"/>
+        <result column="ORDER_AMOUNT" property="orderAmount" jdbcType="VARCHAR"/>
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="DATE"/>
+        <result column="ENTRY_QUANTITY" property="quantity" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="customerid" property="customerid" jdbcType="VARCHAR"/>
+        <result column="ORDER_TYPE" property="orderType" jdbcType="VARCHAR"/>
+        <result column="ORDER_CREATIONTIME" property="orderCreationtime" jdbcType="DATE"/>
+        <result column="HISTORY_TOTAL_REFUND_AMOUNT" property="historyTotalRefundAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <resultMap id="resultInfoMap" type="com.hand.hmall.om.dto.Order">
+        <id column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="ESC_ORDER_CODE" jdbcType="VARCHAR" property="escOrderCode"/>
+        <result column="ORDER_STATUS" jdbcType="VARCHAR" property="orderStatus"/>
+        <result column="USER_ID" jdbcType="DECIMAL" property="userId"/>
+        <result column="CURRENCY_ID" jdbcType="VARCHAR" property="currencyId"/>
+        <result column="WEBSITE_ID" jdbcType="VARCHAR" property="websiteId"/>
+        <result column="SALECHANNEL_ID" jdbcType="VARCHAR" property="salechannelId"/>
+        <result column="STORE_ID" jdbcType="VARCHAR" property="storeId"/>
+        <result column="PAYMENT_AMOUNT" jdbcType="DECIMAL" property="paymentAmount"/>
+        <result column="ORDER_AMOUNT" jdbcType="DECIMAL" property="orderAmount"/>
+        <result column="DISCOUNT_FEE" jdbcType="DECIMAL" property="discountFee"/>
+        <result column="ORDER_CREATIONTIME" jdbcType="TIMESTAMP" property="orderCreationtime"/>
+        <result column="BUYER_MEMO" jdbcType="VARCHAR" property="buyerMemo"/>
+        <result column="IS_INVOICED" jdbcType="VARCHAR" property="isInvoiced"/>
+        <result column="INVOICE_TYPE" jdbcType="VARCHAR" property="invoiceType"/>
+        <result column="INVOICE_NAME" jdbcType="VARCHAR" property="invoiceName"/>
+        <result column="INVOICE_URL" jdbcType="VARCHAR" property="invoiceUrl"/>
+        <result column="INVOICE_ENTITY_ID" jdbcType="VARCHAR" property="invoiceEntityId"/>
+        <result column="INVOICE_ENTITY_ADDR" jdbcType="VARCHAR" property="invoiceEntityAddr"/>
+        <result column="INVOICE_ENTITY_PHONE" jdbcType="VARCHAR" property="invoiceEntityPhone"/>
+        <result column="INVOICE_BANK_NAME" jdbcType="VARCHAR" property="invoiceBankName"/>
+        <result column="INVOICE_BANK_ACCOUNT" jdbcType="VARCHAR" property="invoiceBankAccount"/>
+        <result column="POST_FEE" jdbcType="DECIMAL" property="postFee"/>
+        <result column="FIX_FEE" jdbcType="DECIMAL" property="fixFee"/>
+        <result column="TOTALCON" jdbcType="VARCHAR" property="totalcon"/>
+        <result column="RECEIVER_NAME" jdbcType="VARCHAR" property="receiverName"/>
+        <result column="RECEIVER_COUNTRY" jdbcType="VARCHAR" property="receiverCountry"/>
+        <result column="RECEIVER_STATE" jdbcType="VARCHAR" property="receiverState"/>
+        <result column="RECEIVER_CITY" jdbcType="VARCHAR" property="receiverCity"/>
+        <result column="RECEIVER_DISTRICT" jdbcType="VARCHAR" property="receiverDistrict"/>
+        <result column="RECEIVER_ADDRESS" jdbcType="VARCHAR" property="receiverAddress"/>
+        <result column="RECEIVER_ZIP" jdbcType="VARCHAR" property="receiverZip"/>
+        <result column="RECEIVER_MOBILE" jdbcType="VARCHAR" property="receiverMobile"/>
+        <result column="RECEIVER_PHONE" jdbcType="VARCHAR" property="receiverPhone"/>
+        <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime"/>
+        <result column="ESTIMATE_CON_TIME" jdbcType="TIMESTAMP" property="estimateConTime"/>
+        <result column="PAY_RATE" jdbcType="VARCHAR" property="payRate"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="PAY_STATUS" jdbcType="VARCHAR" property="payStatus"/>
+        <result column="SPLIT_ALLOWED" jdbcType="VARCHAR" property="splitAllowed"/>
+        <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType"/>
+        <result column="CHOSEN_COUPON" jdbcType="VARCHAR" property="chosenCoupon"/>
+        <result column="CHOSEN_PROMOTION" jdbcType="VARCHAR" property="chosenPromotion"/>
+        <result column="TRADE_FINISH_TIME" jdbcType="TIMESTAMP" property="tradeFinishTime"/>
+        <result column="EPOST_FEE" jdbcType="DECIMAL" property="epostFee"/>
+        <result column="IS_IO" jdbcType="VARCHAR" property="isIo"/>
+        <result column="display_name" jdbcType="VARCHAR" property="displayName"/>
+        <result column="cancel_refund_uncreate" jdbcType="VARCHAR" property="cancelRefundUncreate"/>
+        <result column="ORDER_TYPE" property="orderType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="refundOrderInfo" type="com.hand.hmall.om.dto.Order">
+        <id column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="code" jdbcType="VARCHAR" property="orderCode"/>
+        <result column="RECEIVER_NAME" jdbcType="VARCHAR" property="receiverName"/>
+        <result column="RECEIVER_ADDRESS" jdbcType="VARCHAR" property="address"/>
+        <result column="RECEIVER_MOBILE" jdbcType="VARCHAR" property="mobile"/>
+        <result column="PAY_MODE" jdbcType="VARCHAR" property="payMode"/>
+        <result column="PAY_AMOUNT" jdbcType="DECIMAL" property="payAmount"/>
+        <result column="USERGROUP_CODE" jdbcType="VARCHAR" property="usergroupCode"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="CUSTOMER_ID" jdbcType="VARCHAR" property="customerid"/>
+        <result column="order_amount" jdbcType="DECIMAL" property="orderAmount"/>
+        <result column="current_amount" jdbcType="DECIMAL" property="currentAmount"/>
+        <result column="payment_amount" jdbcType="DECIMAL" property="paymentAmount"/>
+    </resultMap>
+
+    <!-- 是否废弃待定 -->
+    <resultMap id="orderSyncInfoResultMap" type="com.hand.hmall.om.dto.Order">
+        <id column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="ESC_ORDER_CODE" jdbcType="VARCHAR" property="escOrderCode"/>
+        <result column="order_status" jdbcType="VARCHAR" property="orderStatus"/>
+        <result column="customerid" jdbcType="VARCHAR" property="customerid"/>
+        <result column="CURRENCY_ID" jdbcType="VARCHAR" property="currencyId"/>
+        <result column="WEBSITE_ID" jdbcType="VARCHAR" property="websiteId"/>
+        <result column="SALECHANNEL_ID" jdbcType="VARCHAR" property="salechannelId"/>
+        <result column="STORE_ID" jdbcType="VARCHAR" property="storeId"/>
+        <result column="INVOICE_TYPE" jdbcType="VARCHAR" property="invoiceType"/>
+        <result column="RECEIVER_NAME" jdbcType="VARCHAR" property="receiverName"/>
+        <result column="RECEIVER_COUNTRY" jdbcType="VARCHAR" property="receiverCountry"/>
+        <result column="RECEIVER_STATE" jdbcType="VARCHAR" property="receiverState"/>
+        <result column="RECEIVER_CITY" jdbcType="VARCHAR" property="receiverCity"/>
+        <result column="RECEIVER_DISTRICT" jdbcType="VARCHAR" property="receiverDistrict"/>
+        <result column="RECEIVER_ADDRESS" jdbcType="VARCHAR" property="receiverAddress"/>
+        <result column="RECEIVER_ZIP" jdbcType="VARCHAR" property="receiverZip"/>
+        <result column="RECEIVER_MOBILE" jdbcType="VARCHAR" property="receiverMobile"/>
+        <result column="RECEIVER_PHONE" jdbcType="VARCHAR" property="receiverPhone"/>
+        <result column="PAY_RATE" jdbcType="VARCHAR" property="payRate"/>
+        <result column="PAYMENT_AMOUNT" jdbcType="DECIMAL" property="paymentAmount"/>
+        <result column="ORDER_AMOUNT" jdbcType="DECIMAL" property="orderAmount"/>
+        <result column="DISCOUNT_FEE" jdbcType="DECIMAL" property="discountFee"/>
+        <result column="BUYER_MEMO" jdbcType="VARCHAR" property="buyerMemo"/>
+        <result column="order_creationtime" jdbcType="TIMESTAMP" property="orderCreationtime"/>
+        <result column="IS_INVOICED" jdbcType="VARCHAR" property="isInvoiced"/>
+        <result column="INVOICE_NAME" jdbcType="VARCHAR" property="invoiceName"/>
+        <result column="INVOICE_URL" jdbcType="VARCHAR" property="invoiceUrl"/>
+        <result column="POST_FEE" jdbcType="DECIMAL" property="postFee"/>
+        <result column="FIX_FEE" jdbcType="DECIMAL" property="fixFee"/>
+        <result column="EPOST_FEE" jdbcType="DECIMAL" property="epostFee"/>
+        <result column="PRE_POSTFEE" jdbcType="DECIMAL" property="prePostfee"/>
+        <result column="PRE_EPOSTFEE" jdbcType="DECIMAL" property="preEpostfee"/>
+        <result column="PRE_FIXFEE" jdbcType="DECIMAL" property="preFixfee"/>
+        <result column="TOTALCON" jdbcType="VARCHAR" property="totalcon"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType"/>
+        <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime"/>
+        <result column="ESTIMATE_CON_TIME" jdbcType="TIMESTAMP" property="estimateConTime"/>
+    </resultMap>
+
+    <resultMap id="orderSyncInfoMap" type="com.hand.hmall.om.dto.OrderSyncDto">
+        <id column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="ESC_ORDER_CODE" jdbcType="VARCHAR" property="escOrderCode"/>
+        <result column="order_status" jdbcType="VARCHAR" property="orderStatus"/>
+        <result column="customerid" jdbcType="VARCHAR" property="customerId"/>
+        <result column="CURRENCY_ID" jdbcType="VARCHAR" property="currencyCode"/>
+        <result column="WEBSITE_ID" jdbcType="VARCHAR" property="websiteCode"/>
+        <result column="SALECHANNEL_ID" jdbcType="VARCHAR" property="channelCode"/>
+        <result column="STORE_ID" jdbcType="VARCHAR" property="storeCode"/>
+        <result column="INVOICE_TYPE" jdbcType="VARCHAR" property="invoiceType"/>
+        <result column="RECEIVER_NAME" jdbcType="VARCHAR" property="receiverName"/>
+        <result column="RECEIVER_COUNTRY" jdbcType="VARCHAR" property="countryCode"/>
+        <result column="RECEIVER_STATE" jdbcType="VARCHAR" property="stateCode"/>
+        <result column="RECEIVER_CITY" jdbcType="VARCHAR" property="cityCode"/>
+        <result column="RECEIVER_DISTRICT" jdbcType="VARCHAR" property="districtCode"/>
+        <result column="RECEIVER_ADDRESS" jdbcType="VARCHAR" property="receiverAddress"/>
+        <result column="RECEIVER_ZIP" jdbcType="VARCHAR" property="receiverZip"/>
+        <result column="RECEIVER_MOBILE" jdbcType="VARCHAR" property="receiverMobile"/>
+        <result column="RECEIVER_PHONE" jdbcType="VARCHAR" property="receiverPhone"/>
+        <result column="PAY_RATE" jdbcType="VARCHAR" property="payRate"/>
+        <result column="PAYMENT_AMOUNT" jdbcType="DECIMAL" property="paymentAmount"/>
+        <result column="ORDER_AMOUNT" jdbcType="DECIMAL" property="orderAmount"/>
+        <result column="CURRENT_AMOUNT" jdbcType="DECIMAL" property="realOrderAmount"/>
+        <result column="DISCOUNT_FEE" jdbcType="DECIMAL" property="discountFee"/>
+        <result column="BUYER_MEMO" jdbcType="VARCHAR" property="buyerMemo"/>
+        <result column="order_creationtime" jdbcType="TIMESTAMP" property="orderCreationtime"/>
+        <result column="IS_INVOICED" jdbcType="VARCHAR" property="isInvoiced"/>
+        <result column="INVOICE_NAME" jdbcType="VARCHAR" property="invoiceName"/>
+        <result column="INVOICE_URL" jdbcType="VARCHAR" property="invoiceUrl"/>
+        <result column="POST_FEE" jdbcType="DECIMAL" property="postFee"/>
+        <result column="FIX_FEE" jdbcType="DECIMAL" property="fixFee"/>
+        <result column="EPOST_FEE" jdbcType="DECIMAL" property="epostFee"/>
+        <result column="PRE_POSTFEE" jdbcType="DECIMAL" property="prePostFee"/>
+        <result column="PRE_EPOSTFEE" jdbcType="DECIMAL" property="preEpostFee"/>
+        <result column="PRE_FIXFEE" jdbcType="DECIMAL" property="preFixFee"/>
+        <result column="TOTALCON" jdbcType="VARCHAR" property="totalcon"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType"/>
+        <result column="ESTIMATE_DELIVERY_TIME" jdbcType="VARCHAR" property="estimateDeliveryTime"/>
+        <result column="ESTIMATE_CON_TIME" jdbcType="VARCHAR" property="estimateConTime"/>
+        <!--<result column="deliveryTime" property="deliveryTime" jdbcType="TIMESTAMP"/>-->
+        <!--<result column="conTime" property="conTime" jdbcType="TIMESTAMP"/>-->
+        <result column="COUPON_FEE" jdbcType="DECIMAL" property="couponFee"/>
+        <result column="TOTAL_DISCOUNT" jdbcType="DECIMAL" property="totalDiscount"/>
+        <result column="CHOSEN_COUPON" jdbcType="VARCHAR" property="chosenCoupon"/>
+        <result column="CHOSEN_PROMOTION" jdbcType="VARCHAR" property="chosenPromotion"/>
+        <result column="SYNC_ZMALL" jdbcType="VARCHAR" property="syncZmall"/>
+        <result column="INVOICE_ENTITY_ID" jdbcType="VARCHAR" property="invoiceEntityId"/>
+        <result column="INVOICE_ENTITY_ADDR" jdbcType="VARCHAR" property="invoiceEntityAddr"/>
+        <result column="INVOICE_ENTITY_PHONE" jdbcType="VARCHAR" property="invoiceEntityPhone"/>
+        <result column="INVOICE_BANK_NAME" jdbcType="VARCHAR" property="invoiceBankName"/>
+        <result column="INVOICE_BANK_ACCOUNT" jdbcType="VARCHAR" property="invoiceBankAccount"/>
+        <result column="REFUND_AMOUNT" jdbcType="DECIMAL" property="refundAmount"/>
+    </resultMap>
+
+    <resultMap id="tmOrderInfo" type="com.hand.hmall.om.dto.TmData">
+        <id column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="ESC_ORDER_CODE" jdbcType="VARCHAR" property="escOrderCode"/>
+        <result column="LOGISTICS_NUMBER" jdbcType="VARCHAR" property="logisticsNumber"/>
+        <result column="LOGISTICS_COMPANIES" jdbcType="VARCHAR" property="logisticsCompanies"/>
+    </resultMap>
+
+    <resultMap id="HmallOrderSimpleMap" type="com.hand.hmall.om.dto.Order">
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="LOCKED" property="locked" jdbcType="VARCHAR"/>
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR"/>
+        <result column="ORDER_STATUS" property="orderStatus" jdbcType="VARCHAR"/>
+        <result column="USER_ID" property="userId" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_NAME" property="receiverName" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_MOBILE" property="receiverMobile" jdbcType="VARCHAR"/>
+        <result column="PAYMENT_AMOUNT" property="paymentAmount" jdbcType="VARCHAR"/>
+        <result column="ORDER_AMOUNT" property="orderAmount" jdbcType="VARCHAR"/>
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="DATE"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    od.ORDER_ID,od.CODE, od.STORE_ID, od.PAYMENT_AMOUNT, od.ORDER_AMOUNT, od.DISCOUNT_FEE, od.ORDER_CREATIONTIME, od.BUYER_MEMO,
+    od.IS_INVOICED, od.INVOICE_TYPE, od.INVOICE_NAME, od.INVOICE_URL, od.POST_FEE, od.FIX_FEE, od.TOTALCON,
+    od.RECEIVER_NAME, od.RECEIVER_COUNTRY, od.RECEIVER_STATE, od.RECEIVER_CITY, od.RECEIVER_DISTRICT,
+    od.RECEIVER_ADDRESS, od.RECEIVER_ZIP, od.RECEIVER_MOBILE, od.RECEIVER_PHONE, od.ESTIMATE_DELIVERY_TIME,
+    od.ESTIMATE_CON_TIME, od.PAY_RATE, od.SYNCFLAG, od.PAY_STATUS, od.SPLIT_ALLOWED,od.WEBSITE_ID,
+    od.SHIPPING_TYPE,od.IS_IO
+    </sql>
+
+    <!--
+        根据订单ID查询需要同步到商城的订单
+        OrderSyncDto selectOrderSyncInfoById(Long orderId);
+    -->
+    <select id="selectOrderSyncInfoById" resultMap="orderSyncInfoMap" parameterType="java.lang.Long">
+        select oo.order_id,
+        oo.esc_order_code,
+        oo.order_status,
+        mu.customerid customerId,
+        oo.currency_id currencyCode,
+        oo.website_id websiteCode,
+        oo.store_id storeCode,
+        oo.salechannel_id channelCode,
+        oo.invoice_type,
+        oo.receiver_name,
+        oo.receiver_country countryCode,
+        oo.receiver_state stateCode,
+        oo.receiver_city cityCode,
+        oo.receiver_district districtCode,
+        oo.pay_rate,
+        oo.payment_amount,
+        oo.shipping_type,
+        oo.order_creationtime ,
+        oo.estimate_delivery_time ,
+        oo.estimate_con_time ,
+        oo.is_invoiced,
+        oo.totalcon,
+        oo.syncflag,
+        oo.order_amount,
+        oo.discount_fee,
+        oo.buyer_memo,
+        oo.invoice_name,
+        oo.invoice_url,
+        oo.post_fee,
+        oo.fix_fee,
+        oo.epost_fee,
+        oo.pre_postfee prePostFee,
+        oo.pre_epostfee preEpostFee,
+        oo.pre_fixfee preFixFee,
+        oo.receiver_address,
+        oo.receiver_zip,
+        oo.receiver_mobile,
+        oo.receiver_phone,
+        oo.code,
+        oo.total_discount,
+        oo.coupon_fee,
+        oo.chosen_coupon,
+        oo.chosen_promotion,
+        oo.sync_zmall,
+        oo.CURRENT_AMOUNT realOrderAmount,
+        oo.invoice_bank_name,
+        oo.invoice_entity_id,
+        oo.invoice_entity_addr,
+        oo.invoice_entity_phone,
+        oo.invoice_bank_account,
+        oo.refund_amount
+        from hmall_om_order oo
+        left join hmall_mst_user mu on oo.user_id = mu.user_id
+        where oo.order_id = #{orderId}
+        and oo.order_type = 'NORMAL'
+        AND oo.WEBSITE_ID = '1'
+    </select>
+
+    <!--
+        根据订单ID查询需要同步到商城的订单
+        OrderSyncDto selectOrderSyncInfoById(Long orderId);
+    -->
+    <select id="selectOrderSyncInfoForAddEntryById" resultMap="orderSyncInfoMap" parameterType="java.lang.Long">
+        select oo.order_id,
+        oo.esc_order_code,
+        oo.order_status,
+        mu.customerid customerId,
+        oo.currency_id currencyCode,
+        oo.website_id websiteCode,
+        oo.store_id storeCode,
+        oo.salechannel_id channelCode,
+        oo.invoice_type,
+        oo.receiver_name,
+        oo.receiver_country countryCode,
+        oo.receiver_state stateCode,
+        oo.receiver_city cityCode,
+        oo.receiver_district districtCode,
+        oo.pay_rate,
+        oo.payment_amount,
+        oo.shipping_type,
+        oo.order_creationtime ,
+        oo.estimate_delivery_time ,
+        oo.estimate_con_time ,
+        oo.is_invoiced,
+        oo.totalcon,
+        oo.syncflag,
+        oo.order_amount,
+        oo.discount_fee,
+        oo.buyer_memo,
+        oo.invoice_name,
+        oo.invoice_url,
+        oo.post_fee,
+        oo.fix_fee,
+        oo.epost_fee,
+        oo.pre_postfee prePostFee,
+        oo.pre_epostfee preEpostFee,
+        oo.pre_fixfee preFixFee,
+        oo.receiver_address,
+        oo.receiver_zip,
+        oo.receiver_mobile,
+        oo.receiver_phone,
+        oo.code,
+        oo.total_discount,
+        oo.coupon_fee,
+        oo.chosen_coupon,
+        oo.chosen_promotion,
+        oo.sync_zmall,
+        oo.CURRENT_AMOUNT realOrderAmount,
+        oo.invoice_bank_name,
+        oo.invoice_entity_id,
+        oo.invoice_entity_addr,
+        oo.invoice_entity_phone,
+        oo.invoice_bank_account,
+        oo.refund_amount
+        from hmall_om_order oo
+        left join hmall_mst_user mu on oo.user_id = mu.user_id
+        where oo.order_id = #{orderId}
+        and oo.order_status not in ('TRADE_FINISHED', 'TRADE_CLOSED', 'TRADE_CANCELLED')
+        and oo.locked = 'N'
+        and oo.order_type = 'NORMAL'
+        AND oo.WEBSITE_ID = '1'
+    </select>
+
+    <!-- 查询sync_zmall字段为N的订单信息同步到商城 -->
+    <select id="selectOrderSyncInfo" resultMap="orderSyncInfoMap">
+        select oo.order_id,
+            oo.esc_order_code,
+            oo.order_status,
+            mu.customerid customerId,
+            oo.currency_id currencyCode,
+            oo.website_id websiteCode,
+            oo.store_id storeCode,
+            oo.salechannel_id channelCode,
+            oo.invoice_type,
+            oo.receiver_name,
+            oo.receiver_country countryCode,
+            oo.receiver_state stateCode,
+            oo.receiver_city cityCode,
+            oo.receiver_district districtCode,
+            oo.pay_rate,
+            oo.payment_amount,
+            oo.shipping_type,
+            oo.order_creationtime ,
+            oo.estimate_delivery_time ,
+            oo.estimate_con_time ,
+            oo.is_invoiced,
+            oo.totalcon,
+            oo.syncflag,
+            oo.order_amount,
+            oo.CURRENT_AMOUNT,
+            oo.discount_fee,
+            oo.buyer_memo,
+            oo.invoice_name,
+            oo.invoice_url,
+            oo.post_fee,
+            oo.fix_fee,
+            oo.epost_fee,
+            oo.pre_postfee prePostFee,
+            oo.pre_epostfee preEpostFee,
+            oo.pre_fixfee preFixFee,
+            oo.receiver_address,
+            oo.receiver_zip,
+            oo.receiver_mobile,
+            oo.receiver_phone,
+            oo.code,
+            oo.total_discount,
+            oo.coupon_fee,
+            oo.chosen_coupon,
+            oo.chosen_promotion,
+            oo.sync_zmall,
+            oo.invoice_bank_name,
+            oo.invoice_entity_id,
+            oo.invoice_entity_addr,
+            oo.invoice_entity_phone,
+            oo.invoice_bank_account,
+            oo.refund_amount
+            from hmall_om_order oo
+            left join hmall_mst_user mu on oo.user_id = mu.user_id
+            where oo.sync_zmall = 'N'
+            and upper(oo.order_type) = 'NORMAL'
+            AND oo.WEBSITE_ID = '1'
+    </select>
+
+    <!-- 根据订单ID获取退款单界面上要显示的用户和支付信息 -->
+    <select id="selectRefundOrderInfoByOrderId" parameterType="java.lang.Long" resultMap="refundOrderInfo">
+        SELECT oo.code,
+        oo.receiver_address address,
+        mug.name,
+        mu.customerid,
+        oo.receiver_mobile mobile,
+        oo.receiver_name,
+        oo.order_amount,
+        oo.current_amount,
+        oo.payment_amount
+        FROM hmall_om_order oo
+        LEFT JOIN hmall_mst_user mu
+        ON oo.user_id = mu.user_id
+        LEFT JOIN hmall_mst_user_mapping mum
+        ON mu.user_id = mum.user_id
+        LEFT JOIN hmall_mst_usergroup mug
+        ON mum.usergroup_id = mug.usergroup_id
+        WHERE 1 = 1
+        <if test="_parameter !=null">
+            AND oo.order_id = #{_parameter}
+        </if>
+    </select>
+
+    <!--查询订单列表-->
+    <select id="selectOrderList" resultMap="orderMap">
+        SELECT DISTINCT a.order_id,
+        a.order_type,
+        a.code,
+        a.shipping_type,
+        a.esc_order_code,
+        a.order_status status,
+        mu.customerid,
+        a.receiver_name,
+        a.receiver_mobile,
+        a.payment_amount,
+        a.order_amount,
+        a.estimate_con_time,
+        a.estimate_delivery_time,
+        a.locked,
+        b.ENTRY_QUANTITY,
+        p.HISTORY_TOTAL_REFUND_AMOUNT,
+        a.ORDER_CREATIONTIME
+        FROM hmall_om_order a
+        LEFT JOIN (SELECT
+        oe.order_id,
+        sum(oe.quantity) AS ENTRY_QUANTITY
+        FROM hmall_om_order_entry oe WHERE oe.PARENT_LINE IS NULL GROUP BY oe.ORDER_ID
+        ) b
+        ON a.order_id = b.order_id
+        LEFT JOIN hmall_mst_user mu
+        ON mu.user_id = a.user_id
+        LEFT JOIN (select order_id,sum(refund_amount) AS HISTORY_TOTAL_REFUND_AMOUNT from hmall_om_paymentinfo group by order_id) p
+        ON p.ORDER_ID = a.ORDER_ID
+        LEFT JOIN HMALL_OM_ORDER_ENTRY hooe1
+        ON hooe1.ORDER_ID = a.ORDER_ID
+        LEFT JOIN HMALL_MST_PRODUCT hmp
+        ON hmp.PRODUCT_ID = hooe1.PRODUCT_ID
+        <where>
+            a.SYNCFLAG='N'
+            <if test="code !=null and code!=''and code!='undefined'">
+                and a.CODE LIKE '%'||#{code}||'%'
+            </if>
+            <if test="escOrderCode !=null and escOrderCode!=''and escOrderCode!='undefined'">
+                and a.esc_order_code LIKE '%'||#{escOrderCode}||'%'
+            </if>
+            <if test="userId !=null and userId!=''and userId!='undefined'">
+                and mu.customerid LIKE '%'||#{userId}||'%'
+            </if>
+            <if test="locked !=null and locked!=''and locked!='undefined'">
+                and a.locked = #{locked}
+            </if>
+            <choose>
+                <when test="payRate !=null and payRate!=''and payRate==1">
+                    and a.pay_rate = '1'
+                </when>
+                <when test="payRate !=null and payRate!=''and payRate!=1">
+                    and a.pay_rate <![CDATA[ <> ]]> '1'
+                </when>
+            </choose>
+
+            <if test="receiverMobile !=null and receiverMobile!=''and receiverMobile!='undefined'">
+                and a.RECEIVER_MOBILE LIKE '%'||#{receiverMobile}||'%'
+            </if>
+            <!--<if test="startTime !=null and startTime!=''and startTime!='undefined'">-->
+            <!--and a.ESTIMATE_DELIVERY_TIME>to_date(#{startTime},'yyyy-mm-dd hh24:mi:ss')-->
+            <!--</if>-->
+            <!--<if test="endTime !=null and endTime!=''and endTime!='undefined'">-->
+            <!--and a.ESTIMATE_DELIVERY_TIME &lt;to_date(#{endTime},'yyyy-mm-dd hh24:mi:ss')-->
+            <!--</if>-->
+            <if test="startTime !=null and startTime!=''and startTime!='undefined'">
+                and to_char(a.order_creationtime, 'yyyy-mm-dd hh24:mi:ss')&gt;#{startTime}
+            </if>
+            <if test="endTime !=null and endTime!=''and endTime!='undefined'">
+                and to_char(a.order_creationtime, 'yyyy-mm-dd hh24:mi:ss')&lt;#{endTime}
+            </if>
+            <if test="strOrderStatus != null and strOrderStatus.length != 0">
+                and(
+                <foreach collection="strOrderStatus" item="Status" index="index" open="" separator="or" close="">
+                    a.ORDER_STATUS = #{Status}
+                </foreach>
+                )
+            </if>
+            <if test="strDistribution != null and strDistribution.length != 0">
+                and(
+                <foreach collection="strDistribution" item="Status" index="index" open="" separator="or" close="">
+                    a.SHIPPING_TYPE = #{Status}
+                </foreach>
+                )
+            </if>
+            <if test="strOrderTypes != null and strOrderTypes.length != 0">
+                and(
+                <foreach collection="strOrderTypes" item="type" index="index" open="" separator="or" close="">
+                    a.ORDER_TYPE = #{type}
+                </foreach>
+                )
+            </if>
+            <if test="vproduct !=null and vproduct!=''and vproduct!='undefined'">
+                and hooe1.VPRODUCT_CODE LIKE '%'||#{vproduct}||'%'
+            </if>
+            <if test="productId !=null and productId!=''and productId!='undefined'">
+                and hmp.code LIKE '%'||#{productId}||'%'
+            </if>
+            <if test="pinCode !=null and pinCode!=''and pinCode!='undefined'">
+                and a.order_id in (select hooe.Order_Id from hmall_om_order_entry hooe
+                where hooe.Pin like '%'||#{pinCode}||'%')
+            </if>
+            <if test="websiteId != null and websiteId != '' and websiteId != 'undefined'">
+                and a.WEBSITE_ID = #{websiteId}
+            </if>
+            <if test='isIo == "Y"'>
+                and a.IS_IO = 'Y'
+            </if>
+            <if test='isIo == "N"'>
+                and (a.IS_IO = 'N' or a.IS_IO is NULL )
+            </if>
+            <if test="affiliationId != null">
+                <if test="affiliationId > 0">
+                    AND a.responsible_cs = ( select u.employee_id from sys_user u where u.user_id = #{affiliationId} )
+                </if>
+                <if test="affiliationId == 0">
+                    AND a.responsible_cs is null
+                </if>
+            </if>
+        </where>
+        ORDER BY a.ORDER_CREATIONTIME DESC
+    </select>
+
+    <!-- 订单详情界面展示数据 -->
+    <select id="selectInfoByOrderId" parameterType="com.hand.hmall.om.dto.Order" resultMap="resultInfoMap">
+        SELECT mo.order_id,
+               mo.code,
+               mo.order_type,
+               mo.order_creationtime,
+               cod.meaning orderStatus,
+               us.customerid,
+               us.name,
+               mo.receiver_name,
+               mo.receiver_mobile,
+               mo.receiver_address,
+               mo.receiver_country,
+               mo.receiver_state,
+               mo.receiver_city,
+               mo.receiver_district,
+               mo.receiver_zip,
+               mo.receiver_phone,
+               mo.is_invoiced,
+               mo.invoice_type,
+               mo.invoice_name,
+               mo.INVOICE_ENTITY_ID,
+               mo.INVOICE_ENTITY_ADDR,
+               mo.INVOICE_ENTITY_PHONE,
+               mo.INVOICE_BANK_NAME,
+               mo.INVOICE_BANK_ACCOUNT,
+               mo.chosen_coupon,
+               mo.chosen_promotion,
+               tp.meaning shipping_type,
+               mo.locked,
+               mo.esc_order_code,
+               mo.trade_finish_time,
+               mo.post_fee,
+               mo.epost_fee,
+               mo.fix_fee,
+               mo.payment_amount,
+               mo.store_id,
+               mo.buyer_memo,
+               mo.cancel_refund_uncreate,
+               mb.display_name,
+               mo.website_id
+        FROM   hmall_om_order mo
+        LEFT JOIN hmall_mst_basestore mb
+        ON mb.code = mo.store_id
+        LEFT   JOIN (SELECT mu.user_id,
+                            mu.customerid,
+                            mug.name
+                     FROM   hmall_mst_user         mu,
+                            hmall_mst_usergroup    mug,
+                            hmall_mst_user_mapping mup
+                     WHERE  mu.user_id = mup.user_id
+                     AND    mup.usergroup_id = mug.usergroup_id) us
+        ON     mo.user_id = us.user_id
+        left join (select va.value,va.meaning from
+        sys_code_value_b va where va.code_id =
+        (select b.code_id from
+        sys_code_b b where b.code ='HMALL.ORDER.STATE')) cod on mo.order_status = cod.value
+        left JOIN
+        (select va.value,va.meaning from
+        sys_code_value_b va where va.code_id =
+        (select b.code_id from
+        sys_code_b b where b.code ='HMALL.SHIPPING_TYPE')) tp
+       on tp.value = mo.shipping_type
+        where mo.order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderListByOrderStatus" parameterType="java.lang.String" resultMap="resultInfoMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_OM_ORDER od
+        WHERE od.ORDER_STATUS = #{orderStatus, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectPendingOrders" resultMap="resultInfoMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_OM_ORDER OD
+        WHERE OD.LOCKED = 'N'
+        AND EXISTS (SELECT 1
+        FROM HMALL_OM_ORDER_ENTRY OE
+        WHERE OE.ORDER_ID = OD.ORDER_ID
+        AND OE.CONSIGNMENT_ID IS NULL
+        AND OE.ORDER_ENTRY_STATUS = 'NORMAL')
+    </select>
+
+    <select id="getLockedOrder" resultMap="orderMap">
+        SELECT oo.order_id,oo.code,oo.locked
+        FROM hmall_om_order oo
+        where 1 = 1
+        AND oo.locked = 'Y'
+    </select>
+
+    <!-- Order querySyncZmallOrder(@Param("orderId") Long orderId); -->
+    <select id="querySyncZmallOrder" resultMap="orderSyncInfoResultMap" parameterType="java.lang.Long">
+        select oo.order_id,
+        oo.esc_order_code,
+        oo.order_status,
+        mu.customerid,
+        oo.currency_id,
+        oo.website_id,
+        oo.store_id,
+        oo.salechannel_id,
+        oo.invoice_type,
+        oo.receiver_name,
+        oo.receiver_country,
+        oo.receiver_state,
+        oo.receiver_city,
+        oo.receiver_district,
+        oo.pay_rate,
+        oo.payment_amount,
+        oo.shipping_type,
+        oo.order_creationtime,
+        oo.estimate_delivery_time,
+        oo.estimate_con_time,
+        oo.is_invoiced,
+        oo.totalcon,
+        oo.syncflag,
+        oo.order_amount,
+        oo.discount_fee,
+        oo.buyer_memo,
+        oo.invoice_name,
+        oo.invoice_url,
+        oo.post_fee,
+        oo.fix_fee,
+        oo.epost_fee,
+        oo.pre_postfee,
+        oo.pre_epostfee,
+        oo.pre_fixfee,
+        oo.receiver_address,
+        oo.receiver_zip,
+        oo.receiver_mobile,
+        oo.receiver_phone,
+        oo.code
+        from hmall_om_order oo
+        left join hmall_mst_user mu on oo.user_id = mu.user_id
+        where oo.order_id = #{orderId}
+        and oo.order_status not in ('TRADE_FINISHED', 'TRADE_CLOSED', 'TRADE_CANCELLED')
+        and oo.locked = 'N'
+    </select>
+
+    <!-- void lockOrderStatus(Long orderId); -->
+    <update id="lockOrderStatus" parameterType="java.lang.Long">
+        UPDATE HMALL_OM_ORDER set LOCKED = 'Y' WHERE ORDER_ID = #{orderId}
+    </update>
+
+    <!-- 更新天猫订单的发货单 -->
+    <update id="updateTmData" parameterType="java.util.Date">
+        <![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        UPDATE HMALL_OM_ORDER HOO
+        SET HOO.IS_OUT = 'Y',
+        HOO.OUT_TIME = #{outTime,jdbcType=DATE}
+        WHERE EXISTS  (
+        SELECT  HOO.ORDER_ID
+        FROM HMALL_OM_CONSIGNMENT HOC
+        WHERE HOO.ORDER_ID = HOC.ORDER_ID
+        AND nvl(HOO.WEBSITE_ID,' ') = 'TM'
+        AND nvl(HOO.IS_IO,' ') <> 'Y'
+        AND nvl(HOO.IS_OUT,' ') <> 'Y'
+        AND HOC.LOGISTICS_NUMBER IS NOT NULL
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ]]>
+    </update>
+
+    <!-- 导出天猫订单的发货单 -->
+    <select id="exportTmData" resultMap="tmOrderInfo" parameterType="java.util.Date">
+        <![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        SELECT DISTINCT HOO.ORDER_ID,HOO.ESC_ORDER_CODE, HOC.LOGISTICS_NUMBER, HOC.LOGISTICS_COMPANIES
+        FROM HMALL_OM_ORDER HOO, HMALL_OM_CONSIGNMENT HOC
+        WHERE HOO.ORDER_ID = HOC.ORDER_ID
+        AND nvl(HOO.WEBSITE_ID,' ') = 'TM'
+        AND HOO.IS_OUT = 'Y'
+        AND HOC.LOGISTICS_NUMBER IS NOT NULL
+        AND HOO.OUT_TIME = #{outTime,jdbcType=DATE}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ]]>
+    </select>
+
+    <!--
+        根据商城订单编号(escOrderCode)查询
+        List<Order> selectByEscOrderCode(String escOrderCode);
+    -->
+    <select id="selectByEscOrderCode" resultMap="HmallOrderSimpleMap" parameterType="java.lang.String">
+        SELECT
+            ORDER_ID, CODE, LOCKED, ESC_ORDER_CODE, ORDER_STATUS,
+            USER_ID, RECEIVER_NAME, RECEIVER_MOBILE,
+            PAYMENT_AMOUNT, ORDER_AMOUNT, ESTIMATE_DELIVERY_TIME,
+            SHIPPING_TYPE
+        from HMALL_OM_ORDER where ESC_ORDER_CODE = #{escOrderCode}
+    </select>
+
+    <!--根据指定的订单状态获取订单列表-->
+    <select id="selectOrderListByStatus" resultMap="HmallOrderSimpleMap">
+         SELECT  ORDER_ID, CODE, LOCKED, ESC_ORDER_CODE, ORDER_STATUS,
+            USER_ID, RECEIVER_NAME, RECEIVER_MOBILE,
+            PAYMENT_AMOUNT, ORDER_AMOUNT, ESTIMATE_DELIVERY_TIME,
+            SHIPPING_TYPE
+         FROM HMALL_OM_ORDER
+         WHERE ORDER_STATUS
+         NOT IN ('NEW_CREATE','PROCESS_ERROR','TRADE_FINISHED','TRADE_CLOSED','TRADE_CANCELLED')
+    </select>
+
+    <!--根据平台订单号查询状态为NORMAL的订单表-->
+    <select id="selectByEscOrderCodeAndOrderType" resultMap="orderMap">
+       SELECT o.ORDER_ID
+       FROM HMALL_OM_ORDER o
+       where o.ESC_ORDER_CODE = #{escOrderCode}
+           AND o.ORDER_TYPE = 'NORMAL'
+   </select>
+
+
+    <!--批量插入天猫退款单数据-->
+    <insert id="batchInsertAsTmrefund" parameterType="java.util.List">
+        insert into HMALL_AS_TMREFUND
+        (TMREFUND_ID,
+        ORDER_ID,
+        CODE,
+        ALIPAY_NO,
+        ORDER_PAYMENT_TIME,
+        ORDERENTRY_ID,
+        PRODUCT_ID,
+        REFUND_FINISH_TIME,
+        BUYER_NICK,
+        ACTUAL_PAID_AMOUNT,
+        TITLE,
+        REFUND_FEE,
+        MANUAL_OR_AUTO,
+        HAS_GOOD_RETURN,
+        CREATED,
+        TIMEOUT,
+        STATUS,
+        GOOD_STATUS,
+        RETURN_LOGISTICS,
+        CONSIGNMENT_LOGISTICS,
+        CS_STATUS,
+        SELLER_NAME,
+        SELLER_ADDRESS,
+        SELLER_ZIP,
+        SELLER_PHONE,
+        SELLER_MOBILE,
+        SID,
+        COMPANY_NAME,
+        REASON,
+        REFUND_DESC,
+        GOOD_RETURN_TIME,
+        RESPONSIBILITY_SIDE,
+        REFUND_PHASE,
+        SELLER_NOTE,
+        FINISH_TIME,
+        REFUND_SCOPE,
+        AUDIT_PERSON,
+        BURDEN_TIMEOUT,
+        AUDIT_AUTO,
+        REFUND_PERSON
+        )
+        (select HMALL_AS_TMREFUND_S.NEXTVAL,
+        cd.orderId,
+        cd.code,
+        cd.alipayNo,
+        cd.orderPaymentTime,
+        cd.orderentryId,
+        cd.productId,
+        cd.refundFinishTime,
+        cd.buyerNick,
+        cd.actualPaidAmount,
+        cd.title,
+        cd.refundFee,
+        cd.manualOrAuto,
+        cd.hasGoodReturn,
+        cd.created,
+        cd.timeout,
+        cd.status,
+        cd.goodStatus,
+        cd.returnLogistics,
+        cd.consignmentLogistics,
+        cd.csStatus,
+        cd.sellerName,
+        cd.sellerAddress,
+        cd.sellerZip,
+        cd.sellerPhone,
+        cd.sellerMobile,
+        cd.sid,
+        cd.companyName,
+        cd.reason,
+        cd.refundDesc,
+        cd.goodReturnTime,
+        cd.responsibilitySide,
+        cd.refundPhase,
+        cd.sellerNote,
+        cd.finishTime,
+        cd.refundScope,
+        cd.auditPerson,
+        cd.burdenTimeout,
+        cd.auditAuto,
+        cd.refundPerson
+        from(
+        <foreach collection="list" item="item" index="index" close=")" open="(" separator="union all">
+            select
+            <choose>
+                <when test="item.orderId !=null">
+                    #{item.orderId,jdbcType=DECIMAL} as orderId,
+                </when>
+                <otherwise>
+                    null as orderId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.code !=null and item.code != ''">
+                    #{item.code,jdbcType=VARCHAR} as code,
+                </when>
+                <otherwise>
+                    null as code,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.alipayNo !=null and item.alipayNo != ''">
+                    #{item.alipayNo,jdbcType=VARCHAR} as alipayNo,
+                </when>
+                <otherwise>
+                    null as alipayNo,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.orderPaymentTime !=null">
+                    #{item.orderPaymentTime,jdbcType=TIMESTAMP} as orderPaymentTime,
+                </when>
+                <otherwise>
+                    null as orderPaymentTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.orderentryId !=null">
+                    #{item.orderentryId,jdbcType=DECIMAL} as orderentryId,
+                </when>
+                <otherwise>
+                    null as orderentryId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.productId !=null and item.productId != ''">
+                    #{item.productId,jdbcType=VARCHAR} as productId,
+                </when>
+                <otherwise>
+                    null as productId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundFinishTime !=null">
+                    #{item.refundFinishTime,jdbcType=TIMESTAMP} as refundFinishTime,
+                </when>
+                <otherwise>
+                    null as refundFinishTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.buyerNick !=null and item.buyerNick != ''">
+                    #{item.buyerNick,jdbcType=VARCHAR} as buyerNick,
+                </when>
+                <otherwise>
+                    null as buyerNick,
+                </otherwise>
+            </choose>
+
+            <choose>
+                <when test="item.actualPaidAmount !=null">
+                    #{item.actualPaidAmount,jdbcType=DECIMAL} as actualPaidAmount,
+                </when>
+                <otherwise>
+                    null as actualPaidAmount,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.title !=null and item.title != ''">
+                    #{item.title,jdbcType=VARCHAR} as title,
+                </when>
+                <otherwise>
+                    null as title,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundFee !=null">
+                    #{item.refundFee,jdbcType=DECIMAL} as refundFee,
+                </when>
+                <otherwise>
+                    null as refundFee,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.manualOrAuto !=null and item.manualOrAuto != ''">
+                    #{item.manualOrAuto,jdbcType=VARCHAR} as manualOrAuto,
+                </when>
+                <otherwise>
+                    null as manualOrAuto,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.hasGoodReturn !=null and item.hasGoodReturn != ''">
+                    #{item.hasGoodReturn,jdbcType=VARCHAR} as hasGoodReturn,
+                </when>
+                <otherwise>
+                    null as hasGoodReturn,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.created !=null">
+                    #{item.created,jdbcType=TIMESTAMP} as created,
+                </when>
+                <otherwise>
+                    null as created,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.timeout !=null">
+                    #{item.timeout,jdbcType=TIMESTAMP} as timeout,
+                </when>
+                <otherwise>
+                    null as timeout,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.status !=null and item.status != ''">
+                    #{item.status,jdbcType=VARCHAR} as status,
+                </when>
+                <otherwise>
+                    null as status,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.goodStatus !=null and item.goodStatus != ''">
+                    #{item.goodStatus,jdbcType=VARCHAR} as goodStatus,
+                </when>
+                <otherwise>
+                    null as goodStatus,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.returnLogistics !=null and item.returnLogistics != ''">
+                    #{item.returnLogistics,jdbcType=VARCHAR} as returnLogistics,
+                </when>
+                <otherwise>
+                    null as returnLogistics,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.consignmentLogistics !=null and item.consignmentLogistics != ''">
+                    #{item.consignmentLogistics,jdbcType=VARCHAR} as consignmentLogistics,
+                </when>
+                <otherwise>
+                    null as consignmentLogistics,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.csStatus !=null and item.csStatus != ''">
+                    #{item.csStatus,jdbcType=VARCHAR} as csStatus,
+                </when>
+                <otherwise>
+                    null as csStatus,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerName !=null and item.sellerName != ''">
+                    #{item.sellerName,jdbcType=VARCHAR} as sellerName,
+                </when>
+                <otherwise>
+                    null as sellerName,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerAddress !=null and item.sellerAddress != ''">
+                    #{item.sellerAddress,jdbcType=VARCHAR} as sellerAddress,
+                </when>
+                <otherwise>
+                    null as sellerAddress,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerZip !=null and item.sellerZip != ''">
+                    #{item.sellerZip,jdbcType=VARCHAR} as sellerZip,
+                </when>
+                <otherwise>
+                    null as sellerZip,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerPhone !=null and item.sellerPhone != ''">
+                    #{item.sellerPhone,jdbcType=VARCHAR} as sellerPhone,
+                </when>
+                <otherwise>
+                    null as sellerPhone,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerMobile !=null">
+                    #{item.sellerMobile,jdbcType=DECIMAL} as sellerMobile,
+                </when>
+                <otherwise>
+                    null as sellerMobile,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sid !=null">
+                    #{item.sid,jdbcType=DECIMAL} as sid,
+                </when>
+                <otherwise>
+                    null as sid,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.companyName !=null">
+                    #{item.companyName,jdbcType=DECIMAL} as companyName,
+                </when>
+                <otherwise>
+                    null as companyName,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.reason !=null">
+                    #{item.reason,jdbcType=DECIMAL} as reason,
+                </when>
+                <otherwise>
+                    null as reason,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundDesc !=null and item.refundDesc != ''">
+                    #{item.refundDesc,jdbcType=VARCHAR} as refundDesc,
+                </when>
+                <otherwise>
+                    null as refundDesc,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.goodReturnTime !=null">
+                    #{item.goodReturnTime,jdbcType=TIMESTAMP} as goodReturnTime,
+                </when>
+                <otherwise>
+                    null as goodReturnTime,
+                </otherwise>
+            </choose>
+
+            <choose>
+                <when test="item.responsibilitySide !=null and item.responsibilitySide != ''">
+                    #{item.responsibilitySide,jdbcType=VARCHAR} as responsibilitySide,
+                </when>
+                <otherwise>
+                    null as responsibilitySide,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundPhase !=null and item.refundPhase != ''">
+                    #{item.refundPhase,jdbcType=VARCHAR} as refundPhase,
+                </when>
+                <otherwise>
+                    null as refundPhase,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.sellerNote !=null and item.sellerNote != ''">
+                    #{item.sellerNote,jdbcType=VARCHAR} as sellerNote,
+                </when>
+                <otherwise>
+                    null as sellerNote,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.finishTime !=null">
+                    #{item.finishTime,jdbcType=TIMESTAMP} as finishTime,
+                </when>
+                <otherwise>
+                    null as finishTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundScope !=null and item.refundScope != ''">
+                    #{item.refundScope,jdbcType=VARCHAR} as refundScope,
+                </when>
+                <otherwise>
+                    null as refundScope,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.auditPerson !=null and item.auditPerson != ''">
+                    #{item.auditPerson,jdbcType=VARCHAR} as auditPerson,
+                </when>
+                <otherwise>
+                    null as auditPerson,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.burdenTimeout !=null and item.burdenTimeout != ''">
+                    #{item.burdenTimeout,jdbcType=VARCHAR} as burdenTimeout,
+                </when>
+                <otherwise>
+                    null as burdenTimeout,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.auditAuto !=null and item.auditAuto != ''">
+                    #{item.auditAuto,jdbcType=VARCHAR} as auditAuto,
+                </when>
+                <otherwise>
+                    null as auditAuto,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refundPerson !=null and item.refundPerson != ''">
+                    #{item.refundPerson,jdbcType=VARCHAR} as refundPerson
+                </when>
+                <otherwise>
+                    null as refundPerson
+                </otherwise>
+            </choose>
+            from dual
+        </foreach>
+        ) cd)
+    </insert>
+
+    <!-- 根据OrderId获得平台订单编号 add by zhangyanan 2017-09-23 -->
+    <select id="selectOrderByOrderId" parameterType="java.lang.Integer" resultMap="resultInfoMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_OM_ORDER od
+        WHERE ORDER_ID = #{orderId,jdbcType=DECIMAL}
+    </select>
+
+    <!--判断指定平台订单号和WEBSITE_ID=TM的记录是否存在-->
+    <select id="selectInfoByEscOrderCodeAndWebsiteId" parameterType="com.hand.hmall.om.dto.Order" resultMap="resultInfoMap">
+        SELECT ORDER_ID
+        FROM   hmall_om_order mo
+        WHERE  mo.ESC_ORDER_CODE=#{escOrderCode}
+        and mo.WEBSITE_ID='TM'
+        and mo.ORDER_TYPE='NORMAL'
+    </select>
+
+    <!--批量更新订单表的数据-->
+    <update id="updateBatchOrder" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" separator="" open="begin" close="end;">
+            update hmall_om_order om SET
+            TRADE_FINISH_TIME=#{item.tradeFinishTime},
+            ORDER_STATUS=#{item.orderStatus}
+            where om.ORDER_ID = #{item.orderId};
+        </foreach>
+    </update>
+
+    <!--
+    /**
+     * 设置订单归属信息
+     * @param orderIds - 订单ID列表
+     * @param employeeId - 员工ID
+     * @return
+     */
+    void setOrderAssiging(@Param("orderIds") List<Long> orderIds, @Param("employeeId") Long employeeId);
+    -->
+    <update id="setOrderAssiging">
+        UPDATE HMALL_OM_ORDER oo set oo.responsible_cs = #{employeeId}
+        WHERE oo.order_id in
+        <foreach collection="orderIds" item="orderId" index="index" open="(" close=")" separator=",">
+            #{orderId}
+        </foreach>
+    </update>
+
+    <!-- 查询具有负责人的订单列表 -->
+    <select id="queryOrderResponsible" resultType="java.util.Map">
+        select oo.ORDER_ID, ee.NAME from hmall_om_order oo join hr_employee ee
+            on oo.responsible_cs = ee.employee_id
+    </select>
+
+    <!-- 根据Order表的Code字段查询订单表 -->
+    <select id="selectOrderByCode" parameterType="java.lang.String" resultMap="orderMap">
+        SELECT
+        ORDER_ID
+        FROM HMALL_OM_ORDER od
+        WHERE CODE = #{code,jdbcType=VARCHAR}
+    </select>
+
+    <!-- 查询订单是否可以保价 -->
+    <select id="checkInsuredOrder" parameterType="java.lang.Long" resultMap="orderMap">
+        SELECT
+        ORDER_ID
+        FROM HMALL_OM_CONSIGNMENT
+        WHERE SHIPPING_TYPE = 'LOGISTICS'
+        AND (STATUS = 'WAIT_BUYER_CONFIRM' OR STATUS = 'TRADE_BUYER_SIGNED')
+        AND ORDER_ID = #{orderId}
+    </select>
+
+    <!-- 查询可以保价的发货单 -->
+    <select id="selectInsuredOrder" parameterType="java.lang.Long" resultMap="orderMap">
+        SELECT
+        ORDER_ID,
+        CONSIGNMENT_ID
+        FROM HMALL_OM_CONSIGNMENT
+        WHERE SHIPPING_TYPE = 'LOGISTICS'
+        AND (STATUS != 'WAIT_BUYER_CONFIRM' OR STATUS != 'TRADE_BUYER_SIGNED')
+        AND ORDER_ID = #{orderId}
+    </select>
+
+
+</mapper>

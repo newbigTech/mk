@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.promotion.mapper.MstPointOfServiceMapper">
+    <resultMap id="BaseResultMap" type="com.hand.promotion.dto.MstPointOfService">
+        <id column="POINT_OF_SERVICE_ID" jdbcType="DECIMAL" property="pointOfServiceId"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="DISPLAYNAME" jdbcType="VARCHAR" property="displayname"/>
+        <result column="TYPE" jdbcType="VARCHAR" property="type"/>
+        <result column="ZONE1" jdbcType="VARCHAR" property="zone1"/>
+        <result column="CONTACT_NUMBER" jdbcType="VARCHAR" property="contactNumber"/>
+        <result column="ADDRESS" jdbcType="VARCHAR" property="address"/>
+        <result column="SHOPSTATUS" jdbcType="VARCHAR" property="shopstatus"/>
+        <result column="ZZWERKS" jdbcType="VARCHAR" property="zzwerks"/>
+        <result column="BUKRS" jdbcType="VARCHAR" property="bukrs"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="DEL_ZIP_CODE" jdbcType="VARCHAR" property="delZipCode"/>
+        <result column="DEL_PROVINCE" jdbcType="VARCHAR" property="delProvince"/>
+        <result column="DEL_CITY" jdbcType="VARCHAR" property="delCity"/>
+        <result column="DEL_DISTRICT" jdbcType="VARCHAR" property="delDistrict"/>
+        <result column="DEL_PHONE" jdbcType="VARCHAR" property="delPhone"/>
+        <result column="DEL_ADDRESS" jdbcType="VARCHAR" property="delAddress"/>
+        <result column="DEL_MOBILE" jdbcType="VARCHAR" property="delMobile"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        POINT_OF_SERVICE_ID, CODE, DISPLAYNAME, TYPE, ZONE1, CONTACT_NUMBER, ADDRESS, SHOPSTATUS,
+        ZZWERKS, BUKRS, SYNCFLAG, DEL_ZIP_CODE, DEL_PROVINCE, DEL_CITY, DEL_DISTRICT,
+        DEL_PHONE, DEL_ADDRESS, DEL_MOBILE
+    </sql>
+    <select id="selectByCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_MST_POINTOFSERVICE
+        <where>
+            <if test="#{code}!=null">
+                CODE=#{code}
+            </if>
+        </where>
+    </select>
+</mapper>

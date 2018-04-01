@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.promotion.mapper.HamllMstSubCarriageMapper">
+    <resultMap id="BaseResultMap" type="com.hand.promotion.dto.HamllMstSubCarriage">
+        <id column="SUBCARRIAGE_ID" jdbcType="DECIMAL" property="subcarriageId"/>
+        <result column="LOGISTICSCO_ID" jdbcType="DECIMAL" property="logisticscoId"/>
+        <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType"/>
+        <result column="DISTRICT_CODE" jdbcType="VARCHAR" property="districtCode"/>
+        <result column="PRICE_RATE" jdbcType="DECIMAL" property="priceRate"/>
+        <result column="LEAST_CARRIAGE" jdbcType="DECIMAL" property="leastCarriage"/>
+        <result column="STATUS" jdbcType="VARCHAR" property="status"/>
+        <result column="ORIGIN" jdbcType="VARCHAR" property="origin"/>
+        <result column="PRICE_MODE" jdbcType="VARCHAR" property="priceMode"/>
+        <result column="DIFFERENCE" jdbcType="VARCHAR" property="difference"/>
+        <result column="BASIC_EXPENSE" jdbcType="DECIMAL" property="basicExpense"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        SUBCARRIAGE_ID, LOGISTICSCO_ID, SHIPPING_TYPE, DISTRICT_CODE, PRICE_RATE, LEAST_CARRIAGE,
+        STATUS, PRICE_MODE, DIFFERENCE, BASIC_EXPENSE
+  </sql>
+    <select id="selectByDistrictCodeAndShipType" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from HMALL_MST_SUBCARRIAGE
+        where DISTRICT_CODE = #{0} and SHIPPING_TYPE = #{1} and STATUS = #{2}
+    </select>
+</mapper>

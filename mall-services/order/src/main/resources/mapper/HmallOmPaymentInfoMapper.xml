@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallOmPaymentInfoMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallOmPaymentInfo">
+        <id column="PAYMENTINFO_ID" jdbcType="DECIMAL" property="paymentinfoId"/>
+        <result column="PAY_MODE" jdbcType="VARCHAR" property="payMode"/>
+        <result column="PAY_AMOUNT" jdbcType="DECIMAL" property="payAmount"/>
+        <result column="PAY_TIME" jdbcType="TIMESTAMP" property="payTime"/>
+        <result column="NUMBER_CODE" jdbcType="VARCHAR" property="numberCode"/>
+        <result column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="STATUS" jdbcType="VARCHAR" property="status"/>
+        <result column="ACCOUNT" jdbcType="VARCHAR" property="account"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber"/>
+        <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate"/>
+        <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy"/>
+        <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy"/>
+        <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate"/>
+        <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin"/>
+        <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId"/>
+        <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId"/>
+        <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate"/>
+        <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId"/>
+        <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory"/>
+        <result column="OUT_TRADE_NO" jdbcType="DECIMAL" property="outTradeNo"/>
+        <result column="COUPON_ID" jdbcType="VARCHAR" property="couponId"/>
+        <result column="ORDER_TYPE" jdbcType="VARCHAR" property="orderType"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    PAYMENTINFO_ID, PAY_MODE, PAY_AMOUNT, PAY_TIME, NUMBER_CODE, ORDER_ID, STATUS, ACCOUNT, 
+    NAME, SYNCFLAG, OBJECT_VERSION_NUMBER, CREATION_DATE, CREATED_BY, LAST_UPDATED_BY, 
+    LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, PROGRAM_ID, PROGRAM_UPDATE_DATE, 
+    REQUEST_ID, ATTRIBUTE_CATEGORY,OUT_TRADE_NO,COUPON_ID,ORDER_TYPE
+  </sql>
+
+    <select id="countPayInfo" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT count(*) FROM  HMALL_OM_PAYMENTINFO WHERE NUMBER_CODE = #{numberCode}
+  </select>
+
+    <select id="selectByPaymodeAndNumbercode" parameterType="com.hand.hmall.model.HmallOmPaymentInfo"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM HMALL_OM_PAYMENTINFO
+        <where>
+            <if test="payMode != null and payMode != ''">
+                PAY_MODE = #{payMode,jdbcType=VARCHAR}
+            </if>
+            <if test="numberCode != null and numberCode != ''">
+                AND NUMBER_CODE = #{numberCode,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+</mapper>

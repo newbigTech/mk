@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.PatchlineMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.PatchlineMapping">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="PATCH_LINE_ID" property="patchLineId" jdbcType="DECIMAL"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="patchlineMappingMap" type="com.hand.hmall.mst.dto.PatchlineMappingDto">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="patchline_code" property="patchlineCode" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 推送syncFlag为N的补件商品映射信息到商城当中 -->
+    <select id="selectPushingPatchlineMapping" resultMap="patchlineMappingMap">
+    	select MAPPING_ID, p1.code, p2.code patchline_code
+          from HMALL_MST_PATCHLINE_MAPPING m,
+               hmall_mst_product           p1,
+               hmall_mst_product           p2,
+               hmall_mst_catalogs          c,
+               hmall_mst_catalogversion    cv
+         where m.product_id = p1.product_id
+           and m.patch_line_id = p2.product_id
+           and p1.catalogversion_id = cv.catalogversion_id
+           and cv.catalog = c.catalogs_id
+           and c.code = 'markor'
+           and cv.catalogversion = 'online'
+           and m.SYNCFLAG = 'N'
+    </select>
+
+    <select id="selectByPatchineMappingAndProductId" parameterType="com.hand.hmall.mst.dto.PatchlineMapping" resultType="Long">
+        select pm.MAPPING_ID
+        FROM HMALL_MST_PATCHLINE_MAPPING pm
+        WHERE 1 = 1
+        AND pm.product_id = #{productId}
+        AND pm.patch_line_id = #{patchLineId}
+    </select>
+
+    <!--更新补件商品关系接口推送标志-->
+    <update id="updatePatchlineMappingSyncflag" parameterType="java.util.List">
+        UPDATE HMALL_MST_PATCHLINE_MAPPING
+        <set>
+            SYNCFLAG ='Y'
+        </set>
+        <where>
+            MAPPING_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.mappingId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+    <select id="selectInfo" parameterType="com.hand.hmall.mst.dto.PatchlineMapping" resultMap="BaseResultMap">
+        select pm.MAPPING_ID,pm.patch_line_id, pro.product_id,pro.code,pro.name,pm.syncflag from
+        HMALL_MST_PATCHLINE_MAPPING pm,
+        HMALL_MST_PRODUCT  pro
+        where pm.patch_line_id = pro.product_id
+        and pm.product_id = #{productId}
+    </select>
+
+    <!-- 删除商品时，连带删除补件关系-->
+    <delete id="deletePatchlineMapping" parameterType="com.hand.hmall.mst.dto.PatchlineMapping">
+        DELETE FROM hmall_mst_patchline_mapping
+        WHERE product_id = #{productId}
+        or PATCH_LINE_ID=#{patchLineId}
+    </delete>
+
+
+    <delete id="deleteByProductId" parameterType="java.util.List">
+        delete from hmall_mst_patchline_mapping s
+        <where>
+            s.PRODUCT_ID in
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.syncProductId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </delete>
+
+    <select id="selectAllById" parameterType="java.util.List" resultMap="BaseResultMap">
+        select
+        p.PRODUCT_ID,
+        p.PATCH_LINE_ID
+        from hmall_mst_patchline_mapping p
+        where p.PRODUCT_ID in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.productId,jdbcType=DECIMAL}
+        </foreach>
+    </select>
+
+</mapper>

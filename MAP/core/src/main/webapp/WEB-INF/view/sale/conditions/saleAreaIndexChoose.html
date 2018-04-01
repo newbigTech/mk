@@ -1,0 +1,244 @@
+<#include "/include/header.html"/>
+<body>
+<script type="text/javascript" src="../../lib/DisabledElement.js"></script>
+<script src="${base.contextPath}/common/code?saleStatus=HMALL.SALE_STATUS&saleOverlay=HMALL.SALE_OVERLAY&saleChannel=HMALL.SALE_CHANNEL" type="text/javascript"></script>
+<script>
+    var viewModel = kendo.observable({
+        model:{}
+    });
+    var id='${RequestParameters.id}';
+    var value="";
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var openType='${RequestParameters.openType}';
+
+    if(openType=='BASE') {
+        for (var i in window.parent.viewModel.model.conditions) {
+            if (window.parent.viewModel.model.conditions[i].id == id) {
+                definitionId = window.parent.viewModel.model.conditions[i].definitionId;
+                if (window.parent.viewModel.model.conditions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.conditions[i].parameters.value != undefined) {
+                        value = window.parent.viewModel.model.conditions[i].parameters.value.value;
+                    }
+                }
+                break;
+            }
+        }
+
+    }else if(openType=='GROUP') {
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                for(var j in window.parent.groups_data[i].child)
+                {
+
+                    if(window.parent.groups_data[i].child[j].id==id)
+                    {
+                        if (window.parent.groups_data[i].child[j].parameters != undefined) {
+                            if (window.parent.groups_data[i].child[j].parameters.value != undefined) {
+                                value = window.parent.groups_data[i].child[j].parameters.value.value;
+                            }
+//                            if (window.parent.groups_data[i].child[j].parameters.operator != undefined) {
+//                                operator = window.parent.groups_data[i].child[j].parameters.operator.value;
+//                            }
+                        }
+                        flag=true;
+                        break;
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+    }else if(openType=='GROUP_EXT') {
+
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                if(window.parent.groups_data[i].child!=undefined) {
+                    for (var j in window.parent.groups_data[i].child) {
+                        if (window.parent.groups_data[i].child[j].child != undefined) {
+                            for (var k in  window.parent.groups_data[i].child[j].child) {
+                                if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                    if (window.parent.groups_data[i].child[j].child[k].parameters != undefined) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.value != undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.value.value;
+                                        }
+//                                        if (window.parent.groups_data[i].child[j].child[k].parameters.operator != undefined) {
+//                                            operator = window.parent.groups_data[i].child[j].child[k].parameters.operator.value;
+//                                        }
+                                    }
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+
+    }
+
+    if (value != null && value != undefined && value != "") {
+        viewModel.model.value = value;
+    }
+//    if (operator != null && operator != undefined && operator != "") {
+//        viewModel.model.operator = operator;
+//
+//    }
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div id="appendPanel" class="panel" style="padding: 0px;">
+            <form class="form-horizontal" id="conditionForm">
+                <div class="panel-body">
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">配送方式</label>
+                                <div class="col-sm-8">
+                                    <input id="range" name="使用渠道"  data-bind="value:model.value" placeholder="配送方式"
+                                           style="width: 100%;"  data-value-primitive="true"/>
+                                    <script>
+                                        if(disabled!='true')
+                                        {
+                                            $("#range").removeAttr("disabled");
+                                        }
+                                        if(viewModel.model.value==null||viewModel.model.value==undefined||viewModel.model.value=="") {
+                                            viewModel.model.value = 'EXPRESS';
+                                        }
+
+                                        function changeConditionValue(definitionId) {
+
+                                            if(openType=='BASE') {
+
+                                                if (window.parent.viewModel.model.conditions != undefined) {
+                                                    for (var i in window.parent.viewModel.model.conditions) {
+                                                        if (window.parent.viewModel.model.conditions[i].id == id) {
+                                                            console.log("dasd");
+                                                            window.parent.viewModel.model.conditions[i].set('definitionId',definitionId);
+
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }else if(openType=='GROUP'){
+                                                for (var i in window.parent.groups_data) {
+                                                    if(window.parent.groups_data[i].child!=undefined) {
+                                                        for (var j in window.parent.groups_data[i].child) {
+                                                            if (window.parent.groups_data[i].child[j].id == id) {
+                                                                groups_data[i].child[j].definitionId = definitionId;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        $("#range").kendoDropDownList({
+                                            dataTextField  : "meaning",
+                                            dataValueField : "value",
+                                            dataSource     : [{meaning:"快递配送",value:"EXPRESS"},{meaning:"门店自提",value:"PICKUP"}],
+                                            change:function (e) {
+                                                if(viewModel.model.value=='EXPRESS'){
+                                                    changeConditionValue("o_area_range")
+                                                }else{
+                                                    changeConditionValue("o_store_range")
+                                                }
+                                            }
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label id="number" class="col-sm-4 control-label">地区选择 </label>
+                                <div class="col-sm-7">
+                                    <input id="value"   type="text" onfocus="chooseArea()" style="width: 100%" class="k-textbox ">
+
+                                    <script>
+
+                                        function chooseArea(){
+                                            var onClose = function () {
+                                                window.parent.$("#areaChooseWin").empty();
+                                            };
+
+                                            window.parent. $("#areaChooseWin").kendoWindow({
+                                                actions: ["Close"],
+                                                title: '促销规则编辑',
+                                                draggable: true,
+                                                height: "80%",
+                                                width: "50%",
+                                                close: onClose,
+                                                content: "${base.contextPath}/sale/conditions/saleAreaChoose.html?id=" +id+"&disabled="+disabled+"&openType="+openType+"&definitionId="+definitionId+"&typeValue="+viewModel.model.value,
+                                                iframe: true,
+                                                modal: true
+                                            });
+
+                                            var win =  window.parent.$("#areaChooseWin").data("kendoWindow");
+                                            win.center().open();
+                                            win.toggleMaximization();
+                                        }
+                                    </script>
+
+                                </div>
+                                <label class="col-sm-1 control-label"></label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+
+            <div class="panel-footer text-right">
+                <span class="btn btn-success" disabled="true" id="query"  type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+                <span class="btn btn-primary" id="resetForm"  type="button" onclick="rollBackWin()"><i class="fa fa-refresh"></i> 返回</span>
+            </div>
+
+            <script>
+
+                if(disabled!="true") {
+                    $('#query').removeAttr('disabled');
+                    $('#query').attr("onclick", "saveNumberCondition()");
+                }
+
+            </script>
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    kendo.bind($('#content-container'),viewModel);
+    kendo.bind($('#page-content'),viewModel);
+
+    function saveNumberCondition()
+    {
+        viewModel.model.operator='EQUAL';
+        window.parent.saveNumberCondition(viewModel.model,id,openType);
+        rollBackWin();
+    }
+
+    function rollBackWin() {
+        window.parent.$("#addTempConditionDataWin").data("kendoWindow").close();
+    }
+
+
+</script>
+</body>
+</html>

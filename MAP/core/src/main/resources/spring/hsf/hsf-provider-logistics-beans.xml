@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!--暴露Hmall中物流相关业务的接口-->
+    <bean id="logisticsService4MSImpl" class="com.hand.hmall.logistics.service.impl.LogisticsService4MSImpl"/>
+    <dubbo:service interface="com.hand.hmall.logistics.service.ILogisticsService4MS" ref="logisticsService4MSImpl"
+                   group="hmall"
+                   version="1.0.0">
+        <dubbo:method name="batchImport" retries="0" timeout="5000"/>
+    </dubbo:service>
+</beans>

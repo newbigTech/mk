@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.SysCodeValueBMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.SysCodeValueB">
+    <id column="CODE_VALUE_ID" jdbcType="DECIMAL" property="codeValueId" />
+    <result column="CODE_ID" jdbcType="DECIMAL" property="codeId" />
+    <result column="VALUE" jdbcType="VARCHAR" property="value" />
+    <result column="MEANING" jdbcType="VARCHAR" property="meaning" />
+    <result column="DESCRIPTION" jdbcType="VARCHAR" property="description" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+    <result column="ORDER_SEQ" jdbcType="DECIMAL" property="orderSeq" />
+    <result column="TAG" jdbcType="VARCHAR" property="tag" />
+    <result column="ENABLED_FLAG" jdbcType="VARCHAR" property="enabledFlag" />
+    <result column="PARENT_CODE_VALUE_ID" jdbcType="DECIMAL" property="parentCodeValueId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    CODE_VALUE_ID, CODE_ID, VALUE, MEANING, DESCRIPTION, OBJECT_VERSION_NUMBER, REQUEST_ID, 
+    PROGRAM_ID, CREATED_BY, CREATION_DATE, LAST_UPDATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, 
+    ATTRIBUTE_CATEGORY,ORDER_SEQ, TAG, ENABLED_FLAG, PARENT_CODE_VALUE_ID
+  </sql>
+  <!--检验订单状态是否存在-->
+  <select id="checkOrderStatus" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{orderStatus}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.ORDER.STATE'
+    )
+  </select>
+
+  <!--检验发票类型是否存在-->
+  <select id="checkInvoiceType" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{invoiceType}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.INVOICE.TYPE'
+    )
+  </select>
+
+  <!--检验配送方式是否存在-->
+  <select id="checkShippingType" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{shippingType}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.SHIPPING_TYPE'
+    )
+  </select>
+
+  <!--检验支付类型是否存在-->
+  <select id="checkPayMode" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{payMode}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.PAYMENT_TYPE'
+    )
+  </select>
+
+  <!--检验货币是否存在-->
+  <select id="checkCurrencyCode" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{currencyCode}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.CURRENCY'
+    )
+  </select>
+
+  <!--检验单位是否存在-->
+  <select id="checkUnit" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{unit}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.PRODUCT.UNIT'
+    )
+  </select>
+
+  <!--检验订单类型是否存在-->
+  <select id="checkPayInfoOrderType" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{orderType}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.PAYMENTINFO.ORDER_TYPE'
+    )
+  </select>
+
+  <!--检验订单行状态是否存在-->
+  <select id="checkOrderEntryStatus" parameterType="java.lang.String" resultType="java.lang.Integer">
+    SELECT
+    COUNT (*)
+    FROM
+    SYS_CODE_VALUE_B b
+    WHERE
+    b.VALUE
+    = #{orderEntryStatus}
+    AND CODE_ID = (
+    SELECT
+    CODE_ID
+    FROM
+    SYS_CODE_B
+    WHERE
+    CODE = 'HMALL.ORDER_ENTRY.STATUS'
+    )
+  </select>
+</mapper>

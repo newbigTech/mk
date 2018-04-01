@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.log.mapper.LogManagerMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.log.dto.LogManager">
+        <result column="LOG_ID" property="logId" jdbcType="DECIMAL" />
+        <result column="PROGRAM_NAME" property="programName" jdbcType="VARCHAR" />
+        <result column="PROGRAM_DESCRIPTION" property="programDescription" jdbcType="VARCHAR" />
+        <result column="PROCESS_STATUS" property="processStatus" jdbcType="VARCHAR" />
+        <result column="PROCESS_DESCRIPTION" property="processDescription" jdbcType="VARCHAR" />
+        <result column="START_TIME" property="startTime" jdbcType="DATE" />
+        <result column="END_TIME" property="endTime" jdbcType="DATE" />
+        <result column="MESSAGE" property="message" jdbcType="VARCHAR" />
+        <result column="RETURN_MESSAGE" property="returnMessage" jdbcType="VARCHAR" />
+        <result column="SOURCE_PLATFORM" property="sourcePlatform" jdbcType="VARCHAR" />
+        <result column="dateFrom" property="dateFrom" jdbcType="VARCHAR" />
+        <result column="dateTo" property="dateTo" jdbcType="VARCHAR" />
+        <result column="data_primary_key" property="dataPrimaryKey" jdbcType="VARCHAR" />
+        <result column="creation_date" property="creationDate" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <sql id="table_column">
+       lm.log_id,
+       lm.program_name,
+       lm.program_description,
+       lm.process_status,
+       lm.process_description,
+       lm.start_time,
+       lm.end_time,
+       lm.data_primary_key,
+       lm.message,
+       lm.return_message,
+       lm.source_platform,
+       lm.creation_date
+    </sql>
+
+    <!--根据界面查询条件查询对应的日志信息-->
+    <select id="queryAll" parameterType="com.hand.hmall.log.dto.LogManager" resultMap="BaseResultMap">
+    SELECT <include refid="table_column"></include>
+        from hmall_log_manager lm
+        where 1=1
+        <if test="logId !=null and logId !=''">
+            and lm.log_id = #{logId}
+        </if>
+        <if test="dataPrimaryKey !=null and dataPrimaryKey !=''">
+            and lm.data_primary_key LIKE '%'||#{dataPrimaryKey}||'%'
+        </if>
+        <if test="programName !=null and programName !=''">
+            and lm.PROGRAM_NAME LIKE '%'||#{programName}||'%'
+        </if>
+        <if test="programDescription !=null and programDescription !=''">
+            and lm.PROGRAM_DESCRIPTION LIKE '%'||#{programDescription}||'%'
+        </if>
+        <if test="dateFrom !=null and dateFrom!=''">
+            and lm.creation_date > to_date(#{dateFrom},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="dateTo !=null and dateTo!=''">
+            and lm.creation_date &lt; to_date(#{dateTo},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        order by lm.LOG_ID desc
+    </select>
+
+</mapper>

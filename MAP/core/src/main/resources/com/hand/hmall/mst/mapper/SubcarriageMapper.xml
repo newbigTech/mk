@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.SubcarriageMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.Subcarriage">
+        <result column="SUBCARRIAGE_ID" property="subcarriageId" jdbcType="DECIMAL" />
+        <result column="LOGISTICSCO_ID" property="logisticscoId" jdbcType="DECIMAL" />
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR" />
+        <result column="DISTRICT_CODE" property="districtCode" jdbcType="VARCHAR" />
+        <result column="PRICE_RATE" property="priceRate" jdbcType="DECIMAL" />
+        <result column="LEAST_CARRIAGE" property="leastCarriage" jdbcType="DECIMAL" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="NAME" property="logisticscoName" jdbcType="VARCHAR" />
+        <result column="region_name" property="cityName" jdbcType="VARCHAR" />
+        <result column="ORIGIN" property="origin" jdbcType="VARCHAR" />
+        <result column="PRICE_MODE" property="priceMode" jdbcType="VARCHAR" />
+        <result column="DIFFERENCE" property="difference" jdbcType="VARCHAR" />
+        <result column="BASIC_EXPENSE" property="basicExpense" jdbcType="DECIMAL" />
+        <result column="start_place" property="originName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 支线运费维护界面查询-->
+    <select id="selectSubcarriage" parameterType="com.hand.hmall.mst.dto.Subcarriage" resultMap="BaseResultMap">
+                select sub.subcarriage_id,
+               sub.logisticsco_id,
+               logisticsco.name,
+               sub.shipping_type,
+               sub.DISTRICT_CODE,
+               sub.price_rate,
+               sub.least_carriage,
+               sub.status,
+               region.region_name,
+                sub.origin,
+                sub.price_mode,
+                sub.difference,
+                sub.basic_expense,
+                region2.region_name start_place
+          from hmall_mst_subcarriage sub
+          left join (select b.region_id, b.region_code, t.region_name
+                       from hmall_fnd_regions_b b, hmall_fnd_regions_tl t
+                      where b.region_id = t.region_id
+                        and t.lang = #{request.locale,jdbcType=VARCHAR}) region
+            on sub.DISTRICT_CODE = region.region_code
+        left join (select b.region_id, b.region_code, t.region_name
+                    from hmall_fnd_regions_b b, hmall_fnd_regions_tl t
+                    where b.region_id = t.region_id
+                    and t.lang = #{request.locale,jdbcType=VARCHAR}) region2
+        on sub.origin = region2.region_code
+          left join HMALL_MST_LOGISTICSCO logisticsco
+            on sub.logisticsco_id = logisticsco.logisticsco_id
+         WHERE 1 = 1
+        <if test="cityName != null and cityName !=''">
+            and region.region_name  LIKE '%'||#{cityName}||'%'
+        </if>
+        <if test="logisticscoId != null">
+            and sub.logisticsco_id = #{logisticscoId}
+        </if>
+        <if test="districtCode != null and districtCode !=''">
+            and sub.DISTRICT_CODE = #{districtCode}
+        </if>
+        <if test="shippingType != null and shippingType !=''">
+            and sub.shipping_type = #{shippingType}
+        </if>
+        <if test="status != null and status !=''">
+            and sub.status = #{status}
+        </if>
+    </select>
+
+    <!--通过承运商编码+承运商类型+区编码+始发地确认唯一记录 -->
+    <select id="selectUnique"  parameterType="com.hand.hmall.mst.dto.Subcarriage" resultMap="BaseResultMap">
+      select s.subcarriage_id, s.logisticsco_id, s.shipping_type, s.district_code
+      from hmall_mst_subcarriage s, hmall_mst_logisticsco l
+      where s.logisticsco_id = l.logisticsco_id
+        <if test="shippingType != null and shippingType !=''">
+            and s.shipping_type = #{shippingType}
+        </if>
+        <if test="logisticscoCode != null and logisticscoCode !=''">
+            and l.code = #{logisticscoCode}
+        </if>
+        <if test="districtCode != null and districtCode !=''">
+            and s.district_code = #{districtCode}
+        </if>
+        <if test="origin != null and origin !=''">
+            and s.origin = #{origin}
+        </if>
+
+    </select>
+</mapper>

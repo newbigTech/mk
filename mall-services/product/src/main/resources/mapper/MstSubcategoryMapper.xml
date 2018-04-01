@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.MstSubcategoryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.dto.MstSubcategory">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL"/>
+        <result column="SUB_CATEGORY_ID" property="subCategoryId" jdbcType="DECIMAL"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+    </resultMap>
+    <resultMap id="CategoryInfo" type="com.hand.hmall.dto.CategoryInfo">
+        <result column="categoryId" property="uid" jdbcType="DECIMAL"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="parentCode" property="parentCode" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="queryForSaleCategory" resultMap="CategoryInfo">
+        SELECT
+            category.CATEGORY_ID as CODE,
+            category.CATEGORY_NAME as name,
+            subcategory.CATEGORY_ID as parentCode
+        FROM HMALL_MST_CATEGORY category LEFT JOIN HMALL_MST_SUBCATEGORY subcategory
+                ON category.CATEGORY_ID = subcategory.SUB_CATEGORY_ID
+            LEFT JOIN HMALL_MST_CATALOGVERSION version ON category.CATALOG_VERSION = version.CATALOGVERSION_ID
+            LEFT JOIN HMALL_MST_CATALOGS catalogs ON catalogs.CATALOGS_ID = version.CATALOG
+        WHERE version.CATALOGVERSION = 'online' AND catalogs.CODE = 'markor'
+</select>
+
+
+</mapper>

@@ -1,0 +1,56 @@
+.h-slider-verification {
+  position: relative;
+  width: 100%;
+  line-height: 40px;
+  text-align: center;
+  background-color: #f3f2f0;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+  
+  .h-slider-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    
+    .h-slider-block {
+      height: 40px;
+      width: 50px;
+      background-color: #fff;
+      border-width: 1px;
+      border-style: solid;
+      border-color: #9b9b9b;
+      border-radius: 4px;
+      cursor: pointer;
+      background-image: url('../images/slider-verify-arrow.png');
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+  }
+  &.init {
+    color: #999;
+    .h-slider-bar {
+      background-color: #fff;
+    }
+  }
+  &.validing {
+    background-color: #fff;
+    .h-slider-block {
+      background-image: url('../images/loading_16.gif');
+    }
+  }
+  &.valid {
+    background-color: #27788b;
+    color: #fff;
+    .h-slider-block {
+      background-image: url('../images/slider-verify-valid.png');
+    }
+  }
+  &.invalid {
+    background-color: #f00;
+    color: #fff;
+    .h-slider-block {
+      background-image: url('../images/slider-verify-invalid.png');
+    }
+  }
+}

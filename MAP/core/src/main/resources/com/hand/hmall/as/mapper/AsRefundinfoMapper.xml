@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsRefundinfoMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsRefundinfo">
+        <result column="REFUNDINFO_ID" property="refundinfoId" jdbcType="DECIMAL" />
+        <result column="PAY_MODE" property="payMode" jdbcType="VARCHAR" />
+        <result column="REQUEST_SUM" property="requestSum" jdbcType="DECIMAL" />
+        <result column="REFUND_TIME" property="refundTime" jdbcType="DATE" />
+        <result column="NUMBER_CODE" property="numberCode" jdbcType="VARCHAR" />
+        <result column="AS_REFUND_ENTRY_ID" property="asRefundEntryId" jdbcType="DECIMAL" />
+        <result column="OUT_TRADE_NO" property="outTradeNo" jdbcType="VARCHAR" />
+        <result column="ACTUAL_SUM" property="actualSum" jdbcType="DECIMAL" />
+        <result column="REFUND_FLAG" property="refundFlag" jdbcType="VARCHAR" />
+        <result column="ORDER_TYPE" property="orderType" jdbcType="VARCHAR" />
+        <result column="ESC_ORDER_CODE" property="escOrderCode" jdbcType="VARCHAR" />
+        <result column="transientPayModel" property="transientPayModel" jdbcType="VARCHAR" />
+        <result column="refundTimeStart" property="refundTimeStart" jdbcType="VARCHAR" />
+        <result column="refundTimeTo" property="refundTimeTo" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="getInfoForBalance" resultMap="BaseResultMap" parameterType="com.hand.hmall.as.dto.AsRefundinfo">
+        SELECT arf.REFUNDINFO_ID,
+        oo.ESC_ORDER_CODE,
+        oo.CODE,
+        arf.PAY_MODE transientPayModel,
+        arf.REQUEST_SUM,
+        arf.REFUND_TIME,
+        arf.NUMBER_CODE,
+        arf.OUT_TRADE_NO,
+        arf.ACTUAL_SUM
+        FROM HMALL_AS_REFUNDINFO arf
+        LEFT JOIN HMALL_OM_PAYMENTINFO op ON op.NUMBER_CODE = arf.NUMBER_CODE
+        LEFT JOIN HMALL_OM_ORDER oo ON oo.ORDER_ID = op.ORDER_ID
+        WHERE arf.REFUNDINFO_ID NOT IN (
+        SELECT ob.INFO_ID
+        FROM HMALL_OM_BALANCE ob
+        WHERE ob.TYPE = '2')
+        <if test="transientPayModel != null and transientPayModel != ''">
+            AND arf.PAY_MODE = #{transientPayModel}
+        </if>
+        <if test="requestSum != null and requestSum != ''">
+            AND ROUND(arf.request_sum, 5) = ROUND(#{requestSum}, 5)
+        </if>
+        <if test="refundTimeStart != null and refundTimeStart != ''">
+            AND to_char(arf.REFUND_TIME, 'yyyy-MM-dd HH24:mi:ss') >= #{refundTimeStart}
+        </if>
+        <if test="refundTimeTo != null and refundTimeTo != ''">
+            AND to_char(arf.REFUND_TIME, 'yyyy-MM-dd HH24:mi:ss') &lt;= #{refundTimeTo}
+        </if>
+        <if test="isOrderDetails eq 'Y'.toString()">
+            AND oo.ESC_ORDER_CODE = #{escOrderCode}
+        </if>
+        ORDER BY arf.REFUND_TIME DESC
+    </select>
+
+    <!-- 获取要同步的退款单信息时，传入的refund_flag为N -->
+    <select id="getSuitSyncInfo" parameterType="com.hand.hmall.as.dto.AsRefundinfo" resultMap="BaseResultMap">
+        SELECT ari.number_code,ari.refundinfo_id,ari.pay_mode,oo.esc_order_code,ari.refund_time,ari.actual_sum,ari.out_trade_no,ari.order_type
+        FROM hmall_as_refundinfo ari
+        left join hmall_om_paymentinfo op
+        on ari.out_trade_no = op.out_trade_no
+        left join hmall_om_order oo
+        on oo.order_id = op.order_id
+        where 1 = 1
+        <if test="refundFlag != null">
+            and ari.refund_flag = #{refundFlag}
+        </if>
+    </select>
+
+</mapper>

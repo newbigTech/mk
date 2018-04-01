@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  Copyright (C) HAND Enterprise Solutions Company Ltd.
+  ~  All Rights Reserved
+  ~
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallOmCouponRuleMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallOmCouponRule">
+    <id column="COUPONRULE_ID" jdbcType="DECIMAL" property="couponruleId" />
+    <result column="ORDER_ID" jdbcType="DECIMAL" property="orderId" />
+    <result column="COUPON_ID" jdbcType="VARCHAR" property="couponId" />
+    <result column="COUPON_NAME" jdbcType="VARCHAR" property="couponName" />
+    <result column="RELEASE_ID" jdbcType="VARCHAR" property="releaseId" />
+    <result column="START_DATE" jdbcType="TIMESTAMP" property="startDate" />
+    <result column="END_DATE" jdbcType="TIMESTAMP" property="endDate" />
+    <result column="BENEFIT" jdbcType="DECIMAL" property="benefit" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    COUPONRULE_ID, ORDER_ID, COUPON_ID, COUPON_NAME, RELEASE_ID, START_DATE, END_DATE, 
+    BENEFIT, OBJECT_VERSION_NUMBER, CREATION_DATE, CREATED_BY, LAST_UPDATED_BY, LAST_UPDATE_DATE, 
+    LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, PROGRAM_ID, PROGRAM_UPDATE_DATE, REQUEST_ID, 
+    ATTRIBUTE_CATEGORY
+  </sql>
+
+  <delete id="deleteByOrderId" parameterType="java.lang.Long">
+    delete from HMALL_OM_COUPONRULE where ORDER_ID = #{orderId,jdbcType=DECIMAL}
+  </delete>
+
+</mapper>

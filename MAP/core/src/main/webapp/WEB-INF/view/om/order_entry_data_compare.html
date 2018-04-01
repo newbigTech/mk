@@ -1,0 +1,161 @@
+<#--
+        * description: 订单行数据对比
+        * author:qinzhipeng
+        * 2017/5/22
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+
+        <script type="text/javascript">
+            var viewModel = kendo.observable({
+                model: {
+                },
+                queryResource: function (e) {
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+            var queryModel = kendo.observable({
+                model: {
+                },
+                queryResource: function (e) {
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+
+        </script>
+        <body>
+        <div id="page-content">
+            <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+                <!--  v码查询框 -->
+                <input   placeholder='V码'  data-bind="value:model.vproductCode" style="width:150px;margin-right:5px;" class="k-textbox"/>
+                <!--  平台查询框 -->
+                <input   placeholder='平台编码'  data-bind="value:model.platformCode" style="width:150px;margin-right:5px;" class="k-textbox"/>
+                <span class="btn btn-primary" style="width:70px" data-bind="click:queryResource" type="submit"><@spring.message "hap.query"/></span>
+                <span onclick="exportData()"  class="btn btn-info"><@spring.message "hmall.export"/></span>
+                <div style="clear:both"></div>
+            </div>
+            <script>kendo.bind($('#query-form'), queryModel);</script>
+            <form id="form_ExportExcle" action="${base.contextPath}/hmall/om/order/entry/exportOrderEntryCompare" method="GET" >
+                <input type="hidden" id="vproductCode" name="vproductCode" data-bind="value:model.vproductCode">
+                <input type="hidden" id="platformCode" name="platformCode" data-bind="value:model.platformCode">
+
+            </form>
+            <script>kendo.bind($('#form_ExportExcle'), queryModel);</script>
+            <div style="clear:both">
+                <div id="Grid"></div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var BaseUrl = _basePath;
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hmall/om/order/entry/allOrderEntryCompare",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(queryModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "orderEntryId",
+                        fields: {}
+                    }
+                }
+            });
+
+            var Grid = $("#Grid").kendoGrid({
+                dataSource: dataSource,
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                rownumber: true,
+                sortable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "orderCode",
+                        title: '<@spring.message "订单号"/>',
+                        width: 120
+                    }, {
+                        field: "code",
+                        title: '<@spring.message "订单行号"/>',
+                        width: 120
+                    }, {
+                        field: "vproductCode",
+                        title: '<@spring.message "V码"/>',
+                        width: 120
+                    },{
+                        field: "productCode",
+                        title: '<@spring.message "商品编码"/>',
+                        width: 120
+                    },{
+                        field: "productName",
+                        title: '<@spring.message "商品名称"/>',
+                        width: 120
+                    },
+                    {
+                        field: "texture",
+                        title: '<@spring.message "材质（价签）"/>',
+                        width: 240
+                    }, {
+                        field: "textureSpecification",
+                        title: '<@spring.message "材质（说明书）"/>',
+                        width: 360
+                    }, {
+                        field: "basePrice",
+                        title: '<@spring.message "前台销售价"/>',
+                        width: 120
+                    },{
+                        field: "platformSalesPrice",
+                        title: '<@spring.message "中台销售价"/>',
+                        width: 120
+                    }, {
+                        field: "productSize",
+                        title: '<@spring.message "前台产品外形尺寸"/>',
+                        width: 120
+                    }, {
+                        field: "productPackedSize",
+                        title: '<@spring.message "前台包装尺寸"/>',
+                        width: 120
+                    },{
+                        field: "platformProductSize",
+                        title: '<@spring.message "中台产品外形尺寸"/>',
+                        width: 120
+                    }, {
+                        field: "platformProductPackedSize",
+                        title: '<@spring.message "中台包装尺寸"/>',
+                        width: 120
+                    }, {
+                        field: "internalPrice",
+                        title: '<@spring.message "采购价格"/>',
+                        width: 120
+                    }
+                ],
+                editable: false
+            }).data("kendoGrid");
+
+            function exportData() {
+                $("#form_ExportExcle").submit();
+            }
+        </script>
+        </body>
+        </html>
+

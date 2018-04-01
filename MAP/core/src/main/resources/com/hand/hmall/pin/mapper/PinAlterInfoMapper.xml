@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.pin.mapper.PinAlterInfoMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.pin.dto.PinAlterInfo">
+        <result column="ALTER_INFO_ID" property="alterInfoId" jdbcType="DECIMAL"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="VCODE" property="vcode" jdbcType="VARCHAR"/>
+        <result column="EVENT_CODE" property="eventCode" jdbcType="VARCHAR"/>
+        <result column="NEXT_EVENT_CODE" property="nextEventCode" jdbcType="VARCHAR"/>
+        <result column="NEXT_EVENT_DES" property="nextEventDes" jdbcType="VARCHAR"/>
+        <result column="LEVEL1_TIME" property="level1Time" jdbcType="DATE"/>
+        <result column="LEVEL2_TIME" property="level2Time" jdbcType="DATE"/>
+        <result column="LEVEL3_TIME" property="level3Time" jdbcType="DATE"/>
+        <result column="LEVEL1_DELAY_HOURS" property="level1DelayHours" jdbcType="DECIMAL"/>
+        <result column="LEVEL2_DELAY_HOURS" property="level2DelayHours" jdbcType="DECIMAL"/>
+        <result column="LEVEL3_DELAY_HOURS" property="level3DelayHours" jdbcType="DECIMAL"/>
+        <result column="MOBIL" property="mobile" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <insert id="insertOne" parameterType="com.hand.hmall.pin.dto.PinAlterInfo">
+        INSERT INTO HMALL_PIN_ALTER_INFO (
+            ALTER_INFO_ID,
+            PIN,
+            EVENT_CODE,
+            NEXT_EVENT_CODE,
+            LEVEL1_TIME,
+            LEVEL2_TIME,
+            LEVEL3_TIME
+        )
+        VALUES (
+            HMALL_PIN_ALTER_INFO_S.nextval,
+            #{pin},
+            #{eventCode},
+            #{nextEventCode},
+            #{level1Time},
+            #{level2Time},
+            #{level3Time}
+        )
+    </insert>
+
+    <delete id="deleteOne" parameterType="com.hand.hmall.pin.dto.PinAlterInfo">
+        DELETE FROM HMALL_PIN_ALTER_INFO
+        WHERE PIN = #{pin}
+    </delete>
+
+    <delete id="deleteSent" parameterType="java.util.List">
+        DELETE FROM HMALL_PIN_ALTER_INFO WHERE PIN IN
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+            #{item.pin}
+        </foreach>
+    </delete>
+
+    <update id="updateSent1st" parameterType="java.util.List">
+        UPDATE HMALL_PIN_ALTER_INFO SET LEVEL1_TIME = NULL where ALTER_INFO_ID IN
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+            #{item.alterInfoId}
+        </foreach>
+    </update>
+
+    <update id="updateSent2nd" parameterType="java.util.List">
+        UPDATE HMALL_PIN_ALTER_INFO SET LEVEL2_TIME = NULL,LEVEL1_TIME = NULL where ALTER_INFO_ID IN
+        <foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+            #{item.alterInfoId}
+        </foreach>
+    </update>
+
+    <select id="queryDelay1st" resultMap="BaseResultMap">
+        SELECT
+            pai.ALTER_INFO_ID,
+            pai.PIN,
+            ooe.VPRODUCT_CODE VCODE,
+            pai.NEXT_EVENT_CODE,
+            pai.LEVEL1_TIME,
+            pa.EVENT_DES         AS NEXT_EVENT_DES,
+            pam.LEVEL1_TIME / 60 AS LEVEL1_DELAY_HOURS,
+            emp.MOBIL
+        FROM HMALL_PIN_ALTER_INFO pai
+            LEFT JOIN HMALL_PIN_ALTER pa
+                ON pai.NEXT_EVENT_CODE = pa.EVENT_CODE
+            LEFT JOIN HMALL_OM_ORDER_ENTRY ooe
+                ON ooe.PIN = pai.PIN
+            LEFT JOIN HMALL_MST_PRODUCT mp
+                ON mp.PRODUCT_ID = ooe.PRODUCT_ID
+            LEFT JOIN HMALL_PIN_ALTER_MAPPING pam
+                ON pai.EVENT_CODE = pam.EVENT_CODE AND mp.CUSTOM_SUPPORT_TYPE = pam.CUSTOMER_SUPPORT_TYPE
+            LEFT JOIN HMALL_PIN_SENDINFO ps
+                ON ps.EVENT_CODE = pai.NEXT_EVENT_CODE AND ps.EVENT_LEVEL = 1
+            LEFT JOIN HR_EMPLOYEE emp
+                ON emp.EMPLOYEE_ID = ps.EMPLOYEE_ID
+        WHERE pai.LEVEL1_TIME &lt; sysdate
+    </select>
+
+    <select id="queryDelay2nd" resultMap="BaseResultMap">
+        SELECT
+            pai.ALTER_INFO_ID,
+            pai.PIN,
+            ooe.VPRODUCT_CODE VCODE,
+            pai.NEXT_EVENT_CODE,
+            pai.LEVEL2_TIME,
+            pa.EVENT_DES         AS NEXT_EVENT_DES,
+            pam.LEVEL2_TIME / 60 AS LEVEL2_DELAY_HOURS,
+            emp.MOBIL
+        FROM HMALL_PIN_ALTER_INFO pai
+            LEFT JOIN HMALL_PIN_ALTER pa
+                ON pai.NEXT_EVENT_CODE = pa.EVENT_CODE
+            LEFT JOIN HMALL_OM_ORDER_ENTRY ooe
+                ON ooe.PIN = pai.PIN
+            LEFT JOIN HMALL_MST_PRODUCT mp
+                ON mp.PRODUCT_ID = ooe.PRODUCT_ID
+            LEFT JOIN HMALL_PIN_ALTER_MAPPING pam
+                ON pai.EVENT_CODE = pam.EVENT_CODE AND mp.CUSTOM_SUPPORT_TYPE = pam.CUSTOMER_SUPPORT_TYPE
+            LEFT JOIN HMALL_PIN_SENDINFO ps
+                ON ps.EVENT_CODE = pai.NEXT_EVENT_CODE AND ps.EVENT_LEVEL = 2
+            LEFT JOIN HR_EMPLOYEE emp
+                ON emp.EMPLOYEE_ID = ps.EMPLOYEE_ID
+        WHERE pai.LEVEL2_TIME &lt; sysdate
+    </select>
+
+    <select id="queryDelay3rd" resultMap="BaseResultMap">
+        SELECT
+            pai.ALTER_INFO_ID,
+            pai.PIN,
+            ooe.VPRODUCT_CODE VCODE,
+            pai.NEXT_EVENT_CODE,
+            pai.LEVEL3_TIME,
+            pa.EVENT_DES         AS NEXT_EVENT_DES,
+            pam.LEVEL3_TIME / 60 AS LEVEL3_DELAY_HOURS,
+            emp.MOBIL
+        FROM HMALL_PIN_ALTER_INFO pai
+            LEFT JOIN HMALL_PIN_ALTER pa
+                ON pai.NEXT_EVENT_CODE = pa.EVENT_CODE
+            LEFT JOIN HMALL_OM_ORDER_ENTRY ooe
+                ON ooe.PIN = pai.PIN
+            LEFT JOIN HMALL_MST_PRODUCT mp
+                ON mp.PRODUCT_ID = ooe.PRODUCT_ID
+            LEFT JOIN HMALL_PIN_ALTER_MAPPING pam
+                ON pai.EVENT_CODE = pam.EVENT_CODE AND mp.CUSTOM_SUPPORT_TYPE = pam.CUSTOMER_SUPPORT_TYPE
+            LEFT JOIN HMALL_PIN_SENDINFO ps
+                ON ps.EVENT_CODE = pai.NEXT_EVENT_CODE AND ps.EVENT_LEVEL = 3
+            LEFT JOIN HR_EMPLOYEE emp
+                ON emp.EMPLOYEE_ID = ps.EMPLOYEE_ID
+        WHERE pai.LEVEL3_TIME &lt; sysdate
+    </select>
+
+</mapper>

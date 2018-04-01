@@ -1,0 +1,346 @@
+<#--
+        * description: 价格详情页面
+        * author: peng.chen03@hand-china.com
+        * version: 0.1
+        * #copyright#
+        -->
+    <#include "../../include/header.html">
+    <script src="${base.contextPath}/common/code?saleUnitDate=HMALL.UNIT" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?priceTypeData=HMALL.PRICE_TYPE" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?yesOrNo=SYS.YES_NO" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?priceGroupData=HMALL.PRICE_GROUP" type="text/javascript"></script>
+        <script type="text/javascript">
+            var productId = '${RequestParameters.productId!0}';
+            var code = '${RequestParameters.code!0}'
+            var pricerowId = '${RequestParameters.pricerowId!0}';
+            var viewModel = kendo.observable({
+                model: {
+                    productId : productId,
+                    code : code,
+                },
+            });
+            if(pricerowId != null && pricerowId !=''){
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/mst/pricerow/query?pricerowId=' + pricerowId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                                if(k == "userId" && a0[k] != null){
+                                    $.ajax({
+                                        url : '${base.contextPath}/hmall/mst/user/query?userId='+a0.userId,
+                                        success : function(data){
+                                            if (data.success) {
+                                                var v = data.rows[0] || {};
+                                                $("#userId").data("kendoLov").text(v.name);
+                                            }
+                                        }
+                                    });
+                                }
+                                if(k == "userGroupId" && a0[k] != null){
+                                    $.ajax({
+                                        url : '${base.contextPath}/hmall/mst/usergroup/query?usergroupId='+a0.userGroupId,
+                                        success : function(data){
+                                            if (data.success) {
+                                                var v = data.rows[0] || {};
+                                                $("#userGroupId").data("kendoLov").text(v.code);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+        </script>
+        <body>
+        <div id="page-content">
+            <div id="detail" class="panel">
+                <div class="panel-body" id="lab-body">
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "商品编码:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                        id="productId" data-bind="value:model.productId"/>
+                            </div>
+                            <script type="text/javascript">
+		                     	$("#productId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_PRODUCT")},{
+		       	                    query: function(e) {
+		       	                    	
+		       	                    },
+		       	                    select:function(e){
+		       	                    	
+		       	                    }
+		       	                }));
+                                if(productId !=0 && code !=0){
+                                    $("#productId").data("kendoLov").text(code);
+                                    $("#productId").data("kendoLov").enable(false);
+                                }
+                            </script>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "用户名:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                       id="userId"
+                                       data-bind="value:model.userId"/>
+                            </div>
+                            <script type="text/javascript">
+		                     	$("#userId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_USER")},{
+		       	                    query: function(e) {
+		       	                    	
+		       	                    },
+		       	                    select:function(e){
+		       	                    	
+		       	                    }
+		       	                })); 
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "用户组:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width" id="userGroupId"
+                                       data-bind="value:model.userGroupId"/>
+                            </div>
+                            <script type="text/javascript">
+		                     	$("#userGroupId").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_USERGROUP")},{
+		       	                    query: function(e) {
+		       	                    	var userId =  viewModel.model.userId;
+		    	                    	if(userId){
+		    	                    		e.param['userId'] = userId;
+		    	                    	}
+		       	                    },
+		       	                    select:function(e){
+		       	                    	
+		       	                    }
+		       	                })); 
+                            </script>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "基础销售价格:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                       id="basePrice"
+                                       data-bind="value:model.basePrice"/>
+                            </div>
+                            <script type="text/javascript">
+		                    	$("#basePrice").kendoNumericTextBox({  
+		                    		
+			                    });
+	                    	</script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "最低价:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                       id="bottomPrice"
+                                       data-bind="value:model.bottomPrice"/>
+                            </div>
+                            <script type="text/javascript">
+		                    	$("#bottomPrice").kendoNumericTextBox({  
+		                    		
+			                    });
+	                    	</script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "转换单位:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                        id="saleUnit"
+                                       data-bind="value:model.saleUnit"/>
+                            </div>
+                            <script type="text/javascript">
+                                    $("#saleUnit").kendoDropDownList({
+                                        dataTextField: "meaning",
+                                        dataValueField: "value",
+                                        valuePrimitive: true,
+                                        dataSource: saleUnitDate,
+                                    }).data("kendoDropDownList"); 
+                                </script>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "单位转换率:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width "
+                                       id="rate"
+                                       data-bind="value:model.rate"/>
+                            </div>
+                            <script type="text/javascript">
+		                    	$("#rate").kendoNumericTextBox({  
+		                    		
+			                    });
+	                    	</script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "开始时间:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                       id="startTime"
+                                       data-bind="value:model.startTime"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#startTime").kendoDatePicker({
+                                    open : function(e){
+                                        if(viewModel.model.endTime != null){
+                                            $('#startTime').data('kendoDatePicker').max(viewModel.model.endTime);
+                                        }
+                                    },
+                                })
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "结束时间:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                       id="endTime"
+                                       data-bind="value:model.endTime"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#endTime").kendoDatePicker({
+                                    open : function(e){
+                                        if(viewModel.model.startTime != null){
+                                            $('#endTime').data('kendoDatePicker').min(viewModel.model.startTime);
+                                        }
+                                    },
+                                });
+                            </script>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "价格类型:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width "
+                                       id="priceType"
+                                       data-bind="value:model.priceType"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#priceType").kendoDropDownList({
+                                  //  optionLabel:"<@spring.message 'hmall.pricerow.priceType'/>",
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: priceTypeData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "是否一口价:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                       id="isBottom"
+                                       data-bind="value:model.isBottom"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#isBottom").kendoDropDownList({
+                               //     optionLabel:"<@spring.message 'hmall.pricerow.isBottom'/>",
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: yesOrNo,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                "价目表:"/></label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control full_width"
+                                       id="priceGroup"
+                                       data-bind="value:model.priceGroup"/>
+                            </div>
+                            <script type="text/javascript">
+                                $("#priceGroup").kendoDropDownList({
+                                  //  optionLabel:"<@spring.message 'hmall.pricerow.priceGroup'/>",
+                                    dataTextField: "meaning",
+                                    dataValueField: "value",
+                                    valuePrimitive: true,
+                                    dataSource: priceGroupData,
+                                }).data("kendoDropDownList");
+                            </script>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <script>
+                kendo.bind($("#detail"), viewModel);
+            </script>
+
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-success k-grid-save-changes" onclick="saveFunction()"
+                  style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+            </div>
+            <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+        </div>
+        <script>
+            viewModel.model.set("pricerowId", pricerowId);
+            viewModel.model.set("syncflag", 'N');
+            viewModel.model.set("objectVersionNumber", 1);
+            function saveFunction() {
+                var url = '/hmall/mst/pricerow/submit';
+                if(viewModel.model.pricerowId!=0 && viewModel.model.pricerowId!=''){
+                    viewModel.model.set("__status","update");
+                }else{
+                    viewModel.model.set("__status","add");
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}'+url,
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify([viewModel.model.toJSON()]),
+                    success: function (data) {
+                        if (data.success == true) {
+                            kendo.ui.showConfirmDialog({
+                                title: $l('hap.tip.info'),
+                                message: $l('保存成功！')
+                            })
+ //                               .done(function (event) {
+ //                               if (event.button == 'OK') {
+                                   //关闭弹窗
+//                                    if(pricerowId != 0 && pricerowId != ''){
+//                                        window.parent.closeTab(pricerowId);
+//                                    }else{
+//                                        window.parent.closeTab("NEWPRICEROW");
+//                                    }
+                                    //刷新界面
+                                    //window.parent.$("#pricerowGrid").data('kendoGrid').dataSource.page(1);
+//                                }
+//                            })
+                        }
+                    }
+                });
+            }
+        </script>
+        </body>
+        </html>

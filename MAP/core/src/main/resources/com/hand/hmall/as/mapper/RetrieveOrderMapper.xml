@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.RetrieveOrderMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.RetrieveOrder">
+        <result column="RECEIPT_ORDER_ID" property="receiptOrderId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="RECEIPT_TYPE" property="receiptType" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SV_CATEGORY1" property="svCategory1" jdbcType="VARCHAR"/>
+        <result column="SV_CATEGORY2" property="svCategory2" jdbcType="VARCHAR"/>
+        <result column="SALES_CODE" property="salesCode" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="COMPLAINT" property="complaint" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="USER_ID" property="userId" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="LINKS_CODE" property="linksCode" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="DATE"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="DATE"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="DATE"/>
+        <result column="EXECUTION_DATE" property="executionDate" jdbcType="DATE"/>
+        <result column="TECHNICIAN_NAME" property="technicianName" jdbcType="VARCHAR"/>
+        <result column="IS_CHARGE" property="isCharge" jdbcType="VARCHAR"/>
+        <result column="USER_GROUP" property="userGroup" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="RETURN_FEE" property="returnFee" jdbcType="VARCHAR"/>
+        <result column="RESTORE_FEE" property="restoreFee" jdbcType="VARCHAR"/>
+        <result column="TRANS_FEE" property="transFee" jdbcType="VARCHAR"/>
+        <result column="CHANGE_REASON" property="changeReason" jdbcType="VARCHAR"/>
+        <result column="OA_CHANGE_CODE" property="oaChangeCode" jdbcType="VARCHAR"/>
+        <result column="REORDER_FEE" property="reorderFee" jdbcType="VARCHAR"/>
+        <result column="AFTER_CHANGE_FEE" property="afterChangeFee" jdbcType="VARCHAR"/>
+    </resultMap>
+    <!--根据订单ID查询用户信息-->
+    <select id="selectUserInfoByOrderId" parameterType="com.hand.hmall.as.dto.RetrieveOrder"
+            resultMap="BaseResultMap">
+        SELECT
+        omOrder.USER_ID,
+        omOrder.RECEIVER_NAME NAME,
+        omOrder.RECEIVER_MOBILE MOBILE,
+        omOrder.RECEIVER_ADDRESS ADDRESS,
+        ug.NAME USER_GROUP,
+        omOrder.SHIPPING_TYPE,
+        omOrder.CODE SALES_CODE
+        FROM HMALL_OM_ORDER omOrder
+        LEFT JOIN HMALL_MST_USER_MAPPING um ON omOrder.USER_ID = um.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP ug ON um.USERGROUP_ID = ug.USERGROUP_ID
+        <where>
+            <if test="salesCode != null">
+                omOrder.CODE = #{salesCode}
+            </if>
+        </where>
+    </select>
+
+    <!--查询取回单详细信息-->
+    <select id="selectRetrieveOrderById" parameterType="com.hand.hmall.as.dto.RetrieveOrder"
+            resultMap="BaseResultMap">
+        SELECT
+        receipt.RECEIPT_ORDER_ID,
+        receipt.CODE,
+        receipt.STATUS,
+        receipt.LINKS_CODE,
+        receipt.SV_CATEGORY1,
+        receipt.SV_CATEGORY2,
+        receipt.SALES_CODE,
+        receipt.SHIPPING_TYPE,
+        receipt.COMPLAINT,
+        receipt.NOTE,
+        receipt.IS_CHARGE,
+        receipt.SYNCFLAG,
+        receipt.USER_ID,
+        receipt.NAME,
+        receipt.MOBILE,
+        receipt.ADDRESS,
+        receipt.CS,
+        receipt.FINISH_TIME,
+        receipt.CREATION_DATE,
+        ug.NAME USER_GROUP,
+        receipt.APPOINTMENT_DATE,
+        receipt.EXECUTION_DATE,
+        receipt.LOGISTICS_NUMBER,
+        receipt.RETURN_FEE,
+        receipt.RESTORE_FEE,
+        receipt.TRANS_FEE,
+        receipt.OA_CHANGE_CODE,
+        receipt.CHANGE_REASON,
+        receipt.REORDER_FEE,
+        receipt.AFTER_CHANGE_FEE
+        FROM HMALL_AS_RECEIPT receipt
+        LEFT JOIN HMALL_MST_USER_MAPPING um ON receipt.USER_ID = um.USER_ID
+        LEFT JOIN HMALL_MST_USERGROUP ug ON um.USERGROUP_ID = ug.USERGROUP_ID
+        <where>
+            <if test="receiptOrderId != null">
+                receipt.RECEIPT_ORDER_ID = #{receiptOrderId}
+            </if>
+        </where>
+    </select>
+</mapper>

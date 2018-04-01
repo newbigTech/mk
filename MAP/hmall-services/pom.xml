@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.hand.hmall</groupId>
+    <artifactId>hmall-services</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <distributionManagement>
+        <repository>
+            <id>Markor-Release</id>
+            <name>Markor-Release</name>
+            <url>http://172.16.10.52/nexus/content/repositories/releases</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>Markor-Snapshot</id>
+            <name>Markor-Snapshot</name>
+            <url>http://172.16.10.52/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>Markor-Release</id>
+            <name>Markor-Release</name>
+            <url>http://172.16.10.52/nexus/content/repositories/releases</url>
+        </repository>
+        <repository>
+            <id>Markor-Snapshot</id>
+            <name>Markor-Snapshot</name>
+            <url>http://172.16.10.52/nexus/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <id>RDC</id>
+            <name>RDC Repository</name>
+            <url>http://172.16.10.52/nexus/content/repositories/HAND-RDC-Repository</url>
+        </repository>
+        <repository>
+            <id>RDC snapshot</id>
+            <name>RDC snapshot Repository</name>
+            <url>http://172.16.10.52/nexus/content/repositories/HAND-RDC-Snapshot</url>
+        </repository>
+        <repository>
+            <id>RDC thirdparty</id>
+            <name>RDC thirdparty Repository</name>
+            <url>http://172.16.10.52/nexus/content/repositories/HAND-THIRDPARTY</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.markor.map.framework</groupId>
+            <artifactId>interface-common</artifactId>
+            <version>1.0.1-RELEASE</version>
+        </dependency>
+
+        <!--公共服务-->
+        <dependency>
+            <groupId>com.markor.map</groupId>
+            <artifactId>common-service-api-provider</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    
+</project>

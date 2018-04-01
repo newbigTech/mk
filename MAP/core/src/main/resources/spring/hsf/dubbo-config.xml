@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:property-placeholder location="classpath:config.properties"/>
+    <dubbo:application name="${applicationName}"/>
+    <dubbo:registry address="${dubbo.registry.address}"/>
+    <dubbo:protocol name="dubbo" port="${dubbo.protocol.dubbo.port}"/>
+    <dubbo:monitor protocol="registry"/>
+    <!-- 测试期间为方便服务提供放断点debug，将超时时间拉长，上线后，应修改为秒级。各个服务根据实际业务在服务层面分别设置各自的合理的超时时间 -->
+    <dubbo:consumer timeout="30000"/>
+</beans>

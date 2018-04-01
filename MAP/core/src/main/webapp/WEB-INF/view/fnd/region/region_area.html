@@ -1,0 +1,335 @@
+<#--
+        * description: 区域
+        * author:peng.chen03@hand-china.com
+        * 2017/5/23
+        * version: 0.1
+        *
+        -->
+    <#include "../../include/header.html">
+        <style>
+            .k-grid td {
+                line-height: 1;
+                padding-top: 9px;
+                padding-bottom: 9px;
+            }
+        </style>
+        <body>
+
+        <!--初始化页面-->
+        <script>
+            var parentId = '${RequestParameters.regionId!0}';
+            var ppId = '${RequestParameters.parentId!0}';
+            var pppId = '${RequestParameters.ppId!0}';
+        </script>
+
+
+        <div id="example" class="row">
+            <div id="page-content">
+                <input type="hidden" id="ppid" data-bind="value: model.ppid">
+                <input type="hidden" id="pppid" data-bind="value: model.pppid">
+
+                <div class="pull-left" id="toolbar-btn"
+                     style="padding-bottom:10px;padding-left:19px;padding-right:30px;">
+                    <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" onclick="toBack()">
+                        返回：城市</span>
+                </div>
+                <div class="pull-right" style="padding-bottom:10px;">
+
+                </div>
+            </div>
+        </div>
+        <script>
+
+            var viewModel = kendo.observable({
+                model: {},
+                <!--sysNo sysName mapName mapRemarker-->
+
+                reset: function (e) {
+                    var formData = viewModel.model.toJSON();
+                    for (var k in formData) {
+                        viewModel.model.set(k, "");
+                    }
+                },
+                doQuery: function () {
+                    $('#grid').data('kendoGrid').dataSource.read();
+                }
+            });
+            var viewModel1 = kendo.observable({
+                model: {}
+            });
+        </script>
+        <script>kendo.bind($('#example'), viewModel)</script>
+        <div class="row" id="findByCondition">
+            <div class="pull-left" id="toolbar-btn1" style="padding-bottom:10px;padding-left:28px;">
+                <span style="width: 50px"></span>
+                <span class="btn btn-primary" style="float:left;margin-right:5px;" onclick='toNew()'><i class="fa fa-plus-square" style="margin-right:3px;"></i><@spring.message "hap.new"/></span>
+                <span class="btn btn-primary" style="float:left;margin-right:5px;" onclick='editFunctionResources()'><i class="fa fa-edit"
+                        style="margin-right:3px;"></i><@spring.message "hap.edit"/></span>
+                <span class="btn btn-success k-grid-save-changes" style="float:left;margin-right:5px;" onclick='toSave()'><i class="fa fa-save" style="margin-right:3px;"></i><@spring.message "hap.save"/></span>
+            </div>
+            <div class="pull-right" id="query-form" style="padding-bottom:10px;padding-right:38px;">
+                <input placeholder="<@spring.message 'hmall.region.name'/>" type="text" style=" height:2.5em;float:left;width:150px;margin-right:5px;"
+                       data-bind="value:model.regionName" class="k-textbox">
+                <span class="btn btn-primary" style="float:left;" data-bind="click: doQuery" type="submit">
+                <i class="fa fa-search" style="margin-right:3px;"></i>
+            <@spring.message "hap.query"/></span>
+
+                <div style="clear:both"></div>
+            </div>
+            <div class="row" style="padding-bottom:10px;padding-left:22px;padding-right:27px;">
+                <div class="col-xs-12" clear :both/>
+                <div id="grid">
+
+                </div>
+            </div>
+        </div>
+        <script>kendo.bind($('#findByCondition'), viewModel)</script>
+        <script>
+            function toNew() {
+                $('#grid').data('kendoGrid').addRow();
+            }
+            function toSave() {
+                $('#grid').data('kendoGrid').saveChanges();
+                setTimeout(refresh, 500);
+            }
+
+            function refresh() {
+                var pageNo = $('#grid').data('kendoGrid').dataSource._page;
+                //刷新页面
+                $('#grid').data('kendoGrid').dataSource.read(pageNo);
+            }
+            var dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: "${base.contextPath}/fnd/regions/findByCondition?parentId="+parentId,
+                        type: "POST",
+//                        contentType: "application/json",
+                        dataType: "json"
+                    }, create: {//添加
+                        url: "${base.contextPath}/fnd/regions/insert",
+                        dataType: "json",
+                        contentType: "application/json",
+                        type: "POST"
+                    },
+                    update: {
+                        dataType: "json",
+                        url: "${base.contextPath}/fnd/regions/update",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: "${base.contextPath}/fnd/regions/delete",
+                        contentType: "application/json",
+                        dataType: "json",
+                        type: "POST"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type === 'read') {
+                            var map = viewModel.model.toJSON();
+                            map.start = (options.page - 1) * options.pageSize;
+                            map.size = options.pageSize;
+                            for (var k in map) {
+                                if (map[k] === '' || map[k] === null || map[k] === undefined)
+
+                                    delete map[k];
+                            }
+                            var v = kendo.stringify(viewModel.model.toJSON());
+                            return Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+                        } else {
+                            options.models.parentId = viewModel.model.parentId;
+                            var datas = Hap.prepareSubmitParameter(options, type);
+                            if(options.models.length> 0){
+                                $.each(options.models, function (i, n) {
+                                    options.models[i].parentId = parentId;
+                                    console.log(options.models[i])
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }
+
+                    }
+                },
+                serverPaging: true,//加了这个必须后台分页，而且外面才可以调用page(),如果不写这个就要调read()
+                batch: true,//传批量
+                height: 550,
+                groupable: true,
+                sortable: true,
+                pageSize: 10,
+                pageable: {
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+                schema: {
+                    data: "rows",
+                    total: 'total',
+//
+                    model: {
+                        id: "regionId",
+                        fields: {
+                            parentId: {type: "number"},
+                            regionType: {type: "string", defaultValue:"AREA"},
+                            regionCode: {
+                                type: "string", validation: {
+                                    required: true,
+                                    dateDuplication: function (input) {
+                                        if (input.is('[name=regionCode]')) {
+                                            if (input.val() == null || input.val().trim() == '') {
+                                                input.attr("data-dateDuplication-msg", "<@spring.message 'hmall.sequence.need'/>");
+                                                return false;
+                                            }
+                                            for (var i = 1; i < dataSource.data().length; i++) {
+                                                if (dataSource.data()[i].id != viewModel.model.id && input.val().trim() == dataSource.data()[i].regionCode) {
+                                                    input.attr("data-dateDuplication-msg", "<@spring.message 'hmall.data.duplication'/>");
+                                                    return false;
+                                                }
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                }
+                            },
+                            regionName: {
+                                type: "string", validation: {
+                                    required: true
+                                }
+                            },
+                            enabledFlag: {defaultValue: 'Y', type: 'boolean', checkedValue: 'Y', uncheckedValue: 'N'}
+
+                        },
+                        editable : function(col){
+                            if(col =='regionType'){
+                                return false;
+                            }
+                            return true;
+                        }
+                    }
+                }
+            });
+            var gridModel = $("#grid").kendoGrid({
+                dataSource: dataSource,
+                navigatable: false,
+                reorderable: true,
+                sortable: false,
+                selectable: 'multiple,rowbox',// 多选
+                height: '100%',
+                resizable: true,
+                pageSize: 10,
+//                filterable: true,
+                sortable: true,
+                pageable: true,
+//                editable: true,
+                scrollable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [{
+                    field: "regionType",
+                    title: '<@spring.message "hmall.region.type"/>',
+//                height:'50px',
+                    attributes: {style: "text-align:left"},
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: left"
+                    },
+                    template: function (dataItem) {
+                        var v = dataItem.regionType;
+                        $.each(regionTypeDataSource, function (i, n) {
+                            if ((n.value || '').toLowerCase() == (v || '').toLowerCase()) {
+                                v = n.meaning;
+                                return v;
+                            }
+                        })
+                        return v;
+                    },
+                    editor: function (container, options) {
+                        options.model.parentId = viewModel.model.parentId;
+                        $('<input name="' + options.field + '"/>')
+                            .appendTo(container)
+                            .kendoDropDownList({
+                                dataTextField: "meaning",
+                                dataValueField: "value",
+                                valuePrimitive: true,
+                                dataSource: regionTypeDataSource
+                            });
+                    }
+                }, {
+                    field: "regionCode",
+                    title: '<@spring.message "hmall.region.code"/>',
+                    attributes: {style: "text-align:left"},
+                    headerAttributes: {
+                        "class": "table-header-cell",
+                        style: "text-align: left"
+                    },
+                    editor: function (container, options) {
+                        $('<input id="regionCode"   class="k-input k-textbox" name="' + options.field + '"/>')
+                            .appendTo(container);
+
+                    }
+                },
+                    {
+                        field: "regionName",
+                        title: '<@spring.message "hmall.region.name"/>',
+                        attributes: {style: "text-align:left"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: left"
+                        },
+                        editor: function (container, options) {
+                            $('<input name="' + options.field + '"/>')
+                                .appendTo(container)
+                                .kendoTLEdit({
+                                    idField: 'regionId',
+                                    field: 'regionName',
+                                    dto: "com.hand.hmall.fnd.dto.Region",
+                                    model: options.model
+                                });
+                        }
+
+                    },
+                    {
+                        field: "enabledFlag",
+                        title: '<@spring.message "hmall.employee.enabledflag"/>',
+                        attributes: {style: "text-align:center"},
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {style: "text-align:center"},
+                        width: 80
+
+//               }
+                    }
+                ],
+                editable: "inline"
+//            editable: true
+            }).data('kendoGrid');
+            kendo.bind($("#example"), viewModel);
+            Hap.autoResizeGrid("#grid");
+            //$("#wdp").bind("click",function(){ location.href="/orderMsg.html?orderNumber="+viewModel.model.orderNumber;});
+
+            function toBack() {
+                window.parent.$("#editWin").data("kendoWindow").close();
+            }
+            function editFunctionResources() {
+                var checked = gridModel.selectedDataItems();
+                if (checked.length == 1) {
+                    var data = gridModel.dataItem(gridModel.select())
+                    viewModel.model.set("id", data.id);
+                    gridModel.editRow(data);
+                } else {
+                    kendo.ui.showInfoDialog({
+                        message: $l('hap.tip.selectrow')
+                    })
+                }
+            }
+
+
+        </script>
+        <script src="${base.contextPath}/common/code?regionTypeDataSource=HMALL.FND_REGION_TYPE"
+                type="text/javascript"></script>
+        </div>
+        </body>
+        </html>

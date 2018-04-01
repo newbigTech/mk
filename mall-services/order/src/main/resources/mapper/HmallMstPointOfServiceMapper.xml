@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallMstPointOfServiceMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallMstPointOfService">
+    <id column="POINT_OF_SERVICE_ID" jdbcType="DECIMAL" property="pointOfServiceId" />
+    <result column="CODE" jdbcType="VARCHAR" property="code" />
+    <result column="DISPLAYNAME" jdbcType="VARCHAR" property="displayname" />
+    <result column="TYPE" jdbcType="VARCHAR" property="type" />
+    <result column="ZONE1" jdbcType="VARCHAR" property="zone1" />
+    <result column="CONTACT_NUMBER" jdbcType="VARCHAR" property="contactNumber" />
+    <result column="ADDRESS" jdbcType="VARCHAR" property="address" />
+    <result column="SHOPSTATUS" jdbcType="VARCHAR" property="shopstatus" />
+    <result column="ZZWERKS" jdbcType="VARCHAR" property="zzwerks" />
+    <result column="BUKRS" jdbcType="VARCHAR" property="bukrs" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    POINT_OF_SERVICE_ID, CODE, DISPLAYNAME, TYPE, ZONE1, CONTACT_NUMBER, ADDRESS, SHOPSTATUS, 
+    ZZWERKS, BUKRS, SYNCFLAG, OBJECT_VERSION_NUMBER, CREATION_DATE, CREATED_BY, LAST_UPDATED_BY, 
+    LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, PROGRAM_APPLICATION_ID, PROGRAM_ID, PROGRAM_UPDATE_DATE, 
+    REQUEST_ID, ATTRIBUTE_CATEGORY
+  </sql>
+
+  <select id="selectByPointOfServiceCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT * FROM HMALL_MST_POINTOFSERVICE WHERE CODE = #{pointOfServiceCode}
+  </select>
+</mapper>

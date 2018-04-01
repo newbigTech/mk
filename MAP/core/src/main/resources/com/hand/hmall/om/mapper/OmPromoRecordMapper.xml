@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OmPromoRecordMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OmPromoRecord">
+        <result column="RECORD_ID" property="recordId" jdbcType="DECIMAL" />
+        <result column="PROMO_ID" property="promoId" jdbcType="DECIMAL" />
+        <result column="USER_ID" property="userId" jdbcType="DECIMAL" />
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="LOGISTICS_NO" property="logisticsNo" jdbcType="VARCHAR" />
+        <result column="COUPON_ID" property="couponId" jdbcType="VARCHAR" />
+        <result column="customerid" property="customerid" jdbcType="VARCHAR" />
+        <result column="code" property="code" jdbcType="VARCHAR" />
+        <result column="order_amount" property="orderAmount" jdbcType="VARCHAR" />
+        <result column="order_status" property="orderStatus" jdbcType="VARCHAR" />
+        <result column="refund_sum1" property="willRefundSum" jdbcType="VARCHAR" />
+        <result column="refund_sum2" property="haveRefundSum" jdbcType="VARCHAR" />
+        <result column="order_creationtime" property="orderCreationtime" jdbcType="DATE" />
+    </resultMap>
+
+    <!--根据传进来的参数俩判断是符合条件用户还是候补用户
+        flag为‘1’：符合条件用户，flag为'2':候补用户-->
+    <select id="selectPromoRecord" parameterType="com.hand.hmall.om.dto.OmPromoRecord" resultMap="BaseResultMap">
+        select opr.record_id,
+               opr.status,
+               opr.order_id,
+               opr.logistics_no,
+               opr.COUPON_ID,
+               opr.user_id customerid,
+               hod.code,
+               hod.order_amount,
+               hod.order_status,
+               hod.order_creationtime,
+               (select sum(har.refound_sum)
+                  from hmall_as_refund har
+                 where har.order_id = opr.order_id
+                   and har.status in ('NEW', 'PROC')) refund_sum1,
+               (select sum(har.refound_sum)
+                  from hmall_as_refund har
+                 where har.order_id = opr.order_id
+                   and har.status in ('FINI', 'APPROVE')) refund_sum2
+          from hmall_om_promo_record opr
+          left join hmall_om_order hod
+            on opr.order_id = hod.order_id
+            where 1=1
+            <if test='flag != null and flag == "1"'>
+                and opr.status in ('NEW','CANCEL','FINISH')
+            </if>
+            <if test='flag != null and flag == "2"'>
+                and opr.status in ('WAIT_NEW','WAIT_CANCEL','WAIT_FINI')
+            </if>
+            <if test="promoId != null ">
+                and opr.promo_id = #{promoId}
+            </if>
+            order by hod.order_amount desc
+    </select>
+
+    <!--查询某事后促销规则下'WAIT_FINI', 'FINISH'两个状态的记录个数 -->
+    <select id="selectFinishCount" parameterType="com.hand.hmall.om.dto.OmPromoRecord" resultMap="BaseResultMap">
+        select opr.record_id
+      from hmall_om_promo_record opr
+     where opr.promo_id = #{promoId}
+       and opr.status in ('WAIT_FINI', 'FINISH')
+    </select>
+
+
+</mapper>

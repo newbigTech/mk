@@ -1,0 +1,242 @@
+<#include "/include/header.html"/>
+<body>
+<script src="${base.contextPath}/common/code?saleStatus=HMALL.SALE_STATUS&saleOverlay=HMALL.SALE_OVERLAY&saleChannel=HMALL.SALE_CHANNEL&saleType=HMALL.SALE_TYPE" type="text/javascript"></script>
+
+<script>
+    var viewModel = kendo.observable({
+        model: {},
+        sendData: {},
+        resourceTypeData: [saleStatus, saleOverlay, saleChannel],
+        queryResource: function (e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        resetForm: function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                if (k == 'isOverlay' || k == 'range' || k == 'status') {
+                    viewModel.model.set("isOverlay", "ALL");
+                    viewModel.model.set("range", "ALL");
+                    viewModel.model.set("status", "SENDCOUPON");
+                    viewModel.model.set("type", "COUPON_TYPE_02");
+                } else {
+                    viewModel.model.set(k, null);
+                }
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+</script>
+<div id="content-container">
+    <div id="page-content">
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary k-grid-add" style="margin-right:5px;margin-top: 10px;margin-bottom: 10px;margin-left: 5px" onclick="addCoupon()">确定</span>
+        </div>
+        <div id='grid-container'>
+            <div id="grid" style="clear: both"></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    kendo.bind($('#page-content'), viewModel);
+    kendo.bind($('#grid-container'), viewModel);
+
+    dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: "${base.contextPath}/hmall/om/ed/promo/queryOmEdPromo",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = options.models;
+                    if (type == 'create' || type == 'update') {
+                        var map = viewModel.model.toJSON();
+                        datas = options.models.map(function (data) {
+                            data['__status'] = (type == 'create' ? 'add' : 'update');
+                            return data;
+                        })
+                    }
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    viewModel.model.set("isOverlay", "ALL");
+                    viewModel.model.set("range", "ALL");
+                    viewModel.model.set("status", "SENDCOUPON");
+                    viewModel.model.set("type", "COUPON_TYPE_02");
+                    var map = {};
+                    map.data = viewModel.model.toJSON();
+                    map.page = options.page;
+                    map.pageSize = options.pageSize;
+                    for (var k in map) {
+                        if (map[k] === '' || map[k] === null || map[k] === undefined)
+                            delete map[k]
+                    }
+                    return kendo.stringify(map);
+
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'resp',
+            total: 'total',
+            model: {
+                id: "id",
+                fields: {}
+            },
+            errors: function (res) {
+                if (!res.success && res.msg) {
+                    return res.msg;
+                }
+            }
+        },
+        error: function (e) {
+            kendo.ui.showErrorDialog({
+                title: "提示",
+                message: e.errors
+            })
+        }
+    });
+
+    var grid = $("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize: true,
+        navigatable: true,
+        height: '100%',
+        rownumber: true,
+        selectable: 'single, rowbox',
+        pageable: {
+            pageSizes: ['All', 5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+
+        columns: [
+            {
+                field: "couponCode",
+                title: '优惠券码',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                width: 80
+            },
+            {
+                field: "couponName",
+                title: '优惠券名称',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                width: 120
+            },
+            {
+                title: '有效期',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                template: function (dataItem) {
+                    if (dataItem.startDate != null || dataItem.startDate != undefined || dataItem.startDate != "") {
+                        if (dataItem.endDate != null || dataItem.endDate != undefined || dataItem.endDate != "") {
+                            return validTime(dataItem.startDate, dataItem.endDate);
+                        } else {
+                            return tempToDate(dataItem.startDate) + " - 永久"
+                        }
+                    } else {
+                        return ""
+                    }
+                },
+                width: 150
+            },
+            {
+                field: "type",
+                title: '发放类型',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                width: 120,
+                template: function (dataItem) {
+                    var v = dataItem.type;
+                    if (v == null) {
+                        v = "";
+                    }
+                    $.each(saleType, function (i, n) {
+                        if (n.value == v) {
+                            v = n.meaning;
+                            return v;
+                        }
+                    });
+                    return v;
+                }
+            },
+            {
+                field: "status",
+                title: '状态',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                template: function (dataItem) {
+                    if (dataItem.status) {
+                        for (var i in saleStatus) {
+                            if (saleStatus[i].value == dataItem.status) {
+                                return saleStatus[i].meaning;
+                            }
+                        }
+                        return "";
+
+                    }
+                },
+                width: 80
+            }
+        ],
+        editable: false,
+        dataBound: function () {
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+    function tempToDate(time) {
+        var date = new Date(time);
+        Y = date.getFullYear() + '/';
+        M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '/';
+        D = date.getDate() + ' ';
+        h = date.getHours() + ':';
+        m = date.getMinutes() + ':';
+        s = date.getSeconds();
+        return Y + M + D + h + m + s
+    }
+
+    function validTime(startDate, endDate) {
+        return tempToDate(startDate) + " - " + tempToDate(endDate);
+    }
+
+    $('.k-input').attr("disabled", true);
+
+    function addCoupon() {
+        kendo.ui.showConfirmDialog({
+            title: $l('hap.tip.info'),
+            message: $l('是否关联选择的优惠券？')
+        }).done(function (event) {
+            if (event.button == 'OK') {
+                var selections = $("#grid").data("kendoGrid").selectedDataItems();
+                window.parent.viewModel.model.set("coupon", selections[0].couponCode);
+                window.parent.$("#couponDialog").data("kendoWindow").close();
+            }
+        })
+    }
+
+</script>
+</body>
+</html>

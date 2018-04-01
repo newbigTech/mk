@@ -1,0 +1,520 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var importForPopGrid = null;
+
+    var viewModel = kendo.observable({
+        model: {},
+        notIn: [],
+        data: {},
+        queryResource: function (e) {
+
+            $('#gridPush').data('kendoGrid').dataSource.page(1);
+        },
+        resetForm: function (e) {
+            viewModel.data.name = null;
+            viewModel.data.mobileNumber = null;
+            $('#gridPush').data('kendoGrid').dataSource.page(1);
+
+        }
+
+    });
+
+    var couponId = '${RequestParameters.couponId}';
+    var type = '${RequestParameters.type}';
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div class="panel" style="padding: 0px;">
+            <div class="panel-footer text-left">
+                <span class="btn btn-success" id="query" style="cursor:pointer;" data-bind="click:queryResource" type="submit"><i class="fa fa-search"></i> <@spring.message "hap.query"/></span>
+                <span class="btn btn-warning" id="resetForm" style="cursor:pointer;" data-bind="click:resetForm" type="button"><i class="fa fa-refresh"></i> <@spring.message "hap.reset"/></span>
+                <span class="btn btn-primary" id="sure" onclick="saveUserCondition()" style="cursor:pointer;" data-bind="click:resetForm" type="button"><i class="fa fa-plus"></i> 确定</span>
+                <span class="btn btn-danger" id="cancel" style="cursor:pointer;" onclick="returnWin()" type="button"><i class="fa fa-sign-out"></i> 取消</span>
+                <span class="btn btn-success" id="import" style="cursor:pointer;" onclick="importData()" type="button"><i class="fa fa-sign-out"></i> 导入</span>
+            </div>
+            <!-- 导入导出的execl Window -->
+            <div id="excelWindow"></div>
+            <form class="form-horizontal" id="conditionForm">
+                <div class="panel-body">
+                    <div class="row">
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">客户姓名</label>
+                                <div class="col-sm-8">
+                                    <input id="name" type="text" placeholder="客户姓名" style="width: 100%" data-bind="value:data.name"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">手机号</label>
+                                <div class="col-sm-8">
+                                    <input id="mobileNumber" type="text" placeholder="手机号" style="width: 100%" data-bind="value:data.mobileNumber"
+                                           class="k-textbox">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">会员类型</label>
+                                <div class="col-sm-8">
+                                    <input id="groups" type="text" placeholder="会员类型" style="width: 100%" data-bind="value:data.groups" data-value-primitive="true">
+                                    <script>
+                                        viewModel.data.groups = 0;
+                                        $("#groups").kendoDropDownList({
+                                            dataTextField: "meaning",
+                                            dataValueField: "value",
+                                            dataSource: {
+                                                data: [{meaning: "所有", value: 0}, {meaning: "普通会员", value: 1}, {meaning: "员工", value: 2}]
+                                            }
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+
+        <div id='grid-container'>
+            <div class="col-sm-5">
+                <div id="gridPush"></div>
+            </div>
+            <div class="col-sm-2">
+                <span id="push" style="cursor:pointer;" onclick="push()" class="btn btn-success"><i class="fa fa-arrow-circle-right"></i> 添加</span>
+                <span id="pop" style="cursor:pointer;" onclick="pop()" class="btn btn-warning"><i class="fa  fa-arrow-circle-left"></i> 移除</span>
+            </div>
+            <div class="col-sm-5">
+                <div id="gridPop"></div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+    kendo.bind($('#page-content'), viewModel);
+    kendo.bind($('#grid-container'), viewModel);
+
+
+    var countEditor = function (container, options) {
+        $('<input name="countEditor" data-bind="value:' + options.field + '"/>')
+                .appendTo(container)
+                .kendoNumericTextBox({
+                    format: "n0",
+                    min: 0
+
+                });
+    };
+
+
+    //    viewModel.data.operator='EXIST';
+
+    var BaseUrl = "${base.contextPath}/sale/range/user/",
+            dataSourcePush = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "queryNotEqual",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            if (type == 'create' || type == 'update') {
+                                var map = viewModel.data.toJSON();
+                                datas = options.models.map(function (data) {
+                                    data['__status'] = (type == 'create' ? 'add' : 'update');
+                                    return data;
+
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            var map = {};
+                            map.data = viewModel.data.toJSON();
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+                            map.notIn = viewModel.notIn;
+
+                            for (var k in map) {
+                                if (map[k] === '' || map[k] === null || map[k] === undefined)
+                                    delete map[k]
+                            }
+                            for (var j in map.data) {
+                                if (map.data[j] === '' || map.data[j] === null || map.data[j] === undefined)
+                                    delete map.data[j]
+                            }
+                            return kendo.stringify(map);
+
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'resp',
+                    total: 'total',
+                    model: {
+                        id: "userId",
+                        fields: {
+                            name: {editable: false, validation: {required: true}},
+                            groups: {editable: false, validation: {required: true}},
+                            mobileNumber: {editable: false, validation: {required: true}},
+                        }
+                    },
+                    errors: function (res) {
+                        if (!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function (e) {
+                    kendo.ui.showErrorDialog({
+                        title: "提示",
+                        message: e.errors
+                    })
+                }
+            });
+
+
+    dataSourcePop = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "queryByUserIds",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type === "read") {
+                    var map = {};
+                    map.userIds = viewModel.notIn;
+                    map.page = options.page;
+                    map.pageSize = options.pageSize;
+                    for (var k in map) {
+                        if (map[k] === '' || map[k] === null || map[k] === undefined)
+                            delete map[k]
+                    }
+                    for (var j in map.data) {
+                        if (map.data[j] === '' || map.data[j] === null || map.data[j] === undefined)
+                            delete map.data[j]
+                    }
+                    return kendo.stringify(map);
+
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'resp',
+            total: 'total',
+            model: {
+                id: "userId",
+                fields: {
+                    name: {editable: false, validation: {required: true}},
+                    groups: {editable: false, validation: {required: true}},
+                    mobileNumber: {editable: false, validation: {required: true}},
+                    count: {editable: true, validation: {required: true}, defaultValue: 1}
+                }
+            },
+            errors: function (res) {
+                if (!res.success && res.msg) {
+                    return res.msg;
+                }
+            }
+        },
+        error: function (e) {
+            kendo.ui.showErrorDialog({
+                title: "提示",
+                message: e.errors
+            })
+        }
+    });
+
+
+    console.log("dataSourcePush", dataSourcePush);
+    var gridPush = $("#gridPush").kendoGrid({
+        dataSource: dataSourcePush,
+        resizable: true,
+        scrollable: true,
+        navigatable: true,
+        height: '100%',
+        autoResize: true,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [20, 50, 100, 500, 1000],
+            refresh: true,
+            buttonCount: 5
+        },
+
+        columns: [
+
+            {
+                field: "name",
+                title: '姓名',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+
+            },
+            {
+                field: "groups",
+                title: '会员类型',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                template: function (dataItem) {
+                    if (dataItem.groups === 2) {
+                        return "员工"
+                    } else {
+                        return "普通会员"
+                    }
+                }
+            },
+            {
+                field: "mobileNumber",
+                title: '手机',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            },
+        ],
+        editable: true,
+        dataBound: function () {
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+
+    var gridPop = $("#gridPop").kendoGrid({
+        dataSource: dataSourcePop,
+        resizable: true,
+        scrollable: true,
+        navigatable: true,
+        height: '100%',
+        autoResize: true,
+        rownumber: true,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [20, 50, 100, 500, 1000],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+
+            {
+                field: "name",
+                title: '姓名',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+
+            },
+            {
+                field: "groups",
+                title: '会员类型',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                template: function (dataItem) {
+                    if (dataItem.groups === 2) {
+                        return "员工"
+                    } else {
+                        return "普通会员"
+                    }
+                }
+            },
+            {
+                field: "mobileNumber",
+                title: '手机',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                }
+            },
+            {
+                field: "count",
+                title: '数量',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style: "text-align: center"
+                },
+                editor: countEditor,
+                template: function (dataItem) {
+                    if (dataItem.count) {
+                        return dataItem.count
+                    } else {
+                        return 0;
+                    }
+                }
+            }
+        ],
+        editable: true,
+        dataBound: function () {
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+
+    var gridPush = $("#gridPush").data("kendoGrid");
+    var gridPop = $("#gridPop").data("kendoGrid");
+    function push() {
+        var pushData = gridPush.selectedDataItems();
+        console.log("viewModel", viewModel);
+        console.log("push", pushData);
+        console.log("gridPop.dataSource._data", gridPop.dataSource._data);
+        if (pushData.length > 0) {
+            for (var i in pushData) {
+                var flag = true;
+                for (var j in gridPop.dataSource._data) {
+                    if (gridPop.dataSource._data[j].userId == pushData[i].userId) {
+                        flag = false;
+                    }
+                }
+                if (flag) {
+                    viewModel.notIn.push(pushData[i].userId);
+                    pushData[i].count = 1;
+                    gridPop.dataSource._data.push(pushData[i]);
+                }
+            }
+            console.log(viewModel);
+            gridPush.dataSource.read();
+            gridPop.refresh();
+        } else {
+            kendo.ui.showWarningDialog({
+                title: "提示",
+                message: "请先勾选一个选项"
+            })
+        }
+
+    }
+    function pop() {
+        var popData = gridPop.selectedDataItems();
+        for (var i in popData) {
+            viewModel.notIn.remove(popData[i].userId);
+            gridPop.dataSource._data.remove(popData[i]);
+        }
+        gridPush.dataSource.read();
+        gridPop.refresh();
+    }
+
+    function saveUserCondition() {
+        $('#sure').removeAttr("onclick");
+        $('#sure').attr("disabled", "true");
+        var map = {};
+        map.couponId = couponId;
+        map.type = type;
+        map.convertData = gridPop.dataSource.data();
+
+        $.ajax({
+            url: "${base.contextPath}/sale/coupon/convert/admin",
+            contentType: "application/json",
+            type: "POST",
+            data: JSON.stringify(map),
+            success: function (data) {
+                if (data.success) {
+                    kendo.ui.showInfoDialog({
+                        title: "提示",
+                        message: "发放成功"
+                    }).done(function (event) {
+                        if (event.button == 'OK') {
+                            returnWin();
+                        }
+
+                    })
+
+                } else {
+                    kendo.ui.showErrorDialog({
+                        title: "错误",
+                        message: data.msg
+                    }).done(function (e) {
+                        $('#sure').attr("onclick", "saveUserCondition()");
+                        $('#sure').removeAttr("disabled");
+                    })
+                }
+            }
+        })
+    }
+
+    function importData() {
+        var excelWindow = $("#excelWindow").kendoWindow({
+            title: '客户导入',
+            content: "${base.contextPath}/sale/coupon/saleCouponSend_excel.html",
+            actions: [
+                "Pin",
+                "Close"
+            ],
+            modal: true,
+            visible: false,
+            width: 800,
+            height: 400,
+            iframe: true,
+            close: function () {
+            }
+        }).data("kendoWindow");
+        excelWindow.center().open();
+
+    }
+
+    /**
+     * 将导入Excel中的内容追加/更新到右侧表格中（数据重复时更新）
+     * @author xuxiaoxue
+     * @param importForPopGridData
+     */
+    function importForPopGrid(importForPopGridData) {
+        if (importForPopGridData != null) {
+            //将导入Excel中的内容和右侧表格中数据比对,如果customerId重复，则将右侧表格中的该重复数据更新
+            for (var i in importForPopGridData) {
+                viewModel.notIn.push(importForPopGridData[i].userId);
+                for (var j in gridPop.dataSource._data) {
+                    if (importForPopGridData[i].userId == gridPop.dataSource._data[j].userId) {
+                        var refreshRow = gridPop.dataSource.at(j);
+                        gridPop.dataSource.remove(refreshRow);
+                    }
+                }
+                gridPop.dataSource._data.push(importForPopGridData[i]);
+            }
+        }
+    }
+
+
+    function returnWin() {
+        window.parent.$("#editCouponWin").data("kendoWindow").close();
+    }
+
+
+</script>
+</body>
+</html>

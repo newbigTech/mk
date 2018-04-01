@@ -1,0 +1,222 @@
+<#--
+        * description: Hmall商品管理 品类管理 类品详情
+        * author:xuxiaoxue@markor.com.cn
+        * 2017/5/31
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+    <script src="${base.contextPath}/common/code?product_catalog=HMALL.PRODUCT.CATALOG" type="text/javascript"></script>
+    <script type="text/javascript">
+        /*超类别*/
+        var viewModelSupertype = kendo.observable({
+            model: {},
+            createFunction: function () {
+                $('#supertype_grid').data('kendoGrid').addRow();
+            },
+            saveFunction: function () {
+                $('#supertype_grid').data('kendoGrid').saveChanges();
+            },
+            queryResource: function (e) {
+                queryList();
+            },
+            resetFunction: function () {
+                var formData = viewModelSupertype.model.toJSON();
+                for (var k in formData) {
+                    viewModelSupertype.model.set(k, null);
+                }
+            }
+        });
+        /*接受商品类别页面传递过来的数据*/
+        var categoryId="${RequestParameters.categoryId}";
+        var flag = "${RequestParameters.flag}";
+
+        //版本目录数据
+        var catalogData = new Array();
+        $.ajax({
+            url : '${base.contextPath}/hmall/mst/catalogversion/selectCatalog',
+            type : 'POST',
+            contentType : "application/json;charset=utf-8",
+            cache : false,
+            dataType : 'json',
+            async : false,
+            success : function(data) {
+                catalogData = data.rows;
+            }
+        });
+    </script>
+    <body>
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+        <span class="btn btn-primary k-grid-add" style="margin-right:5px;margin-top: 10px;margin-bottom: 10px;margin-left: 5px" onclick="addType()" ><i class="fa fa-plus-square"></i><@spring.message "添加"/></span>
+    </div>
+    <script>kendo.bind($('#toolbar-btn'), viewModelSupertype);</script>
+    <div id="queryPanel" class="pull-right" style="padding-bottom:10px;margin-top: 10px;margin-bottom: 10px">
+        <div class="k-query-simple" id="query-form">
+            <input type="text" id="categoryCode" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.productCategory.categoryCode"/>' data-bind="value:model.categoryCode" class="k-textbox">
+
+        </div>
+        <script>
+            kendo.bind($('#query-form'), viewModelSupertype);
+        </script>
+
+        <div class="k-query-detail" id="query-form-detail">
+            <div class="rows" style="margin-top: 5px">
+
+                <input type="text" id="categoryName" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;margin-top: 10px;margin-bottom: 10px" data-bind="value:model.categoryName"  placeholder='<@spring.message "hmall.productcategory.categoryname"/>' class="k-textbox">
+                <input type="text" style="float:left;width: 150px;margin-right:5px;margin-top: 10px;margin-bottom: 10px" id="catalogVersion" data-bind="value:model.catalogVersion">
+                <script type="text/javascript">
+                    $("#catalogVersion").kendoDropDownList({
+                        dataTextField: "catalogName",
+                        dataValueField: "catalogversionId",
+                        valuePrimitive: true,
+                        dataSource: catalogData,
+                    }).data("kendoDropDownList");
+                </script>
+            </div>
+
+        </div>
+        <script>
+            kendo.bind($('#query-form-detail'), viewModelSupertype);
+        </script>
+    </div>
+
+    <script>
+        $('#queryPanel').kendoQueryPanel({
+            queryFunction: function () {
+                viewModelSupertype.queryResource();
+            },
+            resetFunction: function (e) {
+                viewModelSupertype.resetFunction();
+            }
+        })
+    </script>
+        <div style="clear:both">
+            <div id="supertype_grid"></div>
+        </div>
+    </body>
+    <script>
+        var BaseUrl = _basePath;
+        /*超类别*/
+        supertype_dataSource = new kendo.data.DataSource(
+                {
+                    transport: {
+                        read: {
+                           url: BaseUrl + "/mst/product/category/queryTypeNotInSuperAndSub?categoryId="+categoryId,
+                            type: "POST",
+                            dataType: "json"
+                        },
+                        parameterMap: function (options, type) {
+                            if (type !== "read" && options.models) {
+                                var datas = Hap.prepareSubmitParameter(options, type)
+                                return kendo.stringify(datas);
+                            } else if (type === "read") {
+                                return Hap.prepareQueryParameter(viewModelSupertype.model.toJSON(), options)
+                            }
+                        }
+                    },
+                    batch: true,
+                    serverPaging: true,
+                    pageSize: 10,
+                    schema: {
+                        data: 'rows',
+                        total: 'total',
+                        model: {
+                            id: "categoryCode",
+                            fields: {}
+                        }
+                    }
+                });
+
+
+        /*超类表*/
+        $("#supertype_grid").kendoGrid({
+            dataSource: supertype_dataSource,
+            height: '330px',
+            pageable: true,
+            editable: false,
+            navigatable: true,
+            scrollable: true,
+            selectable: 'multiple, rowbox',
+            sortable: true,
+            rownumber: true,
+            /* selectable : "multiple,rowbox", */
+            pageable: {
+                pageSizes: [1, 5, 10, 20, 50],
+                refresh: true,
+                buttonCount: 10
+            },
+            columns: [
+                {
+                    field: "categoryCode",
+                    title: '<@spring.message "hmall.ProductCategory.categoryCode"/>',
+                    width: 120
+                },
+                {
+                    field: "categoryName",
+                    title: '<@spring.message "hmall.ProductCategory.categoryName"/>',
+                    width: 120
+                },
+                {
+                    field: "catalogversion",
+                    title: '<@spring.message "hmall.ProductCategory.catalogversion"/>',
+                    width: 120
+                },
+                {
+                    field: "categoryLevel",
+                    title: '<@spring.message "hmall.ProductCategory.categoryLevel"/>',
+                    width: 120
+                }
+            ],
+            editable: false
+
+        }).data("kendoGrid");
+    
+        //查询列表
+        function queryList() {
+            var categoryCode = $('#categoryCode').val();
+            var categoryName = $('#categoryName').val();
+            var catalogVersion = $("#catalogVersion").data("kendoDropDownList").value();
+
+            var informations = viewModelSupertype.model.toJSON();
+            $.ajax({
+                url: BaseUrl + "/mst/product/category/queryTypeNotInSuperAndSub?categoryId="+categoryId+"&categoryCode="+categoryCode+"&categoryName="+categoryName+"&catalogVersion="+catalogVersion,
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: kendo.stringify(informations),
+                success: function (json) {
+                    console.log(json);
+                    if (json.success) {
+                        supertype_dataSource.data(json.rows);
+                        $("#supertype_grid").data("kendoGrid").refresh();
+                    }
+                }
+            });
+        }
+        //保存选中的超类别
+        function addType() {
+                var grid = $("#supertype_grid").data("kendoGrid");
+                var items = grid.selectedDataItems();
+                var TypeId='';
+                for(var i=0;i<items.length;i++){
+                    TypeId = TypeId+items[i].categoryId+',';
+                }
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('hap.add.category')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        $.ajax({
+                            type : "post",
+                            url : BaseUrl + "/mst/product/category/addType?TypeId="+TypeId+"&categoryId="+categoryId+"&flag="+flag,
+                            cache : false,
+                            dataType : "json",
+                            success : function(json) {
+                                kendo.ui.showInfoDialog({
+                                    message : "<@spring.message 'hap.catagory.success'/>"
+                                })
+                                window.parent.$("#typedialogEdit").data("kendoWindow").close();
+                            }});
+                    }
+                })
+        }
+    </script>

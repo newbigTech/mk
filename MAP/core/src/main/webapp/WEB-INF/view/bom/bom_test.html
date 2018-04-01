@@ -1,0 +1,672 @@
+<#include "../include/header.html">
+<body>
+<style>
+    .select-bar {
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+        width: 100%;
+    }
+
+    .select-bar option {
+        color: #1a1a1a;
+    }
+
+    .k-state-selected {
+        background-color: #42a5f5;
+        color: #fff;
+    }
+
+    div.k-widget.k-tooltip {
+        width: 80px;
+    }
+
+
+</style>
+
+<script src="${base.contextPath}/lib/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script src="${base.contextPath}/common/code?husmObtainMode=HUSM_OBTAIN_MODE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?projectUom=HUSM_PZ_UOM" type="text/javascript"></script>
+
+<script src="${base.contextPath}/common/code?husmAttrTypeData=HUSM_ATTR_TYPE_DATA" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmAttrEnabledFlag=HUSM_ATTR_ENABLED_FLAG"
+        type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmAttrEditableFlag=HUSM_ATTR_EDITABLE_FLAG"
+        type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmRequriedFlag=HUSM_REQUIRED_FLAG" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmDefaultValueType=HUSM_DEFAULT_VALUE_TYPE"
+        type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmControlTpye=HUSM_CONTROL_TYPE" type="text/javascript"></script>
+<script src="${base.contextPath}/common/code?husmControlWidth=HUSM_CONTROL_WIDTH" type="text/javascript"></script>
+
+<script type="text/javascript">
+    //设置第一个form vieModel
+    viewModel = kendo.observable({
+        firstLoad: true, //预留标志位，判断页面是否是第一次加载
+        isNew: null, //用于判断form表单数据时候被编辑过的标志位
+        uid: null, //存储当前被编辑的dataItem uid
+        model: {},
+        //树展开
+        nodesExpand: function (e) {
+            datas = treeDataSource.data();
+            var row = null;
+            var children = null;
+            for (var i = 0, len = datas.length; i < len; i++) {
+                children = treeDataSource.childNodes(datas[i]);
+                if (children != null && children.length > 0) {
+                    row = kendoTreeList.content.find("tr[data-uid=" + datas[i].uid + "]");
+                    kendoTreeList.expand(row);
+                }
+            }
+        }/*,
+
+        //树关闭
+        nodesCollapse:function (e) {
+
+            datas = treeDataSource.data();
+            var row = null;
+            var children = null;
+            for(var i = 0, len = datas.length; i < len ; i++){
+                children = treeDataSource.childNodes(datas[i]);
+                if(children != null && children.length > 0){
+                    row = kendoTreeList.content.find("tr[data-uid=" + datas[i].uid + "]");
+                    kendoTreeList.collapse(row);
+                }
+            }
+        }*/
+    });
+
+    // 属性组设置表单初始化状态，当单击某项物料平台时，此项值为false，当完成并显示其属性组设置信息时，此项值变为true
+    var setupFormInitFlag = false;
+
+    function nodes(platformConfig) {
+        var formBehind = $("#dynamicallyGenerated");
+        formBehind.html("");
+        setupFormInitFlag = false;
+        insertRows(platformConfig);
+        setupFormInitFlag = true;
+    }
+
+    function selectDataItem() {
+        //获取在树上选择到的数据
+        var treeList = $("#treeList").data("kendoTreeList");
+        var row = treeList.select();
+        var selectDatas = treeList.dataItem(row);
+        var itemId = selectDatas.itemId;
+        var parentItemId=selectDatas.parentItemId;
+        console.log(selectDatas);
+        viewModel.set("itemId", itemId);
+        getFormConfData(itemId);
+        loadTreeBySelect(itemId,parentItemId);
+        return treeList.dataItem(row);
+    }
+
+    //获取分屏需要的全屏参数
+    function divFullScreen() {
+        var width = $(window).width();//计算屏幕的宽度
+        var height = $(window).height();
+        $('#main').width(width - 20);//设置div的宽度等于屏幕的宽度
+        $('#main').height(height - 20);//设置div的宽度等于屏幕的宽度
+    }
+
+</script>
+<script type="text/javascript">
+
+    //插行方法
+    function insertRows(platformConfig) {
+        var itemAttrList = platformConfig.rows[0].lookupTypeList;
+        var itemValueSetupList = platformConfig.rows[0].mdmItemValueSetupList;
+        //给控件增加插入方式
+        for (var p = 0; p < itemAttrList.length; p++) {
+            for (var i = 0; i < itemValueSetupList.length; i++) {
+                if (itemAttrList[p].headerId == itemValueSetupList[i].attrId) {
+                    itemAttrList[p].value = itemValueSetupList[i].effectFlag;
+                }
+            }
+            if ((p % 3) == 0) {
+                var firstItem = itemAttrList[p];
+                firstItem["widthFlag"] = "halfRowCreate";
+            } else if ((p % 3) == 1) {
+                var secondItem = itemAttrList[p];
+                secondItem["widthFlag"] = "halfRowInsert1";
+            } else if ((p % 3) == 2) {
+                var secondItem = itemAttrList[p];
+                secondItem["widthFlag"] = "halfRowInsert2";
+            }
+        }
+
+
+        //循环插入控件
+        for (var i = 0; i < itemAttrList.length; i++) {
+            var attrCode = itemAttrList[i].lookupType;
+            var dataSource = itemAttrList[i].dataSource;
+            var deleteFlag = itemAttrList[i].deleteFlag;
+            var description = itemAttrList[i].description;
+            var effectDateFrom = itemAttrList[i].effectDateFrom;
+            var effectFlag = itemAttrList[i].effectFlag;
+            var endDate = itemAttrList[i].endDate;
+            var headerId = itemAttrList[i].headerId;
+            var lookupType = itemAttrList[i].lookupType;
+            var attrName = itemAttrList[i].name;
+            var value = itemAttrList[i].value;
+            var widthFlag = itemAttrList[i].widthFlag;
+            var widgetType = "Checkbox";
+            //第一个tab页行id
+
+            var firstRowPositionFlag = viewModel.model.firstRowPositionFlag;
+            if (widthFlag == "halfRowCreate") {
+                //第一个tab页创建半行
+                var before_Front_Html = '<div class="row" id=\"' + firstRowPositionFlag + '\" style="padding: 5px">' +
+                        '<div class="col-md-4">' +
+                        '<div class="form-group">' +
+                        '<label class="col-md-4 control-label">' + attrName + '</label>' +
+                        '<div class="col-md-8">' +
+                        '<input  id=\"' + attrCode + '\" name=\"' + attrCode + '\" type="text"' +
+                        'data-bind=\"value:model.value\"' +
+                        'style="width: 100%;" />' +
+                        '<span style="width: 100%;"></span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                $("#dynamicallyGenerated").append(before_Front_Html);
+                generateAttr(attrCode, dataSource, deleteFlag, description, effectDateFrom, effectFlag, endDate, headerId, widgetType, lookupType, attrName, value);
+                viewModel.model.set("firstRowPositionFlag", firstRowPositionFlag + 1);
+            } else if (widthFlag == "halfRowInsert1") {
+                //插入半行（三个tab页都通用）
+                var before_middle_Html = '<div class="col-md-4">' +
+                        '<div class="form-group">' +
+                        '<label class="col-md-4 control-label">' + attrName + '</label>' +
+                        '<div class="col-md-8">' +
+                        '<input id=\"' + attrCode + '\" name=\"' + attrCode + '\" type="text"' +
+                        'data-bind=\"value:model.value\"' +
+                        'style="width: 100%;" />' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                var prentRowId = "#" + (firstRowPositionFlag - 1);
+                $(prentRowId).append(before_middle_Html);
+                generateAttr(attrCode, dataSource, deleteFlag, description, effectDateFrom, effectFlag, endDate, headerId, widgetType, lookupType, attrName, value);
+            } else if (widthFlag == "halfRowInsert2") {
+                //插入半行（三个tab页都通用）
+                var before_middle_Html = '<div class="col-md-4">' +
+                        '<div class="form-group">' +
+                        '<label class="col-md-4 control-label">' + attrName + '</label>' +
+                        '<div class="col-md-8">' +
+                        '<input id=\"' + attrCode + '\" name=\"' + attrCode + '\" type="text"' +
+                        'data-bind=\"value:model.value\"' +
+                        'style="width: 100%;" />' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                var prentRowId = "#" + (firstRowPositionFlag - 1);
+                $(prentRowId).append(before_middle_Html);
+                generateAttr(attrCode, dataSource, deleteFlag, description, effectDateFrom, effectFlag, endDate, headerId, widgetType, lookupType, attrName, value);
+            }
+        }
+    }
+
+
+    //取得生成form的数据
+    function getFormConfData(itemId) {
+        var dto = {};
+        dto.itemId = itemId;
+        var base = '${base.contextPath}';
+        $.ajax({
+            type: 'POST',
+            url: base + '/hap/mdm/item/value/setup/query',
+            contentType: 'application/json',
+            data: JSON.stringify(dto),
+            async: false,
+            success: function (platformConfig) {
+                if ($('#mask').length === 1) {
+                    $('#mask').remove();
+                }
+                if (platformConfig.success) {
+                    viewModel.model.set("firstRowPositionFlag", 1000);
+                    viewModel.model.set("lookupTypeList", platformConfig.rows[0].lookupTypeList);
+                    viewModel.model.set("mdmItemValueSetupList", platformConfig.rows[0].mdmItemValueSetupList);
+                    viewModel.model.set("platformConfig", platformConfig);
+                    nodes(platformConfig);
+                } else {
+                    kendo.ui.showErrorDialog({
+                        message: platformConfig.message
+                    })
+                }
+            },
+            error: function (data) {
+
+                kendo.ui.showErrorDialog({
+                    message: data.message
+                });
+            }
+
+        });
+    }
+</script>
+<div class="container" style="width: auto; margin: 10px 0px 0px 0px; height: 100%">
+    <div id="main" style="padding: 0px">
+
+        <div id="left" style="padding: 0px">
+            <div class="panel-body" style="height: 99.8%; padding: 0px;">
+                <div class="row">
+                    <div style='padding-top: 7px; padding-bottom: 7px;'>
+                        <!-- 平台名称查询输入框 -->
+                        <input id="platformName" placeholder="<@spring.message "husm.platformName"/>" type="text"
+                               style="width:250px;margin-right:5px;margin-left:10px;" class="k-textbox">
+                        <!-- 查询按钮 -->
+                        <span id="query_platformName" class="btn btn-primary" onclick="loadTreeByname()"
+                              style="margin-right:5px;" type="submit">
+                <i class="fa fa-search" style="margin-right:3px;"><@spring.message "hap.query"/></i>
+
+            </span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div id="treeList" style="height: 750px"></div>
+                </div>
+            </div>
+        </div>
+        <div id="right">
+            <div id="mask"
+                 style="opacity: 0.3; filter: alpha(opacity = 30); background-color: #e0e0e0; z-index: 100; right: 0px; left: 0px; top: 0px; bottom: 0px; position: absolute;">
+            </div>
+            <div class="row">
+                <span class="btn btn-success" style="float:left;margin:5px 0px 0px 12px;" onclick="saveFormDatas()"> <i
+                        class="fa fa-save" style="margin-right:3px;"></i><@spring.message "hap.save"/></span>
+            </div>
+            <div id="rightTopTab" style="padding-left:5px ;margin-top: 10px;/* display:none */">
+                <div class="panel" style="padding: 0px;">
+                    <form class="form-horizontal">
+                        <div class="panel-body" id="conditionForm">
+                            <div class="panel" style="padding: 0px;">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <h4><@spring.message "bom.configure.properties"/></h4>
+                                    </div>
+                                    <div id="dynamicallyGenerated">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+
+    function loadTree() {
+        var treeDataSource = new kendo.data.TreeListDataSource({
+            //请求结束操作
+            requestEnd: function (e) {
+                basePlatform=e.response.rows;
+                bomTreeData=basePlatform
+                //console.log(basePlatform);
+                if (!(e.response.success === true)) {
+                    kendo.ui.showErrorDialog({
+                        message: '<@spring.message "bom.operation.failed"/>'
+                    });
+                    return;
+                }
+
+                //新建，必须获取到主表code 再保存行表
+                if (e.type === "create") {
+                    //设置返回的code到viewMoel
+                    viewModel.model.set("itmeCode", e.response.rows[0].itmeCode);
+                    //设置标志位为true，表示此数据已经保存过或者没有被修改过
+                    viewModel.set("isNew", true);
+                    kendo.ui.showInfoDialog({
+                        message: '<@spring.message "hpm.save_sucess"/>'
+                    });
+
+                } else if (e.type === "update") { //更新直接接着保存行表，然后提示保存成功
+                    //设置标志位为true，表示此数据已经保存过或者没有被修改过
+                    viewModel.set("isNew", true);
+                    kendo.ui.showInfoDialog({
+                        message: '<@spring.message "hpm.save_sucess"/>'
+                    });
+                }
+            },
+            transport: {
+                read: {
+                    url: "${base.contextPath}/hap/mdm/bom/queryPlatform",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: 'application/json',
+                },
+                destroy: {
+                    url: "${base.contextPath}/husm/pz/item/removeTree",
+                    contentType: "application/json",
+                    type: "POST"
+                },
+                parameterMap: function (options, type) {
+                    if (type === "read") {
+                        var map = {};
+                        map.plaformName=$('#platformName').val();
+                        map.platformId = viewModel.model.platformId;
+                        return JSON.stringify(map);
+                    }
+                    if (type === "create") {
+                        return JSON.stringify(options);
+                    }
+                    if (type === "update") {
+                        return JSON.stringify(options);
+                    }
+                    if (type === "destroy") {
+
+                        return JSON.stringify(options);
+                    }
+                }
+            },
+            schema: {
+                data: "rows",
+                total: 'total',
+                model: {
+                    id: "itemId",
+                    parentId: "parentItemId",
+                    expanded: true,
+                    fields: {
+                        bomId: {field: "bomId"},
+                        itemId: {field: "itemId"},
+                        //root节点的父节点以空开始，默认为false，手动设置为true，要不然无法显示
+                        parentItemId: {field: "parentItemId", nullable: true, type: "number"},
+                        infaceId: {field: "infaceId", type: "number", defaultValue: 1},
+                        matnr: {field: "matnr", type: "string", defaultValue: "1"},
+                        werks: {field: "werks", type: "string", defaultValue: "1"},
+                        stlal: {field: "stlal", type: "string", defaultValue: "1"},
+                        bmeng: {field: "bmeng", type: "string", defaultValue: "1"},
+                        postp: {field: "postp", type: "string", defaultValue: "1"},
+                        posnr: {field: "posnr", type: "string", defaultValue: "1"},
+                        idnrk: {field: "idnrk", type: "string", defaultValue: "1"},
+                        menge: {field: "menge", type: "string", defaultValue: "1"},
+                        meins: {field: "meins", type: "string", defaultValue: "1"},
+                        deleteFlag: {field: "deleteFlag", type: "string", defaultValue: "N"},
+                        hierarchy: {field: "hierarchy", type: "number", defaultValue: 1}
+                    }
+                }
+            },
+            errors: function (res) {
+                if (!res.success && res.message) {
+                    return res.message;
+                }
+            }
+        });
+
+        var kendoTreeList;
+
+        $(document).ready(function () {
+            kendoTreeList = $("#treeList").kendoTreeList({
+                dataSource: treeDataSource,
+                sortable: true,
+                resizable: true,
+                /*                              toolbar: kendo.template('<div class="pull-left" id="toolbar-btn" style="margin: 0px;">' +
+                                                        '<span class="btn btn-default" style="float:left;margin:5px 3px 0px 0px;" data-bind="click:nodesExpand"><i class="fa  fa-chevron-down" style="margin-right:3px;"></i><@spring.message "item.expand"/></span>' +
+                        '<span class="btn btn-default" style="float:left;margin:5px 3px 0px 0px;" data-bind="click:nodesCollapse"><i class="fa fa-chevron-up" style="margin-right:3px;"></i><@spring.message "item.close"/></span>' +
+                        '</div>'),*/
+                navigatable: true,
+                edit: function (e) {
+                    this.select(e.container);
+                },
+
+
+                editable: {
+                    move: true
+                },
+                selectable: true,
+                dataBound: function (e) {
+
+                    if (viewModel.firstLoad) {
+
+//            把所有的root节点全部闭合，（默认是展开状态）
+                        datas = treeDataSource.rootNodes();
+
+                        for (var i = 0, len = datas.length; i < len; i++) {
+
+                            var row = this.content.find("tr[data-uid=" + datas[i].uid + "]");
+
+                            this.collapse(row);
+                        }
+
+                        viewModel.set("firstLoad", false);
+                    }
+
+                },
+                change: function onChange(arg) {
+                    selectDataItem();
+
+                },
+                columns: [
+                    {
+                        title: '<@spring.message "item.platformList"/>',
+                        field: "item.itemName",
+                        editor: function (container, options) {
+                            $('<input required id="itemDescriptionGrid" type="text" class="k-textbox" name="' + options.field + '"/>').appendTo(container);
+                        },
+                    }
+
+                ],
+                messages: {
+                    commands: {
+                        update: '<@spring.message "hap.submit"/>',
+                        canceledit: '<@spring.message "hap.cancel"/>',
+                        createchild: '<@spring.message "husm.setup.type.create_child"/>',
+                    }
+                }
+            }).data("kendoTreeList");
+
+
+            //动态设置分屏div的大小
+            divFullScreen();//页面加载时全屏
+            $(window).bind('resize', function () {
+                divFullScreen();//最大化，还原窗口大小时DIV尺寸跟着变化，不过最好在CSS里给这个DIV加个min-width等于html,body的最小宽度。
+            });
+
+            //初始化分屏布局
+            $("#main").kendoSplitter({
+                orientation: "horizontal",
+                panes: [{size: "30%"}, {}]
+            });
+
+            //绑定tree toolbar上的按钮
+            kendo.bind($('#left'), viewModel);
+            kendo.bind($('#right'), viewModel);
+            kendo.bind($('#main'), viewModel);
+        });
+    }
+
+    var basePlatform;
+    var selectBomTree;
+    var bomTreeData;
+    var tempDataSource;
+    function loadTreeByname(){
+        var map = {};
+        map.platformName=$('#platformName').val();
+        map.platformId = viewModel.model.platformId;
+        var treeview = $("#treeList").data("kendoTreeList");
+        $.ajax({
+            type: 'POST',
+            url: '${base.contextPath}/hap/mdm/bom/queryPlatform',
+            data: JSON.stringify(map),
+            contentType: 'application/json',
+            async: false,
+            success: function (sucData) {
+                if (sucData.success) {
+                    treeview.setDataSource(sucData.rows);
+                } else {
+                    kendo.ui.showErrorDialog({
+                        message: sucData.message
+                    })
+                }
+            },
+            error: function (data) {
+
+            }
+
+        });
+    }
+    function loadTreeBySelect(itemId,parentItemId){
+        var map = {};
+        map.itemId = itemId;
+        var treeview = $("#treeList").data("kendoTreeList");
+        $.ajax({
+            type: 'POST',
+            url: '${base.contextPath}/hap/mdm/bom/querySelectTree',
+            data: JSON.stringify(map),
+            contentType: 'application/json',
+            async: false,
+            success: function (sucData) {
+                if (sucData.success) {
+                    selectBomTree=sucData.rows;
+                    caculateTree(itemId,parentItemId,selectBomTree);
+                    console.log(selectBomTree);
+                    treeview.setDataSource(selectBomTree);
+                    bomTreeData=selectBomTree;
+                    console.log(bomTreeData);
+
+                } else {
+                    kendo.ui.showErrorDialog({
+                        message: sucData.message
+                    })
+                }
+            },
+            error: function (data) {
+
+            }
+
+        });
+    }
+    function caculateTree(itemId,parentItemId,selectBomTree) {
+        if(bomTreeData!=null&&parentItemId!=null){
+            for(var i=0;i<bomTreeData.length;i++){
+                if(bomTreeData[i].parentItemId==parentItemId&&bomTreeData[i].itemId!=itemId){
+                    selectBomTree.push(bomTreeData[i]);
+                }
+                if(bomTreeData[i].itemId==parentItemId){
+                    selectBomTree.push(bomTreeData[i]);
+                    caculateTree(itemId,bomTreeData[i].parentItemId,selectBomTree);
+                }
+            }
+        }
+    }
+
+</script>
+
+<!-- 右边Grid配置 -->
+<script type="text/javascript">
+
+    //from保存函数
+    function saveFormDatas() {
+        var platformConfig = viewModel.model.platformConfig;
+
+        var requestData = JSON.stringify(platformConfig.rows[0]);
+        $.ajax({
+            type: 'POST',
+            url: '${base.contextPath}/hap/mdm/item/value/setup/submit',
+            data: requestData,
+            contentType: 'application/json',
+            async: false,
+            success: function (sucData) {
+                if (sucData.success) {
+                    kendo.ui.showInfoDialog({
+                        message: '<@spring.message "hap.tip.success"/>'
+                    }).done(function (e) {
+                        var mdmItemValueSetupList = viewModel.model.platformConfig.rows[0].mdmItemValueSetupList;
+                     //   console.log(viewModel.model.platformConfig.rows[0].mdmItemValueSetupList);
+                        for (var i = 0; i < mdmItemValueSetupList.length; i++) {
+                            mdmItemValueSetupList[i].status = null;
+                        }
+                    })
+                } else {
+                    kendo.ui.showErrorDialog({
+                        message: sucData.message
+                    })
+                }
+            },
+            error: function (data) {
+
+            }
+
+        });
+    }
+
+    $(document).ready(function () {
+
+        loadTree();
+    });
+
+</script>
+<script>
+    //生成视图页面
+    function generateAttr(attrCode, dataSource, deleteFlag, description, effectDateFrom, effectFlag, endDate, headerId, widgetType, lookupType, attrName, value) {
+        if (widgetType == "Checkbox") {
+            $("#" + attrCode).removeAttr('data-role');
+            $("#" + attrCode).removeAttr('style');
+            $("#" + attrCode).attr('type', 'checkbox');
+            $("#" + attrCode).kendoCheckbox({
+                checkedValue: 'Y',
+                uncheckedValue: 'N',
+                change: function () {
+                    var thisValue = this.value();
+                    var temp = {};
+                    var mdmItemValueSetupList = viewModel.model.platformConfig.rows[0].mdmItemValueSetupList;
+                    var flag = false;
+
+                    //  要求：每个物料平台只能选中一个属性组
+                    //  判断逻辑：
+                    //      当选中状态变为false时，不做校验，直接执行后续逻辑
+                    //      当选中状态变为由false变为true时，判断其他复选框有无选中，
+                    //          如果有，因为不能多选，不执行后续逻辑并弹出提示框
+                    //          如果无，执行后续逻辑
+                    if (thisValue == 'Y' && setupFormInitFlag) { // 属性组显示区加载并显示完成后才做此处校验
+                        for (var i = 0; i < mdmItemValueSetupList.length; i++) {
+                            // 循环判断前一状态各个复选框状态，由于当前复选框改变后状态为true，所以当前复选框的前一状态一定为false
+                            // 如果存在前一状态为true的复选框，则不能再次选中
+                            if (mdmItemValueSetupList[i].effectFlag == 'Y') {
+                                this.value('N');
+                                kendo.ui.showWarningDialog({
+                                    message: '一个平台只允许选择一个属性组'
+                                });
+                                return;
+                            }
+                        }
+                    }
+
+                    for (var i = 0; i < mdmItemValueSetupList.length; i++) {
+                        if (mdmItemValueSetupList[i].attrId == headerId && (mdmItemValueSetupList[i].status == null || mdmItemValueSetupList[i].status == 'UPDATE')) {
+                            mdmItemValueSetupList[i].status = 'UPDATE';
+                            mdmItemValueSetupList[i].effectFlag = thisValue;
+                            flag = true;
+                        } else if (mdmItemValueSetupList[i].attrId == headerId && mdmItemValueSetupList[i].status == 'INSERT') {
+                            mdmItemValueSetupList[i].effectFlag = thisValue;
+                            flag = true;
+                        }
+                    }
+                    ; <!-- What is This semicolon's eFfect ? -->
+                    if (flag == false) {
+                        temp.itemId = viewModel.model.platformConfig.rows[0].itemId;
+                        temp.attrId = headerId;
+                        temp.effectFlag = thisValue;
+                        temp.status = 'INSERT';
+                        mdmItemValueSetupList.push(temp);
+                    }
+                }
+            });
+            if (attrCode != "") {
+                $("#" + attrCode).css("text-align", "center");
+                $("#" + attrCode).css("vertical-align", "middle");
+            }
+            if (value != null && value == 'Y') {
+                $("#" + attrCode).data("kendoCheckbox").value("Y");
+                $("#" + attrCode).attr("value", value);
+            }
+        }
+
+    }
+
+</script>
+</body>
+</html>

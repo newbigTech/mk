@@ -1,0 +1,204 @@
+<#include "../include/header.html">
+    <script src="${base.contextPath}/common/code?ServiceTypeData=HMALL.POINTOFSERVICE_TYPE" type="text/javascript"></script>
+<script type="text/javascript">
+    var viewModel = Hap.createGridViewModel("#grid");
+</script>
+<body>
+<div id="page-content">
+    <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+        <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" data-bind="click:create"><@spring.message "hap.new"/></span>
+        <span class="btn btn-success k-grid-save-changes" data-bind="click:save" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+        <span  data-bind="click:remove" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>
+    </div>
+    <script>kendo.bind($('#toolbar-btn'), viewModel);</script>
+    <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+        <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.pointofservice.code"/>'
+               data-bind="value:model.code" class="k-textbox">
+        <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.pointofservice.displayname"/>'
+               data-bind="value:model.displayname" class="k-textbox">
+        <span class="btn btn-primary" style="float:left;width:70px" data-bind="click:query" type="submit"><@spring.message "hap.query"/></span>
+        <div style="clear:both"></div>
+    </div>
+    <script>kendo.bind($('#query-form'), viewModel);</script>
+    <div style="clear:both;height: 450px;">
+        <div id="grid"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    Hap.initEnterQuery('#query-form', viewModel.query);
+    var BaseUrl = _basePath;
+    dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/mst/pointofservice/query",
+                type: "POST",
+                dataType: "json"
+            },
+            update: {
+                url: BaseUrl + "/hmall/mst/pointofservice/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            destroy: {
+                url: BaseUrl + "/hmall/mst/pointofservice/remove",
+                type: "POST",
+                contentType: "application/json"
+            },
+            create: {
+                url: BaseUrl + "/hmall/mst/pointofservice/submit",
+                type: "POST",
+                contentType: "application/json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "pointOfServiceId",
+                fields: {}
+            }
+        }
+    });
+
+    $("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        height: '450px',
+        selectable: 'multiple, rowbox',
+        dataBound: function () {
+            if (parent.autoResizeIframe) {
+                parent.autoResizeIframe('${RequestParameters.functionCode!}')
+            }
+        },
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "地点"/>',
+                width: 80
+            },
+            {
+                field: "displayname",
+                title: '<@spring.message "中文名称"/>',
+                width: 120
+            },
+            {
+                field: "type",
+                title: '<@spring.message "服务点类型"/>',
+                width: 120,
+                template: function (dataItem) {
+                    var v = dataItem.type || '';
+                    $.each(ServiceTypeData, function (i, n) {
+                        if(n.value == v){
+                            v = n.meaning;
+                            return v;
+                        }
+                    })
+                    return v;
+                },
+                editor: function (container, options) {
+                    $('<input name="' + options.field + '"/>')
+                        .appendTo(container)
+                        .kendoDropDownList({
+                            dataTextField: "meaning",
+                            dataValueField: "value",
+                            valuePrimitive: true,
+                            dataSource: ServiceTypeData
+                        });
+                }
+            },
+                    {
+                field: "zone1",
+                title: '<@spring.message "发货目的地"/>',
+                width: 120
+            },
+                    {
+                field: "contactNumber",
+                title: '<@spring.message "联系电话"/>',
+                width: 120
+            },
+                    {
+                field: "address",
+                title: '<@spring.message "住宅区及街道"/>',
+                width: 120
+            },
+                    {
+                field: "shopstatus",
+                title: '<@spring.message "店面状态"/>',
+                width: 50
+            },
+                    {
+                field: "zzwerks",
+                title: '<@spring.message "服务中心"/>',
+                width: 80
+            },
+                    {
+                field: "bukrs",
+                title: '<@spring.message "公司代码"/>',
+                width: 60
+            },
+                    {
+                field: "syncflag",
+                title: '<@spring.message "同步标识"/>',
+                width: 60
+            },
+            {
+                field: "delZipCode",
+                title: '<@spring.message "发货人邮编"/>',
+                width: 120
+            },
+            {
+                field: "delProvince",
+                title: '<@spring.message "发货人省份"/>',
+                width: 120
+            },
+            {
+                field: "delCity",
+                title: '<@spring.message "发货人城市"/>',
+                width: 120
+            },
+            {
+                field: "delDistrict",
+                title: '<@spring.message "发货人地区"/>',
+                width: 120
+            },
+            {
+                field: "delPhone",
+                title: '<@spring.message "发货人电话"/>',
+                width: 120
+            },
+            {
+                field: "delAddress",
+                title: '<@spring.message "发货人地址"/>',
+                width: 120
+            },
+            {
+                field: "delMobile",
+                title: '<@spring.message "发货人手机"/>',
+                width: 120
+            }
+        ],
+        editable: true
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,561 @@
+<#include "/include/header.html"/>
+<body>
+<script src="${base.contextPath}/common/code?saleChannel=HMALL.SALE_CHANNEL&saleType=HMALL.SALE_TYPE&saleYesNo=SYS.YES_NO" type="text/javascript"></script>
+
+<script>
+    var viewModel = kendo.observable({
+        model: {},
+        disabled: "false",
+        containerFlag: 1,
+        selectType: "COUPON",
+        type: "",
+        resourceTypeData: [saleChannel, saleType, saleYesNo],
+
+
+    });
+    viewModel.model.set('coupon', {});
+
+    var id = '${RequestParameters.id}';
+    var baseId = '${RequestParameters.baseId}';
+    var openType = '${RequestParameters.type}';
+
+    if (openType == 'CREATE') {
+        viewModel.model.coupon.maxRedemptionPerCustomer = 1;
+        viewModel.model.coupon.discountType = "other";
+    }
+
+    var addConditions = "ADD_CONDITIONS";
+    var addActions = "ADD_ACTIONS";
+    var addGroups = "ADD_GROUPS";
+    var addContainers = "ADD_CONTAINERS";
+
+</script>
+
+
+<div id="content-container">
+    <div class="panel" style="padding: 10px;">
+        <div class="panel" style="padding: 0px;">
+            <div class="panel-footer text-left">
+                <span class="btn btn-success" id="query" onclick="submitResource()" type="submit"><i class="fa fa-plus"></i> 创建并发布</span>
+                <span class="btn btn-primary" id="resetForm" onclick="returnResource()" type="button"><i class="fa fa-refresh"></i> 返回</span>
+
+            </div>
+        </div>
+
+        <div id="tabStrip">
+            <ul>
+                <li>字段编辑</li>
+                <li>条件与结果</li>
+            </ul>
+            <div>
+                <div class="panel" style="padding: 4px;">
+                    <form class="form-horizontal" id="baseInfo">
+
+                        <div class="panel-body">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">优惠券ID</label>
+                                    <div class="col-sm-8">
+                                        <input id="couponId" disabled="true" style="background: rgb(222, 222, 222);;width: 100%;" type="text" placeholder="优惠券ID" style="width: 100%"
+                                               data-bind="value:model.coupon.couponId"
+                                               class="k-textbox">
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">优惠券名称</label>
+                                    <div class="col-sm-8">
+                                        <input id="couponName" name="优惠券名称" required type="text" placeholder="优惠券名称" style="width: 100%" data-bind="value:model.coupon.couponName"
+                                               data-role="优惠券名称" class="k-textbox">
+                                        <!--<script>-->
+                                        <!--kendo.bind($('#couponName'), viewModel);-->
+                                        <!--</script>-->
+                                        <span data-for="优惠券名称" class="k-invalid-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">优惠券描述</label>
+                                    <div class="col-sm-8">
+                                        <input id="couponDes" name="优惠券描述" required type="text" placeholder="优惠券描述" style="width: 100%" data-bind="value:model.coupon.couponDes"
+                                               data-role="优惠券描述" class="k-textbox">
+                                        <!--<script>-->
+                                        <!--kendo.bind($('#couponName'), viewModel);-->
+                                        <!--</script>-->
+                                        <span data-for="优惠券描述" class="k-invalid-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">优惠券码</label>
+                                    <div class="col-sm-8">
+                                        <input id="couponCode" name="优惠券码" required type="text" placeholder="优惠券码"
+                                               style="width: 100%" data-bind="value:model.coupon.couponCode" data-role="优惠券码" class="k-textbox">
+                                        <!--<script>-->
+                                        <!--kendo.bind($('#couponCode'), viewModel);-->
+                                        <!--</script>-->
+                                        <span data-for="优惠券码" class="k-invalid-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">优惠券面值</label>
+                                        <div class="col-sm-8">
+                                            <input id="benefit"  type="number" required placeholder="优惠券面值" class="k-textbox"
+                                                   style="width: 100%" data-bind="value:model.coupon.benefit">
+                                            <!--<script>-->
+                                                <!--$("#benefit").kendoNumericTextBox({-->
+                                            <!--format: "n0",-->
+                                                    <!--min:0-->
+                                                <!--});-->
+                                            <!--</script>-->
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">客户最大兑换数</label>
+                                    <div class="col-sm-8">
+                                        <input id="maxRedemptionPerCustomer"
+                                               pattern="^[1-9]\d*$" validationMessage="大于0的正整数"
+                                               type="text" placeholder="客户最大兑换数"
+                                               style="width: 100%" data-bind="value:model.coupon.maxRedemptionPerCustomer">
+                                        <script>
+                                            $("#maxRedemptionPerCustomer").kendoNumericTextBox({
+                                                format: "n0",
+                                                min: 0,
+                                                value: 1
+                                            });
+                                        </script>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">卷最大兑换数</label>
+                                    <div class="col-sm-8">
+                                        <input id="maxRedemption" type="text" pattern="^[1-9]\d*$" validationMessage="大于0的正整数" placeholder="优惠卷最大兑换数"
+                                               style="width: 100%" data-bind="value:model.coupon.maxRedemption">
+                                        <script>
+                                            $("#maxRedemption").kendoNumericTextBox({
+                                                format: "n0",
+                                                min: 0
+                                            });
+                                        </script>
+                                        <!--<span data-for="卷最大兑换数" class="k-invalid-msg"></span>-->
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">使用渠道</label>
+                                    <div class="col-sm-8">
+                                        <input id="range" name="使用渠道" data-bind="value:model.coupon.range" placeholder="使用渠道"
+                                               style="width: 100%;" data-value-primitive="true"/>
+                                        <script>
+                                            viewModel.model.coupon.range = 'ALL';
+                                            $("#range").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                dataSource: saleChannel
+                                            });
+                                        </script>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">发放类型</label>
+                                    <div class="col-sm-8">
+                                        <input id="type" data-bind="value:model.coupon.type" placeholder="发放类型"
+                                               style="width: 100%;" data-value-primitive="true"/>
+                                        <script>
+                                            viewModel.model.coupon.type = 'COUPON_TYPE_01';
+                                            $("#type").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                dataSource: saleType,
+                                                change: function (dataItem) {
+
+                                                    if (this.value() == 'COUPON_TYPE_05') {
+                                                        console.log("1111111111", this.value());
+                                                        $('#payFeeHide').show();
+                                                    } else {
+                                                        $('#payFeeHide').hide();
+                                                    }
+                                                }
+                                            });
+                                        </script>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4" id="payFeeHide">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">优惠券费用</label>
+                                    <div class="col-sm-8">
+                                        <input id="payFee" type="text" placeholder="优惠券费用"
+                                               style="width: 100%" data-bind="value:model.coupon.payFee">
+                                        <script>
+                                            $("#payFee").kendoNumericTextBox({
+                                                format: "n",
+                                                min: 0
+                                            });
+                                        </script>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-sm-8">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">有效开始</label>
+                                    <div class="col-sm-10">
+                                        <input id="startDate" required type="text" placeholder="有效开始时间"
+                                               style="width: 40%" data-bind="value:model.coupon.startDate">
+                                        <input id="endDate" type="text" placeholder="有效结束时间"
+                                               style="width: 40%" data-bind="value:model.coupon.endDate">
+                                        <script>
+                                            $("#startDate").kendoDateTimePicker({
+                                                animation: false,
+                                                format: "yyyy-MM-dd HH:mm:ss",
+                                                change: function () {
+                                                    var startDate = $("#startDate").val();
+                                                    $('#endDate').data('kendoDateTimePicker').min(startDate);
+                                                }
+
+                                            });
+                                            $("#endDate").kendoDateTimePicker({
+                                                animation: false,
+                                                format: "yyyy-MM-dd HH:mm:ss",
+                                                change: function () {
+                                                    var endDate = $("#endDate").val();
+                                                    $('#startDate').data('kendoDateTimePicker').max(endDate);
+                                                }
+                                            });
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">创建时间</label>
+                                    <div class="col-sm-8">
+                                        <input id="creationTime" disabled="true" type="text" placeholder="创建时间" style="width: 100%" data-bind="value:model.coupon.creationTime">
+                                        <script>
+                                            $("#creationTime").kendoDateTimePicker({
+                                                animation: false,
+                                                format: "yyyy-MM-dd HH:mm:ss"
+
+                                            });
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-8">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">允许领取时间</label>
+                                    <div class="col-sm-10">
+                                        <input id="getStartDate" required type="text" placeholder="开始领取时间"
+                                               style="width: 40%" data-bind="value:model.coupon.getStartDate">
+                                        <input id="getEndDate" type="text" placeholder="结束领取时间"
+                                               style="width: 40%" data-bind="value:model.coupon.getEndDate">
+                                        <script>
+                                            $("#getStartDate").kendoDateTimePicker({
+                                                animation: false,
+                                                format: "yyyy-MM-dd HH:mm:ss",
+                                                change: function () {
+                                                    var getStartDate = $("#getStartDate").val();
+                                                    $('#getEndDate').data('kendoDateTimePicker').min(getStartDate);
+                                                }
+
+                                            });
+                                            $("#getEndDate").kendoDateTimePicker({
+                                                animation: false,
+                                                format: "yyyy-MM-dd HH:mm:ss",
+                                                change: function () {
+                                                    var getEndDate = $("#getEndDate").val();
+                                                    $('#getStartDate').data('kendoDateTimePicker').max(getEndDate);
+                                                }
+                                            });
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">上次创建时间</label>
+                                    <div class="col-sm-8">
+                                        <input id="lastCreationTime" disabled="true" type="text" placeholder="创建时间" style="width: 100%" data-bind="value:model.coupon.lastCreationTime">
+                                        <script>
+                                            $("#lastCreationTime").kendoDateTimePicker({
+                                                animation: false,
+                                                format: "yyyy-MM-dd HH:mm:ss"
+
+                                            });
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group" id="isOverLayDiv">
+                                    <label class="col-sm-4 control-label">是否排它</label>
+                                    <div class="col-sm-8">
+                                        <label class=" control-label">是</label>
+                                        <input id="isExclusiveYes" name="checkbox" type="radio" data-bind="enabled: true,value:model.coupon.isExclusive"/>
+                                        <a></a><a></a>
+                                        <label class=" control-label">否</label>
+                                        <input id="isExclusiveNo" checked="checked" name="checkbox" type="radio" data-bind="enabled: true,value:model.coupon.isExclusive"/>
+                                        <script>
+                                            $("#isExclusiveYes").kendoCheckbox({
+                                                checkedValue: 'Y',
+                                                uncheckedValue: 'N'
+                                            });
+                                            $("#isExclusiveNo").kendoCheckbox({
+                                                checkedValue: 'N',
+                                                uncheckedValue: 'Y'
+                                            });
+                                            kendo.bind($('#isExclusiveYes'), viewModel);
+                                            kendo.bind($('#isExclusiveNo'), viewModel);
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">有效时长</label>
+                                    <div class="col-sm-8">
+                                        <input id="activeTime" type="text" placeholder="有效时长（D）" style="width: 100%" data-bind="value:model.coupon.activeTime">
+                                        <script>
+                                            $("#activeTime").kendoNumericTextBox({
+                                                format: "n",
+                                                min: 0
+                                            });
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+                <#include "/sale/record/saleRecord.html"/>
+
+            </div>
+
+
+            <div>
+                <#include "/sale/conditions/saleConditionActionInclude.html"/>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<div id="addTempWin"></div>
+<div id="addTempConditionDataWin"></div>
+<div id="addTempActionDataWin"></div>
+<div id="productChooseWin"></div>
+
+
+<script type="text/javascript">
+
+    kendo.bind($('#content-container'), viewModel);
+    var validator = $("#baseInfo").kendoValidator({
+        invalidMessageType: "default"
+    }).data("kendoValidator");
+
+    $("#tabStrip").kendoTabStrip({
+        animation: {
+            close: {
+                duration: 200,
+                effects: "fadeOut"
+            }
+        }
+    });
+    var tabStrip = $("#tabStrip").kendoTabStrip().data("kendoTabStrip");
+    tabStrip.select(0);
+
+
+    function submitAjax() {
+        $('#query').attr("disabled", "true");
+        $('#query').removeAttr("onclick");
+        var actions = viewModel.model.actions;
+        for (var i in actions) {
+            console.log("-----------action---------" + actions[i].definitionId);
+            if (actions[i].definitionId == 'o_total_rate' || actions[i].definitionId == 'oe_total_rate') {
+                viewModel.model.coupon.discountType = "percentDiscount";
+            } else if (actions[i].definitionId == 'o_total_discount' || actions[i].definitionId == 'oe_total_discount') {
+                viewModel.model.coupon.discountType = "fixDiscount";
+            }
+        }
+        $.ajax({
+            url: "${base.contextPath}/sale/coupon/submit",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(viewModel.model),
+            success: function (data) {
+                if (data.success) {
+                    viewModel.model.coupon.set("couponId", data.resp[0].couponId);
+                    viewModel.model.coupon.set("creationTime", timeToDate(data.resp[0].creationTime));
+                    baseId = data.resp[0].couponId;
+                    viewModel.model.coupon.set("lastCreationTime", timeToDate(data.resp[0].lastCreationTime));
+
+                    kendo.ui.showInfoDialog({
+                        title: "提示",
+                        message: "保存成功！"
+                    }).done(function (e) {
+
+
+                        window.parent.$("#editCouponWin").data("kendoWindow").close();
+
+//                        tabStrip.select(0);
+//                        $('#gridRecord').data('kendoGrid').dataSource.query();
+                    })
+                } else {
+                    kendo.ui.showErrorDialog({
+                        title: "提示",
+                        message: data.msg
+                    }).done(function (e) {
+                        $('#query').removeAttr("disabled");
+                        $('#query').attr("onclick", "submitResource()");
+                    })
+                }
+            }
+        })
+    }
+
+    function submitResource() {
+        viewModel.model.set("groups", groups_data);
+        var validator = $("#baseInfo").data("kendoValidator");
+        if (validator.validate()) {
+            var conditions = viewModel.model.conditions;
+            if (conditions != undefined && conditions.length > 0) {
+                submitAjax();
+            } else {
+                kendo.ui.showWarningDialog({
+                    title: "警告",
+                    message: "当前未设定条件，确定还要提交吗?",
+                    buttons: [{
+                        text: "确定",
+                        type: 'primary',
+                        click: function (e) {
+                            submitAjax();
+                            e.dialog.destroy();
+                        }
+                    }, {
+                        text: "取消",
+                        type: 'default',
+                        click: function (e) {
+                            e.dialog.destroy();
+                        }
+                    }]
+                })
+            }
+        }
+    }
+
+    function returnResource() {
+        kendo.ui.showConfirmDialog({
+            title: "提示",
+            message: "是否放弃当前的规则录入?"
+        }).done(function (e) {
+            if (e.button == 'OK') {
+                window.parent.$("#editCouponWin").data("kendoWindow").close();
+            }
+        })
+    }
+
+    if (openType == 'EDIT') {
+        $.ajax({
+            url: "${base.contextPath}/sale/coupon/detail?id=" + id,
+            type: "GET",
+            success: function (data) {
+                if (data.success) {
+                    var resp = data.resp;
+
+                    if (resp.length > 0) {
+                        if (resp[0].coupon != undefined) {
+                            var coupon = resp[0].coupon;
+                            viewModel.model.coupon.set('couponId', coupon.couponId);
+                            viewModel.model.coupon.set('couponName', coupon.couponName);
+                            viewModel.model.coupon.set('couponCode', coupon.couponCode);
+                            viewModel.model.coupon.set('benefit', coupon.benefit);
+                            viewModel.model.coupon.set('maxRedemptionPerCustomer', coupon.maxRedemptionPerCustomer);
+                            viewModel.model.coupon.set('type', coupon.type);
+                            viewModel.model.coupon.set('maxRedemption', coupon.maxRedemption);
+                            viewModel.model.coupon.set('creationTime', timeToDate(coupon.creationTime));
+                            viewModel.model.coupon.set('lastCreationTime', timeToDate(coupon.lastCreationTime));
+                            viewModel.model.coupon.set('releaseId', timeToDate(coupon.releaseId));
+                            viewModel.model.coupon.set('endDate', timeToDate(coupon.endDate));
+                            viewModel.model.coupon.set('startDate', timeToDate(coupon.startDate));
+                            viewModel.model.coupon.set('getEndDate', timeToDate(coupon.getEndDate));
+                            viewModel.model.coupon.set('getStartDate', timeToDate(coupon.getStartDate));
+                            viewModel.model.coupon.set('couponDes', coupon.couponDes);
+                            viewModel.model.coupon.set('payFee', coupon.payFee);
+                            viewModel.model.coupon.set('status', coupon.status);
+                            viewModel.model.coupon.set('range', coupon.range);
+                            viewModel.model.coupon.set('isOverlay', coupon.isOverlay);
+                            viewModel.model.coupon.set('isExclusive', coupon.isExclusive);
+                            viewModel.model.coupon.set('activeTime', coupon.activeTime);
+                            viewModel.model.coupon.set('creationAt', coupon.creationAt);
+                            viewModel.model.coupon.set('updaId', resp[0].conditionsId);
+                            viewModel.model.set('containerteAt', coupon.updateAt);
+                            viewModel.model.set('conditionsFlag', resp[0].containerFlag);
+
+                            if (coupon.type == 'COUPON_TYPE_05') {
+                                $(document).ready(function () {
+                                    $('#payFeeHide').hide();
+                                })
+                            }
+
+                            appendConditions(resp[0].conditions || [], resp[0].actions || [], resp[0].groups || [], resp[0].containers || [])
+                        }
+                    }
+                } else {
+                    kendo.ui.showErrorDialog({
+                        title: "错误",
+                        message: data.msg
+                    })
+                }
+            }
+        })
+    } else {
+
+        today = new Date();
+        viewModel.model.coupon.set('startDate', new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours(), today.getMinutes(), 0));
+        viewModel.model.coupon.set('endDate', new Date(2099, today.getMonth(), today.getDate(), today.getHours(), today.getMinutes(), 0));
+
+    }
+
+
+</script>
+</body>
+</html>

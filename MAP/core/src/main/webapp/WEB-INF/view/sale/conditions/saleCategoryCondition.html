@@ -1,0 +1,426 @@
+<#include "/include/header.html"/>
+<body>
+
+<script type="text/javascript">
+    var viewModel = kendo.observable({
+        model: {},
+
+        queryFunction: function (e) {
+            $('#grid').data('kendoTreeList').dataSource.read();
+        },
+        resetForm: function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                if (k != "productCatalog") {
+                    viewModel.model.set(k, null);
+                } else {
+                    viewModel.model.set(k, 'UniqloCatalog-staged');
+                }
+            }
+            ;
+            $("#t_product_sync").show();
+        },
+    });
+
+
+    var id = '${RequestParameters.id}';
+    var value = [];
+    var definitionId = '${RequestParameters.definitionId}';
+    var openType = '${RequestParameters.openType}';
+    var disabled = '${RequestParameters.disabled}';
+
+    if (openType == 'BASE') {
+        for (var i in window.parent.viewModel.model.conditions) {
+            if (window.parent.viewModel.model.conditions[i].id == id) {
+
+                if (window.parent.viewModel.model.conditions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.conditions[i].parameters.rangeValue != undefined) {
+                        value = window.parent.viewModel.model.conditions[i].parameters.rangeValue.value;
+                    }
+                }
+                break;
+            }
+        }
+    } else if (openType == 'GROUP') {
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag = false;
+                for (var j in window.parent.groups_data[i].child) {
+                    if (window.parent.groups_data[i].child[j].id == id) {
+                        if (window.parent.groups_data[i].child[j].parameters != undefined) {
+                            if (window.parent.groups_data[i].child[j].parameters.rangeValue != undefined) {
+                                value = window.parent.groups_data[i].child[j].parameters.rangeValue.value;
+                            }
+                        }
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    break;
+                }
+
+            }
+        }
+    } else if (openType == 'GROUP_EXT') {
+
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag = false;
+                if (window.parent.groups_data[i].child != undefined) {
+                    for (var j in window.parent.groups_data[i].child) {
+                        if (window.parent.groups_data[i].child[j].child != undefined) {
+                            for (var k in  window.parent.groups_data[i].child[j].child) {
+                                if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                    if (window.parent.groups_data[i].child[j].child[k].parameters != undefined) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.rangeValue != undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.rangeValue.value;
+                                        }
+                                    }
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (flag) {
+                    break;
+                }
+
+            }
+        }
+
+    } else if (openType == 'CONTAINER') {
+        for (var i in window.parent.viewModel.model.containers) {
+            if (window.parent.viewModel.model.containers[i].child != undefined) {
+                for (var j in window.parent.viewModel.model.containers[i].child) {
+                    if (window.parent.viewModel.model.containers[i].child[j].id == id) {
+
+                        if (window.parent.viewModel.model.containers[i].child[j].parameters != undefined) {
+                            if (window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue != undefined) {
+                                value = window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue.value;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <!--<div id="appendPanel" class="panel" style="padding: 0px;">-->
+            <!--<form class="form-horizontal" id="conditionForm" hidden="true">-->
+                <!--<div class="panel-body">-->
+                    <!--<div class="row">-->
+
+
+                        <!--<div class="col-sm-4">-->
+                            <!--<div class="form-group">-->
+                                <!--<label class="col-sm-4 control-label">分类ID</label>-->
+                                <!--<div class="col-sm-8">-->
+                                    <!--<input id="storeCategoryId" type="text" placeholder="商品名称" style="width: 100%" data-bind="value:model.storeCategoryId"-->
+                                           <!--class="k-textbox">-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</div>-->
+
+
+                        <!--<div class="col-sm-4">-->
+                            <!--<div class="form-group">-->
+                                <!--<label id="number" class="col-sm-4 control-label">分类名称</label>-->
+                                <!--<div class="col-sm-8">-->
+                                    <!--<input id="storeCategoryName" type="text" style="width: 100%"-->
+                                           <!--data-bind="value:model.storeCategoryName" class="k-textbox">-->
+                                <!--</div>-->
+                                <!--<label class="col-sm-1 control-label"></label>-->
+                            <!--</div>-->
+                        <!--</div>-->
+
+
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</form>-->
+            <!--<script>-->
+                <!--if (disabled != 'true') {-->
+                    <!--$('#conditionForm').removeAttr("hidden");-->
+                <!--}-->
+            <!--</script>-->
+
+
+            <div class="panel-footer text-right">
+                <!--<span class="btn btn-primary" id="query" disabled="true" type="submit"><i class="fa fa-search"></i> <@spring.message "hap.query"/></span>-->
+                <!--<span class="btn btn-warning" id="resetForm" disabled="true" type="button"><i class="fa fa-refresh"></i><@spring.message "hap.reset"/></span>-->
+                <span class="btn btn-success" id="submit" disabled="true" type="button"><i class="glyphicon glyphicon-ok"></i>确定</span>
+                <script>
+                    if (disabled != 'true') {
+                        $('#query').removeAttr("disabled");
+                        $('#query').attr("data-bind", "click:queryResource");
+                        $('#resetForm').removeAttr("disabled");
+                        $('#resetForm').attr("data-bind", "click:resetForm");
+                        $('#submit').removeAttr("disabled");
+                        $('#submit').attr("onclick", "saveRangeCondition()");
+                    }
+                </script>
+            </div>
+        </div>
+        <div style="height: 400px; clear: both;">
+            <div id="grid"></div>
+        </div>
+
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    kendo.bind($('#categoryList'), viewModel);
+
+    var crudServiceBaseUrl = '${base.contextPath}/sale/range',
+        dataSource = new kendo.data.TreeListDataSource({
+            transport: {
+                read: {
+                    url: crudServiceBaseUrl + "/category/query",
+                    type: "POST",
+                    contentType: "application/json"
+                },
+
+                parameterMap: function (options, type) {
+                    if (type === "read") {
+
+                        var map = {};
+                        map.data = viewModel.model.toJSON();
+                        map.checkedItems = value;
+                        for (var k in map) {
+                            if (map[k] === '' || map[k] === null || map[k] === undefined)
+                                delete map[k]
+                        }
+                        return kendo.stringify(map);
+                    }
+                }
+            },
+
+
+            batch: true,
+            schema: {
+                data: 'resp',
+                model: {
+                    id: "Code",
+                    parentId: "parentId",
+//                        expanded: true,
+                    fields: {
+                        Code: {editable: false, type: "string"},
+                        name: {editable: false, type: "string"},
+//                            ischecked : {editable: false,type: "string"}
+                    },
+                    expanded: true
+                }
+            },
+            change: function propagate(e) {
+                console.log("------change dataSource----------");
+                console.log(e);
+                var node = e.items && e.items[0];
+                var propagatedField = "ischecked";
+
+                if (!node || e.field != propagatedField) {
+                    return;
+                }
+
+                this.unbind("change", propagate);
+
+                function update(dataSource, nodes, field, state) {
+                    for (var i = 0; i < nodes.length; i++) {
+//                        if(!nodes[i].hasChildren){
+                            nodes[i].set(field, state);
+//                            console.log(nodes[i]);
+//                        }
+                        update(dataSource, dataSource.childNodes(nodes[i]), field, state);
+                    }
+                }
+
+                update(this, this.childNodes(node), propagatedField, node[propagatedField]);
+
+                this.bind("change", propagate);
+            }
+        });
+
+    var treeList = $("#grid").kendoTreeList({
+        dataSource: dataSource,
+        height: '100%',
+        resizable: true,
+        editable: false,
+        navigatable: true,
+        scrollable: true,
+        selectable: true,
+        sortable: true,
+        selectable: "multiple,rowbox",
+        columns: [{
+            template: "<input type='checkbox' id='checkbox' data-bind='checked: ischecked' />",
+            width: 32,
+            attributes: {
+                "class": "table-header-cell",
+                style: "text-align: center;"
+            }
+        }, {
+            field: "Code",
+            expandable: true,
+            title: '分类ID',
+            width: 300
+        }, {
+            field: "name",
+            title: '分类名称',
+            width: 300
+        }],
+        dataBound: function () {
+            var view = this.dataSource.view();
+            this.items().each(function (index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoTreeList");
+
+
+    var grid = $("#grid").parent();
+    var avaHeight = $(window).height() - grid.offset().top - 10
+    grid.outerHeight(avaHeight)
+    $("#grid").data('kendoTreeList').resize();
+    $(window).resize(function () {
+        var grid = $("#grid").parent();
+        var avaHeight = $(window).height() - grid.offset().top - 10
+        grid.outerHeight(avaHeight)
+        $("#grid").data('kendoTreeList').resize();
+    });
+
+    function saveRangeCondition() {
+        var dataItems = [];
+        var checkedList = $('#grid').data('kendoTreeList').dataSource.data();
+        if (checkedList.length > 0) {
+            for (var i = 0; i < checkedList.length; i++) {
+                if (checkedList[i].ischecked) {
+                    console.log("----checked-parentId--"+checkedList[i].parentId);
+                    console.log("----checked-code--"+checkedList[i].Code);
+                    dataItems.push(checkedList[i].Code)
+                }
+            }
+
+
+            if (openType == 'BASE') {
+                if (window.parent.viewModel.model.conditions != undefined) {
+                    for (var i in window.parent.viewModel.model.conditions) {
+                        if (window.parent.viewModel.model.conditions[i].id == id) {
+                            if (window.parent.viewModel.model.conditions[i].parameters == undefined) {
+                                window.parent.viewModel.model.conditions[i].set("parameters", {});
+
+                            }
+                            if (window.parent.viewModel.model.conditions[i].parameters.rangeValue == undefined) {
+                                window.parent.viewModel.model.conditions[i].parameters.set("rangeValue", {});
+
+                            }
+                            window.parent.viewModel.model.conditions[i].parameters.rangeValue.value = dataItems;
+                            break;
+                        }
+                    }
+                }
+            } else if (openType == 'GROUP') {
+                if (window.parent.groups_data != undefined) {
+
+                    for (var i in window.parent.groups_data) {
+
+                        var flag = false;
+                        for (var j in window.parent.groups_data[i].child) {
+
+                            if (window.parent.groups_data[i].child[j].id == id) {
+                                if (window.parent.groups_data[i].child[j].parameters == undefined) {
+                                    window.parent.groups_data[i].child[j].parameters = {};
+
+                                }
+                                if (window.parent.groups_data[i].child[j].parameters.rangeValue == undefined) {
+                                    window.parent.groups_data[i].child[j].parameters.rangeValue = {};
+                                }
+                                window.parent.groups_data[i].child[j].parameters.rangeValue.value = dataItems;
+
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if (flag) {
+                            break;
+                        }
+
+                    }
+                }
+            } else if (openType == 'GROUP_EXT') {
+                if (window.parent.groups_data != undefined) {
+                    for (var i in window.parent.groups_data) {
+
+                        var flag = false;
+                        if (window.parent.groups_data[i].child != undefined) {
+                            for (var j in window.parent.groups_data[i].child) {
+                                if (window.parent.groups_data[i].child[j].child != undefined) {
+                                    for (var k in  window.parent.groups_data[i].child[j].child) {
+                                        if (window.parent.groups_data[i].child[j].child[k].id == id) {
+                                            if (window.parent.groups_data[i].child[j].child[k].parameters == undefined) {
+                                                window.parent.groups_data[i].child[j].child[k].parameters = {};
+                                            }
+                                            if (window.parent.groups_data[i].child[j].child[k].parameters.rangeValue == undefined) {
+                                                value = window.parent.groups_data[i].child[j].child[k].parameters.rangeValue = {};
+                                            }
+                                            window.parent.groups_data[i].child[j].child[k].parameters.rangeValue.value = dataItems;
+                                            flag = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (flag) {
+                            break;
+                        }
+
+                    }
+                }
+            } else if (openType == 'CONTAINER') {
+                if (window.parent.viewModel.model.containers != undefined) {
+                    for (var i in window.parent.viewModel.model.containers) {
+                        if (window.parent.viewModel.model.containers[i].child != undefined) {
+                            for (var j in window.parent.viewModel.model.containers[i].child) {
+                                if (window.parent.viewModel.model.containers[i].child[j].id == id) {
+                                    if (window.parent.viewModel.model.containers[i].child[j].parameters == undefined) {
+                                        window.parent.viewModel.model.containers[i].child[j].set("parameters", {});
+
+                                    }
+                                    if (window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue == undefined) {
+                                        window.parent.viewModel.model.containers[i].child[j].parameters.set("rangeValue", {});
+
+                                    }
+                                    window.parent.viewModel.model.containers[i].child[j].parameters.rangeValue.value = dataItems;
+//									window.parent.viewModel.model.containers[i].child[j].productRelevance=gridPop.dataSource.data();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            window.parent.$("#productChooseWin").data("kendoWindow").close();
+
+        } else {
+
+            kendo.ui.showWarningDialog({
+                title: "提示",
+                message: "请先勾选类型"
+            })
+        }
+
+    }
+
+</script>
+</body>

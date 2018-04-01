@@ -1,0 +1,286 @@
+<#include "/include/header.html"/>
+<body>
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+
+        queryResource: function(e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        resetForm        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+
+    viewModel.model.set("type","PRODUCT");
+    var excelId="NULL";
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+
+        <div id='grid-container'>
+            <div id="grid" style="clear: both"></div>
+        </div>
+    </div>
+</div>
+
+<div id="open_window_Upload" style="clear:both;margin-top:10px;"></div>
+
+<script type="text/javascript">
+
+    kendo.bind($('#page-content'),viewModel);
+    kendo.bind($('#grid-container'),viewModel);
+
+    $("#files").kendoUpload({
+        async: {
+            saveUrl: "${base.contextPath}/sale/excel/product/upload",
+            autoUpload: true
+        }
+    });
+
+    var BaseUrl = "${base.contextPath}/sale/excel/product/",
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"query",
+                        type : "POST",
+                        contentType: "application/json"
+
+                    },
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            console.log("type", type);
+                            if(type =='create' || type =='update'){
+                                var map = viewModel.model.toJSON();
+                                datas = options.models.map(function(data){
+                                    data['__status'] = (type =='create' ? 'add' : 'update');
+                                    console.log("data", data);
+                                    return data;
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+                            var map={};
+                            map.excelId =excelId;
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+                            for (var k in map.data) {
+                                if (map.data[k] === '' || map.data[k] === null || map.data[k] === undefined)
+                                    delete map.data[k]
+                            }
+                            return kendo.stringify(map);
+
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging : true,
+                pageSize: 10,
+                schema: {
+                    data:'resp',
+                    total:'total',
+                    model: {
+                        id: "id",
+                        fields: {
+                            productId:{editable:false, validation: { required: true }},
+                            productCode:{editable:false, validation: { required: true }},
+                            name:{editable:false, validation: { required: true }},
+                            isSuccess:{editable:false, validation: { required: true }},
+                            importDate:{editable:false, validation: { required: true }},
+                            creationDate:{editable:false, validation: { required: true }},
+                            errorMsg:{editable:false, validation: { required: true }},
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+    var grid=$("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+//        selectable : 'rowbox',
+        pageable: {
+            pageSizes:[5, 10, 20, 50,500,1000,2000],
+            refresh:true,
+            buttonCount:5,
+            messages: {
+                noRecords: "未找到任何数据",
+                display: "{0} - {1} 共 {2} 条数据",
+                empty: "没有数据",
+                page: "页",
+                of: "/ {0}",
+                itemsPerPage: "条每页",
+                first: "第一页",
+                previous: "前一页",
+                next: "下一页",
+                last: "最后一页",
+                refresh: "刷新"
+            }
+        },
+
+        toolbar: [
+            {
+                template:'<button  id="new" onclick="importExcel()"  class="btn btn-primary"><i class="fa  fa-file-excel-o" aria-hidden="true"></i> 导入</button>'
+            },{
+                name: "create",
+                template: '<button  id="create" onclick="create()" class="btn btn-success"><i class="glyphicon glyphicon-ok"></i> 确定</button>'
+            },{
+                template:'<button  id="cancel" onclick="deleteError()"  class="btn btn-warning"><i class="fa fa-refresh" aria-hidden="true"></i> 清除错误</button>'
+            }
+        ],
+        columns: [
+
+            {
+                field: "productId",
+                title: '商品ID',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width: 100
+            },
+            {
+                field: "productCode",
+                title: '商品编码',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width: 100
+            },
+            {
+                field: "name",
+                title: '商品名称',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width: 150
+            },
+            {
+                field: "isSuccess",
+                title: '是否成功',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width: 80
+            },{
+                field: "importDate",
+                title: '导入时间',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width: 150
+            },{
+                field: "creationDate",
+                title: '完成时间',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width: 150
+            },{
+                field: "errorMsg",
+                title: '错误信息',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                width: 150
+            },
+        ],
+        editable: true,
+        dataBound: function() {
+            var view = this.dataSource.view();
+            this.items().each(function(index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+
+    function create()
+    {
+        $.ajax({
+            url: "${base.contextPath}/sale/excel/product/deleteError?excelId="+excelId,
+            type       : "GET",
+            success:function (data) {
+                if(data.success) {
+                    kendo.ui.showInfoDialog({
+                        title:"提示",
+                        message:"上传成功"
+                    }).done(function (e) {
+                        window.parent.$("#productExcelImport").data("kendoWindow").close();
+                    });
+                }
+            }
+
+        })
+    }
+    function showFileValue(bb){
+        $("#show_File_Name").html("已选择文件："+bb.files[0].name);
+    }
+    function importExcel(){
+        var excelWindow = $("#open_window_Upload").kendoWindow({
+            title: '商品组导入',
+            content:"${base.contextPath}/sale/excel/saleProductImportExcel.html",
+            actions: [
+                "Pin",
+                "Close"
+            ],
+            width: "500px",
+            height :"225px",
+            modal:true,
+            visible:false,
+            iframe:true,
+            close: function() {
+                //window 关闭  刷新 本页面的  grid
+                $('#grid').data('kendoGrid').dataSource.page(1);
+            }
+        }).data("kendoWindow");
+        excelWindow.center().open();
+    }
+
+    function deleteError(){
+        $.ajax({
+            url: "${base.contextPath}/sale/excel/product/deleteError?excelId="+excelId,
+            type       : "GET",
+            success:function (data) {
+                if(data.success) {
+                    $("#grid").data('kendoGrid').dataSource.page(1);
+                }
+            }
+        })
+    }
+
+    $('.k-input').attr("disabled",true);
+
+</script>
+</body>
+</html>

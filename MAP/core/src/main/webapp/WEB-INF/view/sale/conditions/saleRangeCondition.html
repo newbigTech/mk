@@ -1,0 +1,325 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        notIn:[]
+    });
+    var id='${RequestParameters.id}';
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var openType='${RequestParameters.openType}';
+
+    var value=1;
+    var operator="";
+    var rangeOperator="";
+    var code="";
+
+    if(openType=='BASE') {
+        for (var i in window.parent.viewModel.model.conditions) {
+            if (window.parent.viewModel.model.conditions[i].id == id) {
+                code = window.parent.viewModel.model.conditions[i].code;
+                definitionId = window.parent.viewModel.model.conditions[i].definitionId;
+
+                if(window.parent.viewModel.model.conditions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.conditions[i].parameters.value != undefined) {
+                        value = window.parent.viewModel.model.conditions[i].parameters.value.value;
+
+                    }
+                    if (window.parent.viewModel.model.conditions[i].parameters.operator != undefined) {
+                        operator = window.parent.viewModel.model.conditions[i].parameters.operator.value;
+
+                    }
+                    if (window.parent.viewModel.model.conditions[i].parameters.rangeOperator != undefined) {
+                        rangeOperator = window.parent.viewModel.model.conditions[i].parameters.rangeOperator.value;
+
+                    }
+                    break;
+                }
+            }
+        }
+
+    }else if(openType=='GROUP'){
+
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                for(var j in window.parent.groups_data[i].child)
+                {
+
+                    if(window.parent.groups_data[i].child[j].id==id)
+                    {
+                        if (window.parent.groups_data[i].child[j].parameters != undefined) {
+                            if (window.parent.groups_data[i].child[j].parameters.value != undefined) {
+                                value = window.parent.groups_data[i].child[j].parameters.value.value;
+                            }
+                            if (window.parent.groups_data[i].child[j].parameters.operator != undefined) {
+                                operator = window.parent.groups_data[i].child[j].parameters.operator.value;
+                            }
+
+                            if (window.parent.groups_data[i].child[j].parameters.rangeOperator != undefined) {
+                                rangeOperator = window.parent.groups_data[i].child[j].parameters.rangeOperator.value;
+                            }
+                        }
+
+                        flag=true;
+                        break;
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+    }else if(openType=='GROUP_EXT') {
+
+        if (window.parent.groups_data != undefined) {
+            for (var i in window.parent.groups_data) {
+
+                var flag=false;
+                if(window.parent.groups_data[i].child!=undefined) {
+                    for (var j in window.parent.groups_data[i].child) {
+                        if (window.parent.groups_data[i].child[j].child != undefined) {
+                            for (var k in  window.parent.groups_data[i].child[j].child) {
+                                if (window.parent.groups_data[i].child[j].child[k].id == id) {
+
+                                    if (window.parent.groups_data[i].child[j].child[k].parameters != undefined) {
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.value != undefined) {
+                                            value = window.parent.groups_data[i].child[j].child[k].parameters.value.value;
+                                        }
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.operator != undefined) {
+                                            operator = window.parent.groups_data[i].child[j].child[k].parameters.operator.value;
+                                        }
+
+                                        if (window.parent.groups_data[i].child[j].child[k].parameters.rangeOperator != undefined) {
+                                            rangeOperator = window.parent.groups_data[i].child[j].child[k].parameters.rangeOperator.value;
+                                        }
+                                    }
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if(flag){
+                    break;
+                }
+
+            }
+        }
+
+    }
+    else if(openType=='CONTAINER') {
+        for (var i in window.parent.viewModel.model.containers) {
+            if(window.parent.viewModel.model.containers[i].child!=undefined) {
+                for(var j in window.parent.viewModel.model.containers[i].child) {
+                    if (window.parent.viewModel.model.containers[i].child[j].id == id) {
+
+                        if (window.parent.viewModel.model.containers[i].child[j].parameters != undefined) {
+                            if (window.parent.viewModel.model.containers[i].child[j].parameters.value != undefined) {
+                                value = window.parent.viewModel.model.containers[i].child[j].parameters.value.value;
+
+                            }
+                            if (window.parent.viewModel.model.containers[i].child[j].parameters.operator != undefined) {
+                                operator = window.parent.viewModel.model.containers[i].child[j].parameters.operator.value;
+
+                            }
+                            if (window.parent.viewModel.model.containers[i].child[j].parameters.rangeOperator != undefined) {
+                                rangeOperator = window.parent.viewModel.model.containers[i].child[j].parameters.rangeOperator.value;
+
+                            }
+                            break;
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    if (value != null && value != undefined && value != "") {
+        viewModel.model.value = value;
+    }
+    if (operator != null && operator != undefined && operator != "") {
+        viewModel.model.operator = operator;
+
+    }
+    if (rangeOperator != null && rangeOperator != undefined && rangeOperator != "") {
+        viewModel.model.rangeOperator = rangeOperator;
+
+    }
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div id="appendPanel" class="panel" style="padding: 0px;">
+            <form class="form-horizontal" id="conditionForm">
+                <div class="panel-body">
+                    <div class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">操作符</label>
+                                <div class="col-sm-8">
+                                    <input id="operator" disabled="true" data-bind="value:model.operator" placeholder="操作符" style="width: 100%;"  data-value-primitive="true"/>
+                                    <script>
+                                        if(disabled!="true"){
+                                            $('#operator').removeAttr("disabled");
+                                        }
+                                        if(viewModel.model.operator==null||viewModel.model.operator==undefined||viewModel.model.operator=="") {
+                                            viewModel.model.operator = 'GEATER_THAN_OR_EQUAL';
+                                        }
+                                        $("#operator").kendoDropDownList({
+                                            dataTextField  : "meaning",
+                                            dataValueField : "value",
+                                            dataSource     : [{"meaning":">=","value":"GEATER_THAN_OR_EQUAL"},{"meaning":">","value":"GEATER_THAN"}]
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label id="number" class="col-sm-4 control-label">数值 </label>
+                                <div class="col-sm-7">
+                                    <input id="value" disabled="true" type="text" placeholder="数值" style="width: 100%" data-bind="value:model.value">
+                                    <script>
+                                        if(disabled!='true'){
+                                            $('#value').removeAttr("disabled");
+                                        }
+
+
+                                        $('#number').text("数值 (件)");
+                                        $("#value").kendoNumericTextBox({
+                                            format: "n0",
+                                            min: 0,
+                                            value:1
+                                        })
+
+                                    </script>
+
+                                </div>
+                                <label class="col-sm-1 control-label"></label>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">操作符</label>
+                                <div class="col-sm-8">
+                                    <input id="rangeOperator" disabled="true" data-bind="value:model.rangeOperator"  style="width: 100%;"  data-value-primitive="true"/>
+                                    <script>
+                                        if(disabled!='true'){
+                                            $('#rangeOperator').removeAttr("disabled");
+                                        }
+                                        if(rangeOperator==undefined||rangeOperator=="") {
+                                            viewModel.model.rangeOperator = 'MEMBER_OF';
+                                        }
+                                        $("#rangeOperator").kendoDropDownList({
+                                            dataTextField  : "meaning",
+                                            dataValueField : "value",
+                                            dataSource     : {
+                                                data:[{meaning:"包含",value:"MEMBER_OF"},{meaning:"排除",value:"NOT_MEMBER_OF"}]
+
+                                            }
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label  id="name" class="col-sm-4 control-label">商品选择</label>
+                                <div class="col-sm-8">
+
+                                    <input id="productExp"  disabled="true" type="text" style="width: 70%" data-bind="value:model.productExp"
+                                           class="k-textbox ">
+                                    <span id="clickSpan"  class="btn-sm btn-warning " onclick="showProductChose()"><i class="fa fa-search"></i> </span>
+                                </div>
+                                <script>
+                                    if(disabled!="true"){
+                                        $('#productExp').removeAttr("disabled");
+                                    }
+                                    if(definitionId=='TYPE_RANGE')
+                                    {
+                                        $('#name').text("类别选择");
+                                    }
+
+                                </script>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+
+            <div class="panel-footer text-right">
+                <span class="btn btn-success" disabled="true" id="query" type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+                <span class="btn btn-primary" id="resetForm"  type="button" onclick="rollbackWin()"><i class="fa fa-refresh"></i> 返回</span>
+                <script>
+                    if(disabled!="true"){
+                        $('#query').attr("onclick","saveDataCondition()");
+                        $('#query').removeAttr("disabled");
+                    }
+                </script>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    kendo.bind($('#content-container'),viewModel);
+    kendo.bind($('#page-content'),viewModel);
+
+    function saveDataCondition()
+    {
+        window.parent.saveDataCondition(viewModel.model,id,openType);
+        rollbackWin();
+    }
+
+    function showProductChose() {
+
+        var url='';
+        if(definitionId=='o_product_range') {
+            url='saleProductChoose.html'
+        }else if(definitionId=='o_type_range'){
+            url='saleCategoryCondition.html'
+        }
+
+        var onClose = function () {
+            window.parent.$("#productChooseWin").empty();
+        };
+
+        window.parent.$("#productChooseWin").kendoWindow({
+            actions: ["Close"],
+            title: '添加条件',
+            draggable: true,
+            height: "90%",
+            width: "100%",
+            close: onClose,
+            content: "${base.contextPath}/sale/conditions/"+url+"?id=" + id + "&definitionId=" + definitionId+"&openType="+openType+"&disabled="+disabled,
+            iframe: true,
+            modal: true
+        });
+
+        var win = window.parent.$("#productChooseWin").data("kendoWindow");
+        win.center().open();
+    }
+
+    function rollbackWin(){
+        window.parent.$("#addTempConditionDataWin").data("kendoWindow").close();
+
+    }
+
+</script>
+</body>
+</html>

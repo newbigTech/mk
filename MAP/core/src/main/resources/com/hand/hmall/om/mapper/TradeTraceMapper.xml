@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.TradeTraceMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.TradeTrace">
+        <result column="TRADE_TRACE_ID" property="tradeTraceId" jdbcType="DECIMAL"/>
+        <result column="LINEID" property="lineid" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="THIRDPARTY_SERVICECODE" property="thirdpartyServicecode" jdbcType="VARCHAR"/>
+        <result column="THIRDPARTY_UNIQUECODE" property="thirdpartyUniquecode" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="OPERATOR" property="operator" jdbcType="VARCHAR"/>
+        <result column="OPERATORPHONE" property="operatorphone" jdbcType="VARCHAR"/>
+        <result column="OPERATETIME" property="operatetime" jdbcType="DATE"/>
+        <result column="CONTENT" property="content" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINT_DATE" property="appointDate" jdbcType="VARCHAR"/>
+        <result column="DELIVERY_DATE" property="deliveryDate" jdbcType="VARCHAR"/>
+        <result column="SIGN_DATE" property="signDate" jdbcType="VARCHAR"/>
+        <result column="CHANGE_APPOINT_DATE" property="changeAppointDate" jdbcType="VARCHAR"/>
+        <result column="DELIVERY_ORDER_ID" property="deliveryOrderId" jdbcType="DECIMAL" />
+        <result column="DELIVERY_NOTE" property="deliveryNote" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="TradeTraceToZmallMap" type="com.hand.hmall.om.dto.TradeTraceToZmall">
+        <result column="TRADE_TRACE_ID" property="tradeTraceId" jdbcType="DECIMAL"/>
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="OPERATOR" property="operator" jdbcType="VARCHAR"/>
+        <result column="OPERATORPHONE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="OPERATETIME" property="operationTime" jdbcType="DATE"/>
+        <result column="CONTENT" property="content" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINT_DATE" property="appointDate" jdbcType="VARCHAR"/>
+        <result column="DELIVERY_DATE" property="deliveryDate" jdbcType="VARCHAR"/>
+        <result column="SIGN_DATE" property="signDate" jdbcType="VARCHAR"/>
+        <result column="CHANGE_APPOINT_DATE" property="changeAppointDate" jdbcType="VARCHAR"/>
+        <result column="PICTURE_URL" property="pictrueUrl" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getTradeTraceInfo" parameterType="com.hand.hmall.om.dto.TradeTrace" resultMap="BaseResultMap">
+        SELECT ott.TRADE_TRACE_ID,ott.LINEID,ott.CONSIGNMENT_ID,ott.STATUS,ott.OPERATOR,ott.OPERATORPHONE,ott.OPERATETIME,ott.CONTENT,ott.SYNCFLAG,
+        ott.APPOINT_DATE,ott.DELIVERY_DATE,ott.SIGN_DATE,ott.CHANGE_APPOINT_DATE
+        FROM HMALL_OM_TRADE_TRACE ott
+        WHERE 1 = 1
+        <if test="consignmentId != null and consignmentId != ''">
+            AND ott.CONSIGNMENT_ID = #{consignmentId}
+        </if>
+        ORDER BY ott.LINEID ASC
+    </select>
+
+    <select id="getTradeTraceInfoByDelivery" parameterType="com.hand.hmall.om.dto.TradeTrace" resultMap="BaseResultMap">
+        SELECT ott.TRADE_TRACE_ID,ott.LINEID,ott.CONSIGNMENT_ID,ott.STATUS,ott.OPERATOR,ott.OPERATORPHONE,ott.OPERATETIME,ott.CONTENT,ott.SYNCFLAG,
+        ott.APPOINT_DATE,ott.DELIVERY_DATE,ott.SIGN_DATE,ott.CHANGE_APPOINT_DATE,dod.DELIVERY_NOTE
+        FROM HMALL_OM_TRADE_TRACE ott
+        LEFT JOIN HMALL_OM_DELIVERY_ORDER dod
+        ON ott.DELIVERY_ORDER_ID = dod.DELIVERY_ORDER_ID
+        WHERE 1 = 1
+        <if test="deliveryOrderId != null">
+            AND ott.delivery_Order_Id = #{deliveryOrderId}
+        </if>
+        ORDER BY ott.LINEID ASC
+    </select>
+
+    <!-- 发货单推送ZMALL查询 -->
+    <select id="queryForZmall" resultMap="TradeTraceToZmallMap">
+     SELECT trace.*,consignment.CODE consignmentCode
+    FROM HMALL_OM_TRADE_TRACE trace
+    LEFT JOIN HMALL_OM_DELIVERY_ORDER do ON do.DELIVERY_ORDER_ID = trace.DELIVERY_ORDER_ID
+    LEFT JOIN HMALL_OM_CONSIGNMENT consignment on do.CONSIGNMENT_ID=consignment.CONSIGNMENT_ID
+    where trace.SYNCFLAG='N' and consignment.SYNC_ZMALL='Y' AND do.IS_MAIN='Y'
+    </select>
+
+    <update parameterType="java.util.List" id="updateSyncFlag">
+        UPDATE HMALL_OM_TRADE_TRACE tt
+        SET tt.SYNCFLAG = 'Y'
+        WHERE tt.TRADE_TRACE_ID IN
+        <foreach collection="list" open="(" separator="," close=")" index="index" item="item">
+            #{item.tradeTraceId}
+        </foreach>
+    </update>
+
+
+</mapper>

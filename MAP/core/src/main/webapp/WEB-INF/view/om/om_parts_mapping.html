@@ -1,0 +1,83 @@
+<#--
+        * description: 配件
+        * author:peng.chen03@hand-china.com
+        * 2017/5/23
+        * version: 0.1
+        *
+        -->
+<#include "../include/header.html">
+<script type="text/javascript">
+    var orderEntryId = '${RequestParameters.orderEntryId!0}';
+    var viewModel = kendo.observable({
+        model: {},
+        queryResource: function (e) {
+            $('#Grid').data('kendoGrid').dataSource.page(1);
+        }
+    });
+</script>
+<body>
+<div id="page-content">
+    <div style="clear:both">
+        <div id="Grid"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    var BaseUrl = _basePath;
+    dataSource = new kendo.data.DataSource({
+        transport: {
+            read: {
+                url: BaseUrl + "/hmall/om/parts/mapping/queryParts?orderEntryId="+orderEntryId,
+                type: "POST",
+                dataType: "json"
+            },
+            parameterMap: function (options, type) {
+                if (type !== "read" && options.models) {
+                    var datas = Hap.prepareSubmitParameter(options, type)
+                    return kendo.stringify(datas);
+                } else if (type === "read") {
+                    return Hap.prepareQueryParameter(viewModel.model.toJSON(), options)
+                }
+            }
+        },
+        batch: true,
+        serverPaging: true,
+        pageSize: 10,
+        schema: {
+            data: 'rows',
+            total: 'total',
+            model: {
+                id: "mappingId",
+                fields: {}
+            }
+        }
+    });
+
+    $("#Grid").kendoGrid({
+        dataSource: dataSource,
+        height: '100%',
+        resizable: true,
+        editable: false,
+        navigatable: true,
+        scrollable: false,
+        selectable: true,
+        sortable: true,
+        columns: [
+            {
+                field: "code",
+                title: '<@spring.message "配件编码"/>',
+                width: 60
+            },
+                    {
+                field: "name",
+                title: '<@spring.message "配件名称"/>',
+                width: 60
+            },
+        ],
+        editable: false
+    });
+    Hap.autoResizeGrid("#Grid");
+</script>
+</body>
+</html>

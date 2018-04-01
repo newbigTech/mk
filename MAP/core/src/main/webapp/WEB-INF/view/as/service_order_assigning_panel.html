@@ -1,0 +1,155 @@
+<#--
+        * description: 服务单归属设置页面
+        * author: chenzhigang
+        * 2017/11/17
+        * version: 0.1
+        *
+        -->
+    <#include "/include/header.html">
+        <body>
+        <div class="col-sm-12" style="margin-top: 10px;">
+
+            <script type="text/javascript">
+
+                var soIDs = '${RequestParameters.soIDs!0}';
+
+                var queryViewModel = kendo.observable({
+                    model: {
+                        codeOrName: ''
+                    }
+                });
+
+                var dataSource;
+
+                var grid;
+
+                function searchEmployees() {
+                    console.log("queryViewModel.get('name') = " + queryViewModel.get('model.codeOrName'));
+                    refreshEmployeesTable();
+                }
+
+                function refreshEmployeesTable(codeOrName_) {
+                    var codeOrName = codeOrName_ ? codeOrName_ : queryViewModel.get('model.codeOrName');
+                    //获取查询的所有信息
+                    $.ajax({
+                        type: "GET",
+                        url: '${base.contextPath}/hmall/hr/employee/query?codeOrName=' + codeOrName,
+                        success: function (data) {
+
+                            dataSource = new kendo.data.DataSource({
+                                data: data.rows
+                            });
+
+                            grid = $("#grid").kendoGrid({
+                                dataSource: dataSource,
+                                height: "200px",
+                                resizable: true,
+                                editable: false,
+                                navigatable: true,
+                                scrollable: true,
+                                selectable: 'multiple,rowbox', // selectable: true,
+                                sortable: true,
+                                columns: [{
+                                    field: "EMPLOYEE_CODE",
+                                    title: '工号',
+                                    attributes: {
+                                        style: "text-align:center"
+                                    },
+                                    width: 50,
+                                    headerAttributes: {
+                                        "class": "table-header-cell",
+                                        style: "text-align: center"
+                                    }
+                                }, {
+                                    field: "NAME",
+                                    title: '姓名',
+                                    attributes: {
+                                        style: "text-align:center"
+                                    },
+                                    width: 130,
+                                    headerAttributes: {
+                                        "class": "table-header-cell",
+                                        style: "text-align: center"
+                                    }
+                                }]
+                            }).data("kendoGrid");
+
+                        }
+                    });
+                }
+
+                function confirm() {
+                    var employees = grid.selectedDataItems();
+                    if (employees.length == 0) {
+                        kendo.ui.showInfoDialog({
+                            message: '请至少选择一个员工'
+                        });
+                    } else if (employees.length > 1) {
+                        kendo.ui.showInfoDialog({
+                            message: '只能选择一个员工'
+                        });
+                    } else {
+                        var employeeId = employees[0].EMPLOYEE_ID;
+                        // 设置服务单归属
+                        $.ajax({
+                            type: "GET",
+                            url: '${base.contextPath}/hmall/as/serviceOrder/setAssiging?soIDs=' + soIDs + '&employeeId=' + employeeId,
+                            success: function (response) {
+                                window.parent.$('#soAssigningWindow_').data('kendoWindow').close();
+                            }
+                        });
+                    }
+                }
+
+                $(function () {
+                    refreshEmployeesTable();
+                });
+
+                function currentEmployee() {
+                    refreshEmployeesTable("__CURRENT_EMPLOYEE__");
+                }
+
+            </script>
+
+            <div id="tabContent" class="tab-content" style="height: 60px;">
+                <div class="tab-pane fade in active" style="margin-top: 10px;" id="maintain">
+                    <div id="page-content">
+                        <div class="pull-left" style="padding-bottom:10px;">
+                            <span class="btn btn-primary" style="float:left;margin-right:5px;" onclick="javascript: currentEmployee()"
+                                  type="submit"><i class="fa fa-search" style="margin-right:3px;"></i>当前操作员</span>
+                            <div style="clear:both"></div>
+                        </div>
+                        <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+                            <div style="float:left;margin-right:5px;">
+                                <input placeholder='工号或名称' type="text"
+                                       style="float:left;width:150px;margin-right:5px;" data-bind="value:model.codeOrName"
+                                       class="k-textbox">
+                            </div>
+                            <span class="btn btn-primary" style="float:left;margin-right:5px;" onclick="javascript: searchEmployees()"
+                                  type="submit"><i class="fa fa-search" style="margin-right:3px;"></i>搜索</span>
+                            <div style="clear:both"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script type="text/javascript">
+                kendo.bind($('#tabContent'), queryViewModel);
+            </script>
+
+            <div style="height: 230px;">
+                <div id="grid"></div>
+            </div>
+
+            <div class="pull-right" id="toolbar-btn" style="padding-bottom:10px;">
+                <span type="button" class="btn btn-primary" style="float:left;margin-right:5px" onclick="javascript: confirm()">确认</span>
+            </div>
+
+        </div>
+
+        <script type="text/javascript">
+
+        </script>
+
+        </body>
+        </html>

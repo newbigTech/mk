@@ -1,0 +1,512 @@
+<#--
+        * description: Hmall退货单详情页面
+        * author:xuxiaoxue
+        * 2017/7/14
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?compensateStatus=HMALL.AS.COMPENSATE.STATUS" type="text/javascript"></script>
+        <script src="${base.contextPath}/common/code?compensateType=HMALL.AS.COMPENSATE_TYPE" type="text/javascript"></script>
+
+        <style type="text/css">
+            #forms .form-group label {
+                text-align: right;
+                font-size: auto;
+                margin-top: 8px;
+            }
+
+            #forms .row {
+                margin-top: 10px;
+            }
+
+            span.k-widget.k-tooltip-validation {
+                display: inline-block;
+                width: 160px;
+                text-align: left;
+                border: 0;
+                padding: 0;
+                margin: 0;
+                background: none;
+                box-shadow: none;
+                color: red;
+            }
+
+            .k-tooltip-validation .k-warning {
+                display: none;
+            }
+
+            span.k-widget.k-tooltip-validation {
+                display: none !important;
+            }
+        </style>
+        <script type="text/javascript">
+            //单位
+            var unitType = new Array();
+            $.ajax({
+                url : '${base.contextPath}/hmall/as/compensate/selectMstUnit',
+                type : 'POST',
+                contentType : "application/json;charset=utf-8",
+                cache : false,
+                dataType : 'json',
+                async : false,
+                success : function(data) {
+                    unitType = data.rows;
+                }
+            });
+            var BaseUrl = _basePath;
+            //服务单code
+            var linksCode = "${RequestParameters.linksCode!0}";
+            //服务单id
+            var serviceOrderId = "${RequestParameters.serviceOrderId!0}";
+            //订单id
+            var orderId = "${RequestParameters.orderId!0}";
+            //赔付单ID
+            var receiptOrderId = "${RequestParameters.receiptOrderId!0}";
+
+            var viewModel = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#compensateEntryGrid').data('kendoGrid').addRow();
+                }
+            });
+        </script>
+        <body>
+        <div id="page-content">
+            <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+                <span onclick="saveReturnOrder()" class="btn btn-primary" style="margin-left:10px;margin-right:5px; margin-top: 10px;"><@spring.message "hap.save"/></span>
+            </div>
+            <div id="query-form" style="padding-bottom:10px;clear: both;padding-bottom:10px;">
+                <form id="forms" style="padding-bottom: 20px">
+
+                    <div class="panel-body" style="margin-top: 10px;border:1px solid #2F617F;">
+                        <div>
+                            <label>基本信息</label>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "销售赔付单单号"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='code' type="text" style="width: 100%" name="code"
+                                               data-bind="value:model.code" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "赔付金额"/></label>
+                                    <div class="col-sm-8">
+                                        <input id='compensateFee' type="text" style="width: 100%" name="compensateFee"
+                                               data-bind="value:model.compensateFee" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "状态"/></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" style="width: 100%;" id="status" name="status"
+                                               data-bind="value:model.status" required>
+                                        <script type="text/javascript">
+                                            $("#status").kendoDropDownList({
+                                                dataTextField: "meaning",
+                                                dataValueField: "value",
+                                                valuePrimitive: true,
+                                                dataSource: compensateStatus
+                                            }).data("kendoDropDownList");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">客户ID</label>
+                                    <div class="col-sm-8">
+                                        <input id="userId" type="hidden" data-bind="value:model.userId">
+                                        <input id="customerid" type="text" style="width: 100%" data-bind="value:model.customerid" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "客户姓名"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="name" type="text" style="width: 100%" data-bind="value:model.name" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "备注"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="note" type="text" style="width: 100%" data-bind="value:model.note" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "手机号"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="mobile" type="text" style="width: 100%" data-bind="value:model.mobile" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "客户地址"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="address" type="text" style="width: 100%" data-bind="value:model.address" class="k-textbox">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "hmall.serviceorder.issycretail"/></label>
+                                    <div class="col-sm-8">
+                                        <div id="syncflag" class="full_width" style="margin-top: 8px;" data-bind="value:model.syncflag"></div>
+                                        <script type="text/javascript">
+                                            $("#syncflag").kendoRadio({
+                                                layout: '',
+                                                readonly: false,
+                                                disabled: true,
+                                                items: [{
+                                                    label: "是",
+                                                    value: "Y"
+                                                }, {
+                                                    label: "否",
+                                                    value: "N"
+                                                }]
+                                            }).data("kendoRadio");
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">服务单单号</label>
+                                    <div class="col-sm-8">
+                                        <input id="linksCode" type="text" style="width: 100%" data-bind="value:model.linksCode" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">平台订单号</label>
+                                    <div class="col-sm-8">
+                                        <input id="escOrderCode" type="text" style="width: 100%" data-bind="value:model.escOrderCode" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left">SAP编码</label>
+                                    <div class="col-sm-8">
+                                        <input id="sapCode" type="text" style="width: 100%" data-bind="value:model.sapCode" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body" style="margin-top: 10px;border:1px solid #2F617F;">
+                        <h5 style="margin-left: 10px;">其他信息</h5>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "受理客服"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="cs" type="text" style="width: 100%" data-bind="value:model.cs" class="k-textbox form-control" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "创建时间"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="creationDate" class="form-control" type="text" style="width: 100%;" data-bind="value:model.creationDate" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label" style="text-align:left"><@spring.message "完结时间"/></label>
+                                    <div class="col-sm-8">
+                                        <input id="finishTime" class="form-control" type="text" style="width: 100%" data-bind="value:model.finishTime" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div style="margin-top:10px;">
+                    <div class="panel-default" style="border-radius:0;border:1px solid #ccc;border-bottom:1px solid rgba(0, 0, 0, 0.17);margin-bottom:0px; height: 430px;">
+                        <div class="panel-heading">
+                            <span class="panel-title" style="float:left;margin-left:10px;margin-right:5px;padding: 0px;"> 赔付单行</span>
+                        </div>
+                        <div>
+                            <div id="compensateEntry-page-content">
+                                <div class="pull-left" id="compensateEntry-toolbar-btn" style="padding-bottom:10px;padding-top:10px;">
+                                   <span class="btn btn-primary" style="float:left; margin-left:15px;" data-bind="click:createFunction"><@spring.message "hap.new"/></span>
+                                   <span class="btn btn-success" style="float:left; margin-left:15px;" onclick="deleteData()"><@spring.message "hap.delete"/></span>
+                               </div>
+                                <div style="clear:both">
+                                    <div id="compensateEntryGrid"></div>
+                                </div>
+                            </div>
+                            <script>kendo.bind($('#compensateEntry-toolbar-btn'), viewModel);</script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            kendo.bind($('#page-content'), viewModel);
+
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hmall/as/compensate/entry/selectCompensateEntryById?compensateId="+receiptOrderId,
+                        type: "POST",
+                        dataType: "json"
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "compensateEntryId",
+                        fields: {
+                            lineNumber: {editable: false},
+                            quantity: {editable: false},
+                            totalFee: {editable: false},
+                            unitFee: {
+                                type: "number"
+                            }
+                        }
+                    }
+                }
+            });
+
+            var _grid_ = $("#compensateEntryGrid").kendoGrid({
+                dataSource: dataSource,
+                resizable: true,
+                navigatable: true,
+                rownumber: true,
+                selectable: 'multiple, rowbox',
+                scrollable: true,
+                sortable: true,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "compensateEntryId",
+                        title: '订单行ID',
+                        width: 120,
+                        hidden: true
+                    },
+                    {
+                        field: "lineNumber",
+                        title: '<@spring.message "行序号"/>',
+                        width: 80
+                    },
+                    {
+                        field: "compensateType",
+                        title: '<@spring.message "赔付费用类型"/>',
+                        width: 120,
+                        template: function (dataItem) {
+                            var v = dataItem.compensateType;
+                            if (v == null) {
+                                v = "COMPENSATE_FEE";
+                            }
+                            $.each(compensateType, function (i, n) {
+                                if (n.value == v) {
+                                    v = n.meaning;
+                                    return v;
+                                }
+                            });
+                            return v;
+                        },
+                        editor: function (container, options) {
+                        $('<input name="compensateType" style="background-color: #fbeed5"/>')
+                            .appendTo(container)
+                            .kendoDropDownList({
+                                dataTextField: "meaning",
+                                dataValueField: "value",
+                                valuePrimitive: true,
+                                dataSource: compensateType
+                            }).data("kendoDropDownList");
+                        }
+                    }, {
+                        field: "quantity",
+                        title: '<@spring.message "数量"/>',
+                        width: 80,
+                        template: function (dataItem) {
+                            var v = 1;
+                            return v;
+                        }
+                    }, {
+                        field: "unit",
+                        title: '<@spring.message "单位"/>',
+                        width: 80,
+                        template: function (dataItem) {
+                            var v = dataItem.unit;
+                            if (v == null) {
+                                v = "PC";
+                            }
+                            $.each(unitType, function (i, n) {
+                                if (n.code == v) {
+                                    v = n.description;
+                                    return v;
+                                }
+                            });
+                            return v;
+                        },
+                        editor: function (container, options) {
+                            $('<input name="unit" style="background-color: #fbeed5"/>')
+                            .appendTo(container)
+                            .kendoDropDownList({
+                                dataTextField: "description",
+                                dataValueField: "code",
+                                valuePrimitive: true,
+                                dataSource: unitType
+                            }).data("kendoDropDownList");
+                        }
+                    }, {
+                        field: "unitFee",
+                        title: '<@spring.message "单价"/>',
+                        width: 80,
+                        template: function (dataItem) {
+                            var v = dataItem.unitFee;
+                            if(v == null){
+                                v = 0;
+                            }
+                            if (v < 0) {
+                                v = 0;
+                            }
+                            return v;
+                        }
+                    }, {
+                        field: "totalFee",
+                        title: '<@spring.message "总价"/>',
+                        width: 80
+                    }, {
+                        field: "note",
+                        title: '<@spring.message "订单行备注"/>',
+                        width: 150
+                    }
+                ],
+                editable: true
+            }).data("kendoGrid");
+
+            $(function(){
+                selectCompensate();
+            });
+
+
+            //获取赔付单信息
+            function selectCompensate() {
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hmall/as/compensate/selectCompensateById?compensateId=' + receiptOrderId,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (data) {
+                        if (data.success) {
+                            var a0 = data.rows[0] || {};
+                            for (var k in a0) {
+                                viewModel.model.set(k, a0[k]);
+                            }
+                            var userName = "${Session.userName}";
+                            viewModel.model.set("cs", userName);
+                            viewModel.model.set("linksCode", linksCode);
+                        }
+                    }
+                });
+            }
+
+            //保存
+            function saveReturnOrder() {
+                var data = {};
+                viewModel.model.set("orderId", orderId);
+                data = viewModel.model.toJSON();
+                data.serviceOrderId = serviceOrderId;
+                data.asCompensateEntryList = _grid_.dataSource._data;
+                var validator = $("#forms").kendoValidator().data("kendoValidator");
+                if (validator.validate()) {
+                    $.ajax({
+                        url: "${base.contextPath}/hmall/as/compensate/saveCompensate",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: kendo.stringify([data]),
+                        error: function (request) {
+                            alert("Connection error");
+                        },
+                        success: function (data) {
+                            if (data.success) {
+                                var a0 = data.rows[0];
+                                for (var k in a0) {
+                                    viewModel.model.set(k, a0[k]);
+                                }
+                                kendo.ui.showInfoDialog({
+                                    message: "<@spring.message 'hap.tip.success'/>",
+                                });
+                            } else {
+                                kendo.ui.showInfoDialog({
+                                    message: data.message
+                                });
+                            }
+                            selectCompensate();
+                            $('#compensateEntryGrid').data('kendoGrid').dataSource.page(1);
+                        }
+                    });
+                }
+            }
+            //删除赔付单行表格数据
+            function deleteData() {
+                kendo.ui.showConfirmDialog({
+                    title: $l('hap.tip.info'),
+                    message: $l('是否删除选择的赔付单行？')
+                }).done(function (event) {
+                    if (event.button == 'OK') {
+                        var selections = _grid_.selectedDataItems();
+                        $.ajax({
+                            url: BaseUrl + "/hmall/as/compensate/entry/deleteCompensateEntryById",
+                            type: 'post',
+                            dataType: 'json',
+                            contentType: "application/json",
+                            async: false,
+                            data: JSON.stringify(selections),
+                            success: function (result) {
+                                if (result.success) {
+                                    kendo.ui.showInfoDialog({
+                                        message: "删除成功"
+                                    });
+                                } else {
+                                    kendo.ui.showInfoDialog({
+                                        message: data.message
+                                    });
+                                }
+                            }
+                        });
+                        selectCompensate();
+                        $('#compensateEntryGrid').data('kendoGrid').dataSource.page(1);
+                    }
+                });
+            }
+            //自动根据当前屏幕大小调整表格
+            Hap.autoResizeGrid("#compensateEntryGrid");
+        </script>
+    </body>

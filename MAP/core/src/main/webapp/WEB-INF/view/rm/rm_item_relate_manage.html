@@ -1,0 +1,1350 @@
+<#include "../include/header.html">
+<#--
+    * description: BOM树 选配约束关系维护(新)
+    * author:yanjie.zhang@hand-china.com
+    * 2017/06/20
+    * version: 0.1
+    *
+--><link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.base.css" type="text/css"/>
+<link rel="stylesheet" href="${base.contextPath}/resources/jqwidgets/styles/jqx.bootstrap.css" type="text/css"/>
+<#--<script type="text/javascript" src="${base.contextPath}/resources/jquery-1.11.1.min.js"></script>-->
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcore.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdata.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxbuttons.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxscrollbar.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdatatable.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxtreegrid.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxcheckbox.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxlistbox.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/jqwidgets/jqxdropdownlist.js"></script>
+<script type="text/javascript" src="${base.contextPath}/resources/demos.js"></script>
+<!--进度条-->
+<link rel="stylesheet" href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.css">
+<script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.js"></script>
+</head>
+  <body>
+        <style>
+            .select-bar {
+                box-shadow: inset 0 1px 1px #ccc;
+                width: 100%;
+            }
+
+            .select-bar option {
+                color: #1a1a1a;
+            }
+
+            div.k-widget.k-tooltip{
+                width:80px;
+            }
+            .jqx-cell {
+                -moz-border-bottom-colors: none;
+                -moz-border-left-colors: none;
+                -moz-border-right-colors: none;
+                -moz-border-top-colors: none;
+                border-collapse: separate;
+                border-color: transparent;
+                border-image: none;
+                border-spacing: 0;
+                border-style: solid;
+                border-width: 0 1px 1px 0;
+                box-sizing: border-box;
+                line-height: 1.5;
+                margin: 0;
+                min-height: 23px;
+                overflow: hidden;
+                padding: 6px 4px;
+                text-overflow: ellipsis;
+                white-space: normal;
+            }
+            .jqx-widget-bootstrap .jqx-grid-cell-bootstrap, .jqx-widget-bootstrap .jqx-grid-column-header-bootstrap, .jqx-widget-bootstrap .jqx-grid-group-cell {
+                border-color: #e7ecf1;
+            }
+
+            .k-state-selected {
+                background-color: #42a5f5;
+                color: #fff;
+            }
+        </style>
+        <script src="${base.contextPath}/resources/js/mask.js"></script>
+
+        <script src="${base.contextPath}/common/code?relationRm=HAP_RM_RELATION_CODE"
+                type="text/javascript"></script>
+
+        <script src="${base.contextPath}/common/code?rmTypeCode=HAP_RM_TYPE_CODE"
+        type="text/javascript"></script>
+
+        <script src="${base.contextPath}/common/code?relateGroup=HAP_RM_RELATE_GROUP"
+                type="text/javascript"></script>
+
+        <script type="text/javascript">
+            /*平台ID及平台名称，在进入页面时选择赋值*/
+            var  platformId;
+            var  platformName;
+            //展开关闭
+            function expandAllFunction(){
+                NProgress.start();
+                $("#treeGrid").jqxTreeGrid('expandAll');
+                NProgress.done();
+            };
+
+            function compressAllFunction(){
+                NProgress.start();
+                $("#treeGrid").jqxTreeGrid('collapseAll');
+                NProgress.done();
+            };
+            <!--  选配关系头model   -->
+            var relationModel = kendo.observable({
+                model: {
+
+                },
+                createFunction: function () {
+                    $('#relationGrid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#relationGrid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#relationGrid').data('kendoGrid').dataSource.page(1);
+                },
+                deleteFunction : function(e) {
+                    /*debugger;*/
+                    /* 假删除操作，将数据delete_flag更新为Y*/
+                    var checked = relationGrid.selectedDataItems();
+                    /*console.log(checked);*/
+                    if(relationGrid.selectedDataItems().length){
+                        kendo.ui.showConfirmDialog({
+                            title:$l('hap.tip.info'),
+                            message: $l('hap.tip.delete_confirm')
+                        }).done(function (event) {
+                            if (event.button == 'OK') {
+                                $.each(checked,function(i,v){
+
+                                    v.deleteFlag = 'Y';
+                                    relationGrid.dataSource.remove(v)
+                                })
+                                relationGrid.dataSource.sync();
+                            }
+                        })
+                    }
+                },
+            });
+
+            <!-- 选配关系行表model  -->
+            var rtlviewModel = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#relationLineGrid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#relationLineGrid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#relationLineGrid').data('kendoGrid').dataSource.page(1);
+                },
+                deleteFunction : function(e) {
+
+                    /* 假删除操作，将数据delete_flag更新为Y*/
+                    var checked = relationLineGrid.selectedDataItems();
+                   /* console.log(checked);*/
+                    if(relationLineGrid.selectedDataItems().length){
+                        kendo.ui.showConfirmDialog({
+                            title:$l('hap.tip.info'),
+                            message: $l('hap.tip.delete_confirm')
+                        }).done(function (event) {
+                            if (event.button == 'OK') {
+                                $.each(checked,function(i,v){
+                                    v.deleteFlag = 'Y';
+                                    relationLineGrid.dataSource.remove(v);
+                                })
+                                relationLineGrid.dataSource.sync("");
+                            }
+                        })
+                    }
+                },
+            });
+            //确认选定平台后触发事件  @author yanjie.zhang@hand-china.com
+            function confirmPlatform(option) {
+                $("#mask1").hide();
+                startMask("Bom生成中...","");
+
+                var selectData = option.gridData;
+                /**start**/
+                //给平台ID及平台名称设置默认值，全局可用  @author heng.zhang04@hand-china.com
+                platformId = selectData.itemId;
+                platformName=selectData.itemName;
+                /**end**/
+                //加载关系维护grid
+                loadRelationHeader(platformId);
+                var description = selectData.description;
+
+                var window = $("#platformWindow");
+                window.data("kendoWindow").close();
+
+                historyViewModel.model.set("itemId",platformId);
+                historyViewModel.model.set("description",description);
+                //加载bom树
+                setTimeout(function(){
+                    loadTree();
+
+                //插入访问平台历史记录
+                $.ajax({
+                    type: 'POST',
+                    url: '${base.contextPath}/hap/rm/item/history/insertHistory',
+                    dataType: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data:  kendo.stringify(historyViewModel.model),
+                    success: function (data) {
+                    },
+                    error: function (data) {
+
+                    }
+
+                });
+                //加载历史记录表
+                loadHisGrid();
+                },1000);
+            };
+            //点选事件
+            $("#treeGrid").on('rowSelect', function (event) {
+                console.log(event);
+                // event arguments
+                var args = event.args;
+                // row data
+                var dataItem  = args.row;//获取选中的值
+                var formData = viewModel.model.toJSON();
+                for ( var k in formData) {
+                    //对checkBox进行处理
+                    if(k === "fictionsFlag" || k === "configurableFlag" ){
+                        if(dataItem[k] == null){
+                            viewModel.model.set(k, 'N');
+                        }else{
+                            viewModel.model.set(k, dataItem[k]);
+                        }
+                    }else{
+                        viewModel.model.set(k, dataItem[k]);
+                    }
+
+                }
+                //由于viewModel.model类型本身有uid，所以uid存在viewmodel中，用于后面获取当前选中行的dataItem
+                //并设置标志位，为true，表示当前编辑的数据是未修改的数据
+                viewModel.set("uid",dataItem.uid);
+                viewModel.set("isNew",true);
+                //对select控件进行初始化和加载
+                viewModel.set("isNew",true);
+            });
+
+
+            function loadTree(){
+                $(document).ready(function() {
+                    $.ajax({
+                        url: "${base.contextPath}/hap/mdm/bom/selectRmTree?platformId="+platformId,
+                        contentType: "application/json",
+                        async: false,
+                        type: "POST",
+                        success: function (data) {
+                            endMask();
+                            dataJson = data.rows;
+                        }
+                    });
+                    var source =
+                            {
+                                dataType: "json",
+                                dataFields: [
+                                    {name: 'bomId', type: 'number'},
+                                    {name: 'itemId', type: 'number'},
+                                    {name: 'parentItemId', type: 'number'},
+                                    {name: 'infaceId', type: 'number'},
+                                    {name: 'matnr', type: 'string'},
+                                    {name: 'werks', type: 'string'},
+                                    {name: 'stlan', type: 'string'},
+                                    {name: 'bmeng', type: 'string'},
+                                    {name: 'postp', type: 'string'},
+                                    {name: 'posnr', type: 'string'},
+                                    {name: 'idnrk', type: 'string'},
+                                    {name: 'menge', type: 'string'},
+                                    {name: 'meins', type: 'string'},
+                                    {name: 'hierarchy', type: 'number'},
+                                    {name: 'deleteFlag', type: 'string'},
+                                    {name: 'item'},
+                                    {name: 'itemCode', type: 'string'},
+                                    {name: 'itemName', type: 'string'},
+                                    {name: 'subBomList', type: 'array'}
+                                ],
+/*                                hierarchy: {
+                                    keyDataField: {name: 'itemId'},
+                                    parentDataField: {name: 'parentItemId'}
+                                },
+                                id: 'itemId',*/
+                                hierarchy:
+                                        {
+                                            root: 'subBomList'
+                                        },
+                                id: 'bomId',
+                                localData: dataJson
+                            };
+
+                    dataAdapter = new $.jqx.dataAdapter(source);
+
+                    var treeGrid = $("#treeGrid").jqxTreeGrid(
+                            {
+                                height:600,
+                                width:350,
+                                source: dataAdapter,
+                                sortable: true,//可拍续
+                                theme: "bootstrap",//主题
+                                hierarchicalCheckboxes: true,//选子，相应的父是否变化
+                                altRows: true,//隔行变色
+                                checkboxes: false,
+                                columnsResize: true,//自动调节列
+                                autoRowHeight: true,//自动调高
+                                filterable: true,
+                                editable: true,
+                                ready: function () {
+                                    // expand row with 根节点id
+                                    $("#treeGrid").jqxTreeGrid('expandRow', 32);
+                                },
+                                columns: [
+                                    {text: '物料编码', dataField: 'itemCode', minWidth: 100, pinned: false},//pinned 固定
+                                    {text: '物料名称', dataField: 'itemName', minWidth: 100, pinned: false},
+                                    {text: '数量', dataField: 'menge', minWidth: 50, pinned: false},
+                                    {text: '物料类型', dataField: 'postp', minWidth: 100, pinned: false},
+                                    {text: '单位', dataField: 'meins', minWidth: 50, pinned: false},
+                                    {text: '备货类型', dataField: 'stlan', minWidth: 100, pinned: false}
+                                ]
+                            });
+                    endMask();
+
+                });
+                //数据加载完成事件
+
+            };
+            //treeGrid查询时触发
+            $('#treeGrid').on('filter', function (event) {
+                var filterGroups = event.args.filters;
+                console.log(filterGroups);
+                var filterInfo = "";
+                for (var x = 0; x < filterGroups.length; x++) {
+                    var filterDataField = filterGroups[x].datafield;
+                    var filterGroup = filterGroups[x].filter;
+                    var filterOperator = filterGroup.operator;
+                    var filters = filterGroup.getfilters();
+
+                    filterInfo += "\nData Field: " + filterDataField;
+                    filterInfo += "\nOperator: " + filterOperator;
+
+                    for (var m = 0; m < filters.length; m++) {
+                        var filter = filters[m];
+                        var value = filter.value;
+                        var condition = filter.condition;
+                        var operator = filter.operator;
+                        var type = filter.type;
+                        if(type!=null&&type!=""){
+                            $("#treeGrid").jqxTreeGrid('expandAll');
+                        }
+                    }
+                }
+            });
+            //历史记录model  yanjie.zhang@hand-china.com
+            var historyViewModel = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#Grid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#Grid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+
+            //点选事件
+            $("#treeGrid").on('rowSelect', function (event) {
+                console.log(event);
+                // event arguments
+                var args = event.args;
+                // row data
+                var dataItem  = args.row;//获取选中的值
+                var formData = viewModel.model.toJSON();
+                for ( var k in formData) {
+                    //对checkBox进行处理
+                    if(k === "fictionsFlag" || k === "configurableFlag" ){
+                        if(dataItem[k] == null){
+                            viewModel.model.set(k, 'N');
+                        }else{
+                            viewModel.model.set(k, dataItem[k]);
+                        }
+                    }else{
+                        viewModel.model.set(k, dataItem[k]);
+                    }
+
+                }
+                //由于viewModel.model类型本身有uid，所以uid存在viewmodel中，用于后面获取当前选中行的dataItem
+                //并设置标志位，为true，表示当前编辑的数据是未修改的数据
+                viewModel.set("uid",dataItem.uid);
+                viewModel.set("isNew",true);
+                //对select控件进行初始化和加载
+                viewModel.set("isNew",true);
+            });
+            //根据teelist中选择的数据项初始化页面
+
+
+
+/*            function selectDataItem() {
+                //获取在树上选择到的数据
+                var treeList = $("#treeList").data("kendoTreeList");
+                var row = treeList.select();
+                return treeList.dataItem(row);
+            }*/
+
+            //
+            function updateDataToSource(dataItem){
+                if(dataItem === undefined || dataItem === null){
+                    return null;
+                }
+                var formData = viewModel.model.toJSON();
+
+                for ( var k in formData) {
+                    dataItem.set(k, viewModel.model[k]);
+                }
+
+            }
+
+            //设置数据是否被更改
+            function setOld(){
+                viewModel.set("isNew", false);
+            }
+
+            //获取分屏需要的全屏参数
+            function divFullScreen(){
+                var width = $(window).width();//计算屏幕的宽度
+                var height = $(window).height();
+                $('#main').width(width-40);//设置div的宽度等于屏幕的宽度
+                $('#main').height(height-20);//设置div的宽度等于屏幕的宽度
+            }
+        </script>
+
+        <div class="container"
+             style="width: auto; margin: 10px 0px 0px 0px; height: 100%">
+            <div id="mask1" style="opacity: 0.3;filter:alpha(opacity=30); background-color: #e0e0e0;z-index:100;right: 0px;left: 0px;top: 0px;bottom: 0px;position: absolute;" >
+            </div>
+
+
+            <div id="main">
+
+                <div id="left" style="padding: 0px" class="row">
+                    <div class="panel-body" style="padding: 5px;">
+                        <div id="right-grid" style="margin-top: 5px"class="col-sm-12">
+                            <div id="toolbar-btn">
+                          <span id="expandAll" class="btn btn-primary" onclick="expandAllFunction()">
+                          <i class="fa fa-expand" style="margin-right:3px;"></i>展开全部</span>
+                                <span id="collapseAll" class="btn btn-warning" onclick="compressAllFunction()">
+                            <i class="fa fa-compress" style="margin-right:3px;"></i>收缩全部</span>
+                            </div>
+
+                            <div id="treeGrid" style="height: 100%;margin-top:10px"></div>
+                        </div>
+
+                        <!-- 历史访问记录表 -->
+                        <div class="row" style="margin-left: 20px">
+                            <div class="row">
+                                <div class=""   style="padding-bottom:10px;">
+                                    <h4 style="float:left;margin-right:5px;">访问平台历史记录</h4>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div style="clear:both">
+                                    <div id="historyGrid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="right">
+                    <div class="row" id="page-item-all"
+                         style="position: relative; margin: 0px; min-height: 300px">
+                        <!--选配关系维护增删按钮-->
+                        <div id="page-content">
+                            <div class="pull-left" id="gird-toolbar-btn" style="padding-bottom:10px;">
+                                <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" data-bind="click:createFunction"><@spring.message "hap.new"/></span>
+                                <span class="btn btn-success k-grid-save-changes" data-bind="click:saveFunction" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+                                <span class="btn btn-danger" data-bind="click:deleteFunction" style="float:left;margin-right:5px;"><@spring.message "hap.delete"/></span>
+                                <span  onclick="importExcel()" class="btn btn-default" style="float:left;margin-left: 5px"><i class="fa fa-file-excel-o"></i><@spring.message "hap.execlImport"/></span>
+                                <!--<span onclick="deleteRelationData()" class="btn btn-danger" style="float:left;"><@spring.message "hap.delete"/></span>-->
+                            </div>
+                            <!-- 绑定操作行  -->
+                            <script> kendo.bind($('#gird-toolbar-btn'), relationModel);</script>
+                            <!--选配关系维护查询按钮-->
+                            <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+                                <!--  可配置包查询LOV -->
+                                <input id="itemIdLov" required data-bind="value:model.itemId,text:model.itemName" style="width: 150px;" />
+                                <script>
+                                    $("#itemIdLov").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "MAP_RM_ITEM_LOV")},{
+                                        query: function(e) {
+                                            /* 此处拿的是进入页面选取的平台ID*/
+                                            e.param['platformId'] =platformId;
+                                        },
+                                    }));
+                                </script>
+                                <!--关系类型-->
+                                <input type="text" style="width:150px;" placeholder='<@spring.message "rmitemrelateb.relategroup"/>'
+                                   id="relationCodeKB"    data-bind="value:model.relateGroup" >
+                                <script type="text/javascript">
+
+                                    $("#relationCodeKB").kendoComboBox({
+                                        optionLabel: "----",
+                                        dataSource     :relateGroup,
+                                        valuePrimitive : true,
+                                        dataTextField  : "meaning",
+                                        dataValueField : "value",
+                                    });
+
+                                </script>
+                                <span class="btn btn-primary" style="width:30px" data-bind="click:queryResource" type="submit"><@spring.message "hap.query"/></span>
+                                <div style="clear:both"></div>
+                            </div>
+                           <!-- 绑定查询 -->
+                            <script>kendo.bind($('#query-form'), relationModel);</script>
+                            <div style="clear:both">
+                                <div id="relationGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 选配关系行表  -->
+                    <div class="row"
+                         style="position: relative; margin: 0px; min-height: 400px">
+                        <!--选配关系行维护增删按钮-->
+                        <div >
+                            <div class="pull-left" id="line-toolbar" style="padding-bottom:10px;">
+                                <span class="btn btn-primary k-grid-add" style="float:left;margin-right:5px;" data-bind="click:createFunction"><@spring.message "hap.new"/></span>
+                                <span class="btn btn-success k-grid-save-changes" data-bind="click:saveFunction" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></span>
+                                <span class="btn btn-danger" data-bind="click:deleteFunction" style="float:left;margin-right:5px;"><@spring.message "hap.delete"/></span>
+                            </div>
+                            <script>kendo.bind($('#line-toolbar'), rtlviewModel);</script>
+                            <!--选配关系维护查询按钮-->
+                            <div class="pull-right"  style="padding-bottom:10px;">
+                                <div style="clear:both"></div>
+                            </div>
+                            <!-- <script>kendo.bind($('#query-form'), relationModel);</script>-->
+                            <div style="clear:both">
+                                <div id="relationLineGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+        <!-- 导入导出的execl Window -->
+        <div id="excelWindow"></div>
+        <script>
+            /* 物料关系grid*/
+            var BaseUrl = "${base.contextPath}";
+            /*将关系grid封装在方法里，只有前台选好平台后，拿到平台id才查询*/
+
+             //加载选配关系头表（关联）
+             function loadRelationHeader(selectPlatformId) {
+                 relationSource = new kendo.data.DataSource({
+                     transport: {
+                         read: {
+                             url: BaseUrl + "/hap/rm/item/relate/queryRelationHeaderB",
+                             type: "POST",
+                             dataType: "json",
+                             async:false
+                         },
+                         update: {
+                             url: BaseUrl + "/hap/rm/item/relate/submit",
+                             type: "POST",
+                             contentType: "application/json"
+                         },
+                         destroy: {
+                             url: BaseUrl + "/hap/rm/item/relate/submit",
+                             type: "POST",
+                             contentType: "application/json"
+                         },
+                         create: {
+                             url: BaseUrl + "/hap/rm/item/relate/submit",
+                             type: "POST",
+                             contentType: "application/json"
+                         },
+                         parameterMap: function (options, type) {
+                             relationModel.model.set("platformId",selectPlatformId);
+                             if (type !== "read" && options.models) {
+                                 var datas = Hap.prepareSubmitParameter(options, type)
+                                 return kendo.stringify(datas);
+                             } else if (type === "read") {
+                                 return Hap.prepareQueryParameter(relationModel.model.toJSON(), options)
+                             }
+                         }
+                     },
+                     batch: true,
+                     serverPaging: true,
+                     pageSize: 10,
+                     schema: {
+                         data: 'rows',
+                         total: 'total',
+                         model: {
+                             id: "relateId",
+                             fields: {
+                                 platformName:{defaultValue:platformName},
+                                 relateCode:{defaultValue:'CAN'},
+                                 typeCode:{defaultValue:'NULL'},
+                                 platformId:{defaultValue:platformId},
+                                 attrId:{validation:{
+                                     attrId:function(input){
+                                         if(input.is("[name=attrId]")&&input.val()==""){
+                                             input.attr("data-attrId-msg","必填!");
+                                             return false;
+
+                                         }
+                                         return true;
+                                     }
+                                 }},
+                                 itemId:{validation:{
+                                     itemId:function(input){
+                                         if(input.is("[name=itemId]")&&input.val()==""){
+                                             input.attr("data-itemId-msg","必填!");
+                                             return false;
+
+                                         }
+                                         return true;
+                                     }
+                                 }
+
+                                 },
+                                 attrValue:{validation:{
+                                     attrValue:function(input){
+                                         if(input.is("[name=attrValue]")&&input.val()==""){
+                                             input.attr("data-attrValue-msg","必填!");
+                                             return false;
+
+                                         }
+                                         return true;
+                                     }
+                                 }
+
+                                 },
+                                 itemId2:{validation:{
+                                     itemId2:function(input){
+                                         if(input.is("[name=itemId2]")&&input.val()==""){
+                                             input.attr("data-attrId2-msg","必填!");
+                                             return false;
+
+                                         }
+                                         return true;
+                                     }
+                                 }
+
+                                 },
+                                 attrId2:{validation:{
+                                     attrId2:function(input){
+                                         if(input.is("[name=attrId2]")&&input.val()==""){
+                                             input.attr("data-attrId2-msg","必填!");
+                                             return false;
+
+                                         }
+                                         return true;
+                                     }
+                                 }},
+                                 attrValue2:{validation:{
+                                     attrValue2:function(input){
+                                         if(input.is("[name=attrValue2]")&&input.val()==""){
+                                             input.attr("data-attrValue2-msg","必填!");
+                                             return false;
+
+                                         }
+                                         return true;
+                                     }
+                                 }
+
+                                 },
+                             },
+                             editable:function(col){
+                                 if(col=="platformId"||col=="typeCode"){
+                                     return false;
+                                 }else{
+                                     return true;
+                                 }
+                             }
+
+                         }
+                     }
+                 });
+                 /*选配关系grid*/
+                  relationGrid=  $("#relationGrid").kendoGrid({
+                     dataSource: relationSource,
+                     height: '270px',
+                     rownumber:true,
+                     resizable: true,
+                     scrollable: true,
+                     navigatable: false,
+                     columnMenu:true,// 实现列显示与否
+                     reorderable:true,//调整列位置
+                     selectable: 'multiple, rowbox',
+                     pageable: {
+                         pageSizes: [5, 10, 20, 50],
+                         refresh: true,
+                         buttonCount: 5
+                     },
+                     columns: [
+                         {   /*平台*/
+                             field: "platformId",
+                             title: '<@spring.message "map.platformname"/>',
+                             width: 120,
+                             template        : function (dataItem) {
+                                 return dataItem['platformName'] || ''
+                             },
+                         },
+                         {   /*配置关系头属性组*/
+                             field: "relateGroup",
+                             title: '<@spring.message "RmItemRelateB.relateGroup"/>',
+                             width: 120,
+                             template: function(dataItem){
+                                 var v = dataItem.relateGroup;
+                                 $.each(relateGroup,function(i,n){
+                                     if(n.value == v){
+                                         v = n.meaning;
+                                         return v;
+                                     }
+                                 })
+                                 return v|| '';
+                             },
+                             editor: function(container, options){
+                                 $('<input name="' + options.field + '"/>')
+                                         .appendTo(container)
+                                         .kendoDropDownList({
+                                             dataTextField: "meaning",
+                                             dataValueField: "value",
+                                             valuePrimitive: true,
+                                             dataSource:relateGroup,
+                                         });
+                             }
+                         },
+                         {    /*关联配置包*/
+                             field: "itemId2",
+                             title: '<@spring.message "map.itemName2"/>',
+                             width: 120,
+                             template        : function (dataItem) {
+                                 return dataItem['itemName2'] || ''
+                             },
+                             editor          : function (container, options) {
+                                 $('<input name="' + options.field + '"/>')
+                                         .appendTo(container)
+                                         .kendoLov($.extend(<@lov "MAP_RM_ITEM_LOV"/>,{
+                                     textField: 'itemName2',
+                                     valueField:'itemId2',
+
+                                     query: function(e) {
+                                         /* 此处拿的是进入页面选取的平台ID*/
+                                         e.param['platformId'] =platformId;
+                                         /* 点击关联配置包，不出现前面配置包*/
+
+                                     },
+                                     select:function(e){
+
+                                         options.model.set('itemId2',e.item.itemId);
+
+                                     },
+                                     change : function(e) {
+                                         //如果改变，则对应的下级lov应该清空
+                                         options.model.set('attrId2','');
+                                         options.model.set('attrName2','');
+                                         options.model.set('attrValue2','');
+                                         options.model.set('attrValueName2','');
+                                         relationGrid.refresh();
+                                     },
+                                     model    : options.model,
+
+                                 }));
+                             }
+                         },
+                         {    /*关联配置属性*/
+                             field: "attrId2",
+                             title: '<@spring.message "map.attrName2"/>',
+                             width: 120,
+                             template        : function (dataItem) {
+
+                                 return dataItem['attrName2'] || ''
+                             },
+                             editor          : function (container, options) {
+                                 $('<input name="' + options.field + '"/>')
+                                         .appendTo(container)
+                                         .kendoLov($.extend(<@lov "HAP_RM_ATTR_HEART_LOV"/>,{
+                                     textField: 'attrName2',
+                                     valueField:'attrId2',
+                                     model    : options.model,
+                                     query: function(e) {
+                                         /* 此处拿的前面配置包选取后拿到的itemId*/
+                                         e.param['itemId'] =platformId;
+
+                                     },
+                                     select:function(e){
+                                         options.model.set('headerId2',e.item.headerId);
+
+                                         /* console.log(e.item.headerId);*/
+                                     },
+                                     change : function(e) {
+                                         options.model.set('attrValue2','');
+                                         options.model.set('attrValueName2','');
+                                         relationGrid.refresh();
+                                     },
+
+                                 }));
+                             }
+                         },
+                         {  /* 关联属性值*/
+                             field: "attrValue2",
+                             title: '<@spring.message "map.attrValueName2"/>',
+                             width: 120,
+                             template        : function (dataItem) {
+                                     return dataItem['attrValueName2'] || ''
+                             },
+                             editor : function (container, options) {
+                                 if(options.model.headerId2==-1||options.model.attrId2==-1){
+                                     $('<input name="' + options.field + '"/>')
+                                             .appendTo(container)
+                                             .kendoLov($.extend(<@lov "HAP_RM_ITEM_CODE_LOV"/>,{
+                                                 textField: 'itemName',
+                                                 valueField:'itemCode',
+                                                 model    : options.model,
+                                                 query: function(e) {
+                                                     /* 此处拿的前面配置包选取后拿到的itemId*/
+                                                     e.param['platformId'] =platformId;
+                                                     e.param['chooseItemId']=options.model.itemId2;
+
+                                                 },
+                                                 select:function(e){
+                                                     options.model.set("attrValueName2",e.item.itemName);
+                                                     options.model.set('attrValue2',e.item.itemCode);
+                                                 },
+                                                 change : function(e) {
+
+                                                 },
+                                             }));
+
+                                 }else{
+                                     $('<input name="' + options.field + '"/>')
+                                             .appendTo(container)
+                                             .kendoLov($.extend(<@lov "HAP_RM_ATTR_VALUE_LOV"/>,{
+                                                 textField: 'attrValueName2',
+                                                 valueField:'attrValue2',
+                                                 model    : options.model,
+                                                 query: function(e) {
+                                                     /* 此处拿的前面配置包选取后拿到的itemId*/
+                                                     e.param['headerId'] =options.model.attrId2;
+
+                                                 },
+                                                 select:function(e){
+                                                     options.model.set("attrValueName2",e.item.lookupValue);
+                                                     /*options.model.set('headerId',e.item.headerId);*/
+                                                 },
+                                                 change : function(e) {
+
+                                                 },
+
+                                             }));
+                                 }
+
+                             }
+                         },
+                         {   /*关联关系代码*/
+                             field: "relateCode",
+                             title: '<@spring.message "RmItemRelateB.relateCode"/>',
+                             width: 120,
+                             template: function(dataItem){
+                                 var v = dataItem.relateCode;
+                                 $.each(relationRm,function(i,n){
+                                     if(n.value == v){
+                                         v = n.meaning;
+                                         return v;
+                                     }
+                                 })
+                                 return v;
+                             },
+                             editor: function(container, options){
+                                 $('<input name="' + options.field + '"/>')
+                                         .appendTo(container)
+                                         .kendoDropDownList({
+                                             dataTextField: "meaning",
+                                             dataValueField: "value",
+                                             valuePrimitive: true,
+                                             dataSource:relationRm,
+                                         });
+                             }
+                         },
+                         {   /*类型代码*/
+                             field: "typeCode",
+                             title: '<@spring.message "RmItemRelateB.typeCode"/>',
+                             width: 120,
+                             template: function(dataItem){
+                                 var v = dataItem.typeCode;
+                                 $.each(rmTypeCode,function(i,n){
+                                     if(n.value == v){
+                                         v = n.meaning;
+                                         return v;
+                                     }
+                                 })
+                                 return v;
+                             },
+                             /*editor: function(container, options){
+                                 $('<input name="' + options.field + '"/>')
+                                         .appendTo(container)
+                                         .kendoDropDownList({
+                                             dataTextField: "meaning",
+                                             dataValueField: "value",
+                                             valuePrimitive: true,
+                                             dataSource:rmTypeCode,
+                                         });
+                             }*/
+                         },
+                         /*{    /!*生效日期*!/
+                          field: "effectDate",
+                          title: '<@spring.message "RmItemRelateB.effectDate"/>',
+                          width: 120
+                          },*/
+                         /*{  /!* 失效日期*!/
+                          field: "endDate",
+                          title: '<@spring.message "RmItemRelateB.endDate"/>',
+                          width: 120
+                          },*/
+                         /*{  /!* 生效标识*!/
+                          field: "enableFlag",
+                          title: '<@spring.message "RmItemRelateB.enableFlag"/>',
+                          width: 120
+                          }*/
+                     ],
+                     editable: true
+                 }).data('kendoGrid');
+
+                 //添加表格行点击事件
+                 relationGrid.table.on("click", "tr", clickRelationTr);
+
+                 if(relationGrid._data.length>0){
+                     var firstRow =  $('#relationGrid').data('kendoGrid')._data[0];
+                     var relateId = firstRow.relateId;
+                     var itemId2 = firstRow.itemId2;
+                     loadRelationLine(relateId,itemId2);
+                 }else{
+                     var relateId = "";
+                     var itemId2 = "";
+                     loadRelationLine(relateId,itemId2);
+                 }
+             }
+
+
+             //点击物料关系头表行触发
+             function clickRelationTr() {
+                 var row = $(this).closest("tr");
+                 var dataItem = $('#relationGrid').data('kendoGrid').dataItem(row);
+                 if(dataItem.relateId == ""){
+                     loadRelationLine("","");
+                 }else{
+                     loadRelationLine(dataItem.relateId,dataItem.itemId2);
+                 }
+             }
+
+
+
+            //数据导入window
+            window.excelWindow = function(relationId){
+                var excelWindow = $("#excelWindow").kendoWindow({
+                    title: '选配约束关系的导入',
+                    content:"${base.contextPath}/rm/rm_item_relate_manage_excel.html",
+                    actions: [
+                   "Close"
+                    ],
+                    modal:true,
+                    visible:false,
+                    width:800,
+                    height:400,
+                    iframe:true,
+                    close: function() {
+                        //window 关闭  刷新 本页面的  Grid
+                        $('#relationGrid').data('kendoGrid').dataSource.page(1);
+                    }
+                }).data("kendoWindow");
+                excelWindow.center().open();
+            }
+
+            //查看平台历史表  @author yanjie.zhang@hand-china.com
+            historyDataSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hap/rm/item/history/selectHistory",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/hap/rm/item/history/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/hap/rm/item/history/remove",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/hap/rm/item/history/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+                            return Hap.prepareQueryParameter(null, options)
+                           // return;
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "historyId",
+                        fields: {}
+                    }
+                }
+            });
+
+
+
+        /**
+         * 物料关系行表
+         * @param relateId 关联id
+         */
+        function loadRelationLine(relateId,itemId) {
+            <!--   选配关系行表来源      -->
+            var BaseUrl = _basePath;
+            relationLineSource = new kendo.data.DataSource({
+                transport: {
+                    read: {
+                        url: BaseUrl + "/hap/rm/item/relate/line/queryReleteLine",
+                        type: "POST",
+                        dataType: "json"
+                    },
+                    update: {
+                        url: BaseUrl + "/hap/rm/item/relate/line/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    destroy: {
+                        url: BaseUrl + "/hap/rm/item/relate/line/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    create: {
+                        url: BaseUrl + "/hap/rm/item/relate/line/submit",
+                        type: "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function (options, type) {
+
+                        if (type !== "read" && options.models) {
+                            if(type==="create"){
+                                for(var i=0;i<options.models.length;i++){
+                                    options.models[i].relateId = relateId;
+                                }
+                            }
+                            var datas = Hap.prepareSubmitParameter(options, type)
+                            return kendo.stringify(datas);
+                        } else if (type === "read") {
+
+                            rtlviewModel.model.set('relateId',relateId);
+                            return Hap.prepareQueryParameter(rtlviewModel.model.toJSON(), options)
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging: true,
+                pageSize: 10,
+                schema: {
+                    data: 'rows',
+                    total: 'total',
+                    model: {
+                        id: "relateLineId",
+                        fields: {
+                            enableFlag:{defaultValue: 'Y',type: 'boolean',checkedValue:'Y',uncheckedValue:'N'}
+                        }
+                    }
+                }
+            });
+
+
+             relationLineGrid=  $("#relationLineGrid").kendoGrid({
+                dataSource: relationLineSource,
+                height: '370px',
+                rownumber:true,
+                resizable: true,
+                scrollable: true,
+                navigatable: false,
+                columnMenu:true,// 实现列显示与否
+                reorderable:true,//调整列位置
+                selectable: 'multiple, rowbox',
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {   /*可配置包*/
+                        field: "itemId",
+                        title: '<@spring.message "map.itemname"/>',
+                        width: 120,
+                        template        : function (dataItem) {
+                            return dataItem['itemName'] || ''
+                        },
+                        editor          : function (container, options) {
+                            $('<input name="' + options.field + '"/>')
+                                    .appendTo(container)
+                                    .kendoLov($.extend(<@lov "MAP_RM_ITEM_LOV"/>,{
+                                textField: 'itemName',
+                                valueField:'itemId',
+                                query: function(e) {
+                                    /* 此处拿的是进入页面选取的平台ID*/
+                                    e.param['platformId'] =platformId;
+                                    e.param['itemId'] = itemId;
+                                },
+                                select:function(e){
+                                    options.model.set('itemId',e.item.itemId);
+                                },
+                                change : function(e) {
+                                    options.model.set('attrId','');
+                                    options.model.set('attrName','');
+                                    options.model.set('attrValue','');
+                                    options.model.set('attrValueName','');
+                                    relationLineGrid.refresh();
+                                },
+                                model    : options.model,
+                            }));
+                        }
+                    },
+                    /*配置属性*/
+                    {
+                        field: "attrId",
+                        title: '<@spring.message "map.attrName"/>',
+                        width: 120,
+                        template: function (dataItem) {
+
+                            return dataItem['attrName'] || ''
+                        },
+                        editor          : function (container, options) {
+                            $('<input name="' + options.field + '"/>')
+                                    .appendTo(container)
+                                    .kendoLov($.extend(<@lov "HAP_RM_ATTR_HEART_LOV"/>,{
+                                textField: 'name',
+                                valueField:'headerId',
+
+                                query: function(e) {
+                                    /* 此处拿的前面配置包选取后拿到的平台ID*/
+                                    e.param['itemId'] =platformId;
+
+                                },
+                                select:function(e){
+                                    options.model.set('headerId',e.item.headerId);
+                                    options.model.set('attrName',e.item.name);//由于参数名与获取的不一样，故在此设值
+                                    /*relationModel.model.set("headerId",e.item.headerId);
+                                     console.log("配置属性"+e.item.headerId);*/
+                                },
+                                change : function(e) {
+
+                                    options.model.set('attrValue','');
+                                    options.model.set('attrValueName','');
+                                    relationLineGrid.refresh();
+                                },
+                                model    : options.model,
+
+                            }));
+                        }
+                    },
+                    {   /*配置属性值*/
+                        field: "attrValue",
+                        title: '<@spring.message "map.attrValueName"/>',
+                        width: 120,
+                        template: function (dataItem) {
+                            return dataItem['attrValueName'] || ''
+                        },
+                        editor : function (container, options) {
+                            if(options.model.headerId==-1||options.model.attrId==-1){
+                                options.model.attrValue_input = "";
+                                options.model.itemName = "";
+                                $('<input name="' + options.field + '"/>')
+                                        .appendTo(container)
+                                        .kendoLov($.extend(<@lov "HAP_RM_ITEM_CODE_LOV"/>,{
+                                            textField: 'itemName',
+                                            valueField:'itemCode',
+                                            model    : options.model,
+                                            query: function(e) {
+                                                /* 此处拿的前面配置包选取后拿到的itemId*/
+                                                e.param['platformId'] =platformId;
+                                                e.param['chooseItemId']=options.model.itemId2;
+
+                                            },
+                                            select:function(e){
+                                                options.model.set("attrValueName",e.item.itemName);
+                                                options.model.set('attrValue',e.item.itemCode);
+                                            },
+                                            change : function(e) {
+
+                                            },
+                                        }));
+
+                            }else{
+                                $('<input name="' + options.field + '"/>')
+                                        .appendTo(container)
+                                        .kendoLov($.extend(<@lov "HAP_RM_ATTR_VALUE_LOV"/>,{
+                                            textField: 'attrValueName2',
+                                            valueField:'attrValue2',
+                                            model    : options.model,
+                                            query: function(e) {
+                                                /* 此处拿的前面配置包选取后拿到的itemId*/
+                                                e.param['headerId'] =options.model.attrId;
+
+                                            },
+                                            select:function(e){
+                                                options.model.set("attrValueName",e.item.lookupValue);
+                                                /*options.model.set('headerId',e.item.headerId);*/
+                                            },
+                                            change : function(e) {
+
+                                            },
+
+                                        }));
+                            }
+
+                        }
+                    },
+                    {  /* 生效标识*/
+                        field: "enableFlag",
+                        title: '<@spring.message "hap.enableflag"/>',
+                        width: 120,
+                        headerAttributes: {
+                            "class": "table-header-cell",
+                            style: "text-align: center"
+                        },
+                        attributes: {style: "text-align:center"},
+                    }
+                ],
+                editable: true
+            }).data('kendoGrid');
+
+        }
+
+
+            //历史记录表  @author yanjie.zhang@hand-china.com
+            function loadHisGrid() {
+                $("#historyGrid").kendoGrid({
+                    dataSource: historyDataSource,
+                    height: '300px',
+                    resizable: true,
+                    scrollable: true,
+                    navigatable: false,
+                    pageable: {
+                        pageSizes: [5, 10, 20, 50],
+                        refresh: true,
+                        buttonCount: 5
+                    },
+                    columns: [
+                        {
+                            /** 登录ip **/
+                            field: "ip",
+                            title: '<@spring.message "hap.rmItemHistory.ip"/>',
+                            width: 120
+                        },
+                        {
+                            /** 登录用户 **/
+                            field: "userName",
+                            title: '<@spring.message "hap.rmItemHistory.userName"/>',
+                            width: 100
+                        },
+                        {
+                            /** 登录平台 **/
+                            field: "itemName",
+                            title: '<@spring.message "hap.rmItemHistory.itemName"/>',
+                            width: 100
+                        },
+                        {
+                            /** 访问时间 **/
+                            field: "qurtyDate",
+                            title: '<@spring.message "hap.rmItemHistory.qurtyDate"/>',
+                            width: 180
+                        },
+                        {
+                            /** 描述 **/
+                            field: "description",
+                            title: '<@spring.message "hap.rmItemHistory.description"/>',
+                            width: 120
+                        },
+                    ],
+                    editable: false
+                });
+            }
+
+            //导入
+            function importExcel(){
+                excelWindow();
+            }
+
+            var kendoTreeList;
+
+            //初始化加载
+            $(document).ready(function() {
+                //选择平台窗口  @author yanjie.zhang@hand-china.com
+                window.platformWindow = function(){
+                    var platformWindow = $("#platformWindow").kendoWindow({
+                        title: '平台选择',
+                        width: "680px",
+                        height :"380px",
+                        content:"${base.contextPath}/rm/platform_choose.html",
+                        actions: [
+                            "Pin",
+                            "Close"
+                        ],
+                        modal:true,
+                        visible:false,
+                        iframe:true,
+                        close: function() {
+                            //window 关闭  刷新 本页面的  Grid
+                            //$('#Grid').data('kendoGrid').dataSource.page(1);
+                        }
+                    }).data("kendoWindow");
+                    platformWindow.center().open();
+
+                }
+                //打开选择平台窗口
+                platformWindow();
+
+                //动态设置分屏div的大小
+                divFullScreen();//页面加载时全屏
+                $(window).bind('resize', function (){
+                    divFullScreen();//最大化，还原窗口大小时DIV尺寸跟着变化，不过最好在CSS里给这个DIV加个min-width等于html,body的最小宽度。
+                });
+
+                //初始化分屏布局
+                $("#main").kendoSplitter({
+                    orientation: "horizontal",
+                    panes: [ { size: "30%" }, {} ]
+                });
+
+/*                //绑定dom树到viewModel，这样才能将其管理起来
+                kendo.bind($('#left'), viewModel);
+                kendo.bind($('#right'), viewModel);
+                kendo.bind($('#main'), viewModel);*/
+
+            });
+
+
+        </script>
+        <!-- 选择平台窗口 -->
+        <div id="platformWindow"></div>
+        </body>
+    </html>

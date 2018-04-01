@@ -1,0 +1,11 @@
+{
+  //万能前缀，解决代码中调用完整url的需求
+  "generic": "http://",
+  "MAP": "http://10.5.30.101:8080/core/",
+  "HMALL": "http://10.5.30.100:5555",
+  "zmall": "http://10.5.72.7:8200",
+  "zmall_website": "http://test1.zest.com",
+  "M3D": "http://tcapi.zeststore.com",
+  "hpay": "http://10.5.72.18:7701",
+  "RRS": "http://27.223.99.200/rrs/route/access_orders.do"
+}

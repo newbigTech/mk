@@ -1,0 +1,120 @@
+<#--
+        * description: 短信模板
+        * author:shoupeng.wei
+        * 2017/8/2
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <script src="${base.contextPath}/common/code?sendTypeData=HMALL_SENDTYPE" type="text/javascript"></script>
+        <script type="text/JavaScript" src="${base.contextPath}/lib/ckeditor/ckeditor.js"></script>
+        <script type="text/javascript">
+            var id = '${RequestParameters.id!0}';
+            var code = '${RequestParameters.code!0}';
+            console.log("orderId",id);
+            var viewModel = kendo.observable({
+                model: {}
+            });
+            $.ajax({
+                type:"POST",
+                url:'${base.contextPath}/hmall/om/mailtemplate/queryByID?id='+id,
+                dataType: "json",
+                contentType:"application/json",
+                success:function (data) {
+                    if (data.success) {
+                        var a0 = data.rows[0] || {};
+                        for (var k in a0) {
+                            viewModel.model.set(k, a0[k]);
+                        }
+                        editor.setData(a0["msgTemplate"]);
+//                        $('#detailInfo > div:nth-child(3) > div.col-sm-8 > textarea').val(a0["msgTemplate"]);
+
+                    }
+                }
+
+            })
+
+            function saveFunction() {
+                viewModel.model.msgTemplate =  editor.document.getBody().getText();
+                $.ajax({
+                    type:"POST",
+                    url:'${base.contextPath}/hmall/om/mailtemplate/saveChange',
+                    dataType:"json",
+                    contentType:"application/json",
+                    data:kendo.stringify([viewModel.model.toJSON()]),
+                    success:function (data) {
+                        if(data.success){
+                            kendo.ui.showInfoDialog({
+                                message:"信息修改成功"
+                            })
+                        }
+                    }
+                })
+            }
+        </script>
+        <div id="page-content">
+            <div class="panel" style="height: 550px;">
+                <div class="panel-body" id="detailInfo">
+                        <div id="functionButton" class="col-sm-12" style="float: left;margin-bottom:15px;">
+                            <button class="btn btn-success k-grid-save-changes" onClick="saveFunction()" style="float:left;margin-right:5px;"><@spring.message "hap.save"/></button>
+                        </div>
+                        <div class="row">
+                                <div class="col-sm-4">
+                                    <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                        "模板编码:"/></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="k-textbox" style="width: 100%;background: #F5F5F5" readonly
+                                               data-role="maskedtextbox" id="code" data-bind="value:model.code"/>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                        "模板名称:"/></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="k-textbox" style="width: 100%;"
+                                               data-role="maskedtextbox" id="orderType"
+                                               data-bind="value:model.templateName"/>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <label class="control-label col-sm-4" style="margin-top: 5px;"><@spring.message
+                                        "发送类型:"/></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" id="sendtype" style="width: 100%;"
+                                               data-bind="value:model.sendtype" />
+                                    </div>
+                                    <script>
+                                        $("#sendtype").kendoDropDownList({
+                                            optionLabel: "发送类型",
+                                            dataTextField:"meaning",
+                                            dataValueField:"value",
+                                            valuePrimitive: true,
+                                            dataSource: sendTypeData
+                                        })
+                                    </script>
+                                </div>
+                            </div>
+                        <div class="row" style="margin-top:15px;">
+                            <div class="col-sm-1" style="margin-left:15px;">
+                                <label class="control-label" style="margin-top: 15px;"><@spring.message
+                                    "文本信息:"/></label>
+                            </div>
+                            <div class="col-sm-8" style="float:left;margin-left:20px;">
+                                <textarea id ='msgTemplate' class="ckeditor" rows="8" style="float:right;width:100%;resize:none"></textarea>
+                                <!--<textarea id="TextArea1" cols="20" rows="2" class="ckeditor"></textarea>-->
+                            </div>
+                            <script>
+                               var editor = CKEDITOR.replace('msgTemplate');
+
+                            </script>
+                        </div>
+
+                </div>
+                <script>
+                    kendo.bind($("#detailInfo"), viewModel);
+                </script>
+            </div>
+        </div>
+    </body>
+</html>

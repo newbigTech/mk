@@ -1,0 +1,202 @@
+<#--
+        * description: Hmall商品管理 品类管理 类品详情 商品添加
+        * author:xuxiaoxue@markor.com.cn
+        * 2017/06/02
+        * version: 0.1
+        -->
+    <#include "../include/header.html">
+        <script type="text/javascript">
+            /*商品*/
+            var viewModelCommodity = kendo.observable({
+                model: {},
+                createFunction: function () {
+                    $('#commodity_grid').data('kendoGrid').addRow();
+                },
+                saveFunction: function () {
+                    $('#commodity_grid').data('kendoGrid').saveChanges();
+                },
+                queryResource: function (e) {
+                   queryList();
+                }
+            });
+            /*接受商品类别页面传递过来的数据*/
+            var categoryId="${RequestParameters.categoryId}";
+
+        </script>
+        <body>
+        <div class="pull-left" id="toolbar-btn" style="padding-bottom:10px;">
+            <span class="btn btn-primary k-grid-add" style="margin-right:5px;margin-top: 10px;margin-bottom: 10px;margin-left: 5px" onclick="saveCommodity()" ><i class="fa fa-plus-square"></i><@spring.message "添加"/></span>
+        </div>
+        <script>kendo.bind($('#toolbar-btn'), viewModelCommodity);</script>
+        <div id="queryPanel" class="pull-right" style="padding-bottom:10px;margin-top: 10px;margin-bottom: 10px;">
+            <div class="k-query-simple" id="query-form">
+                <input id="categoryCode" type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.product.code"/>'
+                       data-bind="value:model.categoryCode" class="k-textbox">
+                <input id="categoryName" type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.product.name"/>'
+                       data-bind="value:model.categoryName" class="k-textbox">
+                <input id="categoryVersion" type="text" data-role="maskedtextbox" style="width:150px;margin-right:5px;" placeholder='<@spring.message "hmall.product.name"/>'
+                       data-bind="value:model.categoryName" class="k-textbox">
+            </div>
+            <script>
+                kendo.bind($('#query-form'), viewModel);
+            </script>
+        </div>
+
+        <script>
+            $('#queryPanel').kendoQueryPanel({
+                queryFunction: function () {
+                    viewModelCommodity.queryResource();
+                }
+            })
+        </script>
+        <div style="clear:both">
+            <div id="commodity_grid"></div>
+        </div>
+        </body>
+        <script>
+
+            var BaseUrl = _basePath;
+            /*商品*/
+            commodity_dataSource = new kendo.data.DataSource(
+                    {
+                        transport: {
+                            read: {
+                                url: BaseUrl + "/mst/product/category/queryProductNotItself?categoryId="+categoryId,
+                                type: "POST",
+                                dataType: "json"
+                            },
+                            update: {
+                                url: BaseUrl + "/mst/product/category/submit",
+                                type: "POST",
+                                contentType: "application/json"
+                            },
+                            destroy: {
+                                url: BaseUrl + "/mst/product/category/remove",
+                                type: "POST",
+                                contentType: "application/json"
+                            },
+                            create: {
+                                url: BaseUrl + "/mst/product/category/submit",
+                                type: "POST",
+                                contentType: "application/json"
+                            },
+                            parameterMap: function (options, type) {
+                                if (type !== "read" && options.models) {
+                                    var datas = Hap.prepareSubmitParameter(options, type)
+                                    return kendo.stringify(datas);
+                                } else if (type === "read") {
+                                    return Hap.prepareQueryParameter(viewModelCommodity.model.toJSON(), options)
+                                }
+                            }
+                        },
+                        batch: true,
+                        serverPaging: true,
+                        pageSize: 10,
+                        schema: {
+                            data: 'rows',
+                            total: 'total',
+                            model: {
+                                id: "categoryPk",
+                                fields: {}
+                            }
+                        }
+                    });
+
+
+            /*商品表*/
+            var commodity_grid = $('#commodity_grid');
+
+            $("#commodity_grid").kendoGrid({
+                dataSource: commodity_dataSource,
+                height: '330px',
+                pageable: true,
+                editable: false,
+                navigatable: true,
+                scrollable: true,
+                selectable: 'multiple, rowbox',
+                sortable: true,
+                rownumber: true,
+                /* selectable : "multiple,rowbox", */
+                pageable: {
+                    pageSizes: [1, 5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 10
+                },
+
+                columns: [
+                    {
+                        field: "code",
+                        title: '<@spring.message "hmall.product.code"/>',
+                        width: 80,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes : {
+                            "class" : "table-header-cell",
+                            style : "text-align: center"
+                        }
+                    }, {
+                        field: "name",
+                        title: '<@spring.message "hmall.product.name"/>',
+                        width: 80,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes : {
+                            "class" : "table-header-cell",
+                            style : "text-align: center"
+                        }
+                    }
+                    , {
+                        field: "catalogversion",
+                        title: '<@spring.message "hmall.product.catalogversion"/>',
+                        width: 80,
+                        attributes: {style: "text-align:center"},
+                        headerAttributes : {
+                            "class" : "table-header-cell",
+                            style : "text-align: center"
+                        }
+                    }
+                ],
+                editable: "inline"
+
+            });
+
+            //查询列表
+            function queryList() {
+                var categoryCode = $('#categoryCode').val();
+                var categoryName = $('#categoryName').val();
+                var informations = viewModelCommodity.model.toJSON();
+                $.ajax({
+                    url: BaseUrl + "/mst/product/category/queryProductNotItself?categoryId="+categoryId+"&categoryCode="+categoryCode+"&categoryName="+categoryName,
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: kendo.stringify(informations),
+                    success: function (json) {
+                        if (json.success) {
+                            commodity_dataSource.data(json.rows);
+                            $("#commodity_grid").data("kendoGrid").refresh();
+                        }
+                    }
+                });
+            }
+
+            //商品保存
+            function saveCommodity(){
+                var grid = $("#commodity_grid").data("kendoGrid");
+                var items = grid.selectedDataItems();
+                var productId='';
+                for(var i=0;i<items.length;i++){
+                    productId = productId+items[i].productId+',';
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url : BaseUrl+"/mst/product/category/saveProduct?categoryId="+categoryId+"&productId="+productId,
+                    async: false,
+                    error: function(request) {
+                        alert("Connection error");
+                    },
+                    success: function(data) {
+                        window.parent.$("#typedialogEdit").data("kendoWindow").close();
+                    }
+                });
+            }
+        </script>

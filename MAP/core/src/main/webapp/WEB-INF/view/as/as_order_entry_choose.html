@@ -1,0 +1,196 @@
+<#--
+    * description: 订单行选择界面
+    * author: qinzhipeng
+    * date 2017/07/17
+    * version: 0.1
+    *
+-->
+<#include "../include/header.html">
+    <script src="${base.contextPath}/common/code?approvalStatusList=HMALL.PRODUCT.APPROVAL_STATUS" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?saleStatusList=HMALL.PRODUCT.SALE_STATUS" type="text/javascript"></script>
+    <script src="${base.contextPath}/common/code?isSinSaleList=SYS.YES_NO" type="text/javascript"></script>
+    <script type="text/javascript">
+        var serviceOrderId = "${RequestParameters.serviceOrderId!0}";
+        console.log( window.parent.selectServiceOrderEntries);
+        function closeWindow() {
+            window.parent.$("#selectProduct").data("kendoWindow").close();
+        }
+        //选择产品
+        function selectProducts() {
+            var selections = $("#Grid").data("kendoGrid").selectedDataItems();
+           window.parent.chooseProducts(selections);
+
+
+        }
+        var viewModel = kendo.observable({
+            model: {
+                serviceOrderId:serviceOrderId
+            },
+            queryResource: function (e) {
+                $('#Grid').data('kendoGrid').dataSource.page(1);
+            }
+        });
+    </script>
+    <body>
+        <div id="page-content">
+           <!-- <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+                <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='商品编码'
+                       data-bind="value:model.code" class="k-textbox">
+                <input type="text" data-role="maskedtextbox" style="float:left;width:150px;margin-right:5px;" placeholder='商品名称'
+                       data-bind="value:model.name" class="k-textbox">
+                <span class="btn btn-primary" style="float:left;width:70px" onclick="getAllProduct()" type="submit"><@spring.message "hap.query"/></span>
+                <div style="clear:both"></div>
+            </div>-->
+            <script>kendo.bind($('#query-form'), viewModel);</script>
+            <div style="clear:both">
+                <div id="Grid" style="margin-bottom: 60px;"></div>
+            </div>
+            <div class="pull-right" id="toolbar-btn" style="padding-bottom:10px;padding-top: 10px;">
+                <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="selectProducts()">选择</span>
+                <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="closeWindow()">取消</span>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+          //  var allOrderEntry =[];//服务单中所有产品
+            var showOrderEntryList =[];//展示商品
+           // 初始化商品列表
+            getAllOrderEntry();
+            //获取商品列表
+            function getAllOrderEntry() {
+                var selectProductIds ="";
+                for(var index in window.parent.selectServiceOrderEntries){
+
+                    selectProductIds+=window.parent.selectServiceOrderEntries[index].productId+",";
+                }
+                selectProductIds = selectProductIds.substring(0,selectProductIds.length-1);
+                $.ajax({
+                    type: 'POST',
+                    url: "${base.contextPath}/hmall/as/serviceorder/entry/getServiceOrderListExcludeProductId",
+                    dataType: 'JSON',
+                    data:{serviceOrderId:viewModel.model.serviceOrderId,
+                        excludeProductIds:selectProductIds
+                    },
+                    success: function (result) {
+                     //   allOrderEntry = [];
+                        showOrderEntryList=[];
+                        for (var i in result.rows) {
+                            showOrderEntryList.push(result.rows[i]);
+
+                        }
+                        refreshOrderEntryGrid();
+                       // filterOrderEntry();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+            //过滤掉已经选择的产品
+           /* function filterOrderEntry(){
+                var parentOrderEntries =window.parent.selectServiceOrderEntries;
+                if(parentOrderEntries.length>0){
+                    for(var i in allOrderEntry){
+                        var flag = false;//标志位判断当前商品是否已经选择过
+                        for(var j in parentOrderEntries){
+                            if ( allOrderEntry[i].productId == parentOrderEntries[j].productId) {
+                                flag = true;
+                            }
+                        }
+                        if(!flag){
+                            showOrderEntryList.push(allOrderEntry[i]);
+                        }
+                    }
+                }else{
+                    showOrderEntryList = allOrderEntry;
+                }
+                refreshOrderEntryGrid();
+            }*/
+
+            var _grid_= $("#Grid").kendoGrid({
+                height:260,
+                resizable: true,
+                scrollable: false,
+                reorderable:true,
+                selectable: 'multiple, rowbox',
+                navigatable: false,
+                pageable: {
+                    pageSizes: [5, 10, 20, 50],
+                    refresh: true,
+                    buttonCount: 5
+                },
+                columns: [
+                    {
+                        field: "consignmentCode",
+                        title: '<@spring.message "hmall.OrderEntry.consignmentCode"/>',
+                        width: 120
+                    },
+                    {
+                        field: "vproductCode",
+                        title: '<@spring.message "hmall.OrderEntry.vproduct"/>',
+                        width: 120
+                    }, {
+                        field: "suitCode",
+                        title: '<@spring.message "hmall.OrderEntry.suitCode"/>',
+                        width: 120
+                    }, {
+                        field: "productCode",
+                        title: '<@spring.message "hmall.OrderEntry.productCode"/>',
+                        width: 120
+                    }, {
+                        field: "name",
+                        title: '<@spring.message "hmall.OrderEntry.productName"/>',
+                        width: 120
+                    }, {
+                        field: "quantity",
+                        title: '<@spring.message "hmall.OrderEntry.quantity"/>',
+                        width: 80
+                    }, {
+                        field: "basePrice",
+                        title: '<@spring.message "hmall.OrderEntry.basePrice"/>',
+                        format: "{0:n2}",
+                        width: 80
+                    }, {
+                        field: "discountFee",
+                        title: '<@spring.message "hmall.OrderEntry.discountFee"/>',
+                        format: "{0:n2}",
+                        width: 80
+                    }, {
+                        field: "unitFee",
+                        title: '<@spring.message "hmall.OrderEntry.unitFee"/>',
+                        format: "{0:n2}",
+                        width: 80
+                    }, {
+                        field: "totalFee",
+                        title: '<@spring.message "hmall.OrderEntry.totalFee"/>',
+                        format: "{0:n2}",
+                        width: 80
+                    }, {
+                        field: "isGift",
+                        title: '<@spring.message "hmall.OrderEntry.isGift"/>',
+                        width: 80
+                    }, {
+                        field: "estimateConTime",
+                        title: '<@spring.message "hmall.OrderEntry.estimateConTime"/>',
+                        width: 150
+                    }, {
+                        field: "estimateDeliveryTime",
+                        title: '<@spring.message "hmall.OrderEntry.estimateDeliveryTime"/>',
+                        width: 150
+                    }
+
+                ],
+                editable: false
+            }).data("kendoGrid");
+
+            //刷新商品grid
+            function refreshOrderEntryGrid(){
+                var  _dataSource_ = new kendo.data.DataSource({
+                    data:showOrderEntryList
+                });
+                Hap.autoResizeGrid("#Grid");
+                _grid_.setDataSource(_dataSource_);
+            }
+        </script>
+    </body>
+</html>

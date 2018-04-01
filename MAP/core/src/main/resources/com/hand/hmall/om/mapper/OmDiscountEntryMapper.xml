@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.OmDiscountEntryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OmDiscountEntry">
+        <result column="DISCOUNT_ID" property="discountId" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+        <result column="CATALOGVERSION_ID" property="catalogversionId" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT" property="discount" jdbcType="DECIMAL"/>
+        <result column="DISCOUNT_TYPE" property="discountType" jdbcType="DECIMAL"/>
+        <result column="START_TIME" property="startTime" jdbcType="DATE"/>
+        <result column="END_TIME" property="endTime" jdbcType="DATE"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="IS_HANDLE" property="isHandle" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="CATALOGVERSION" property="catalogVersion" jdbcType="VARCHAR"/>
+        <result column="STAGED_DISCOUNT_ID" property="stagedDiscountId" jdbcType="DECIMAL"/>
+        <result column="VCODE" property="vcode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="queryDiscountEntryInfo" resultMap="BaseResultMap" parameterType="com.hand.hmall.om.dto.OmDiscountEntry">
+        SELECT
+        de.DISCOUNT_ID,
+        de.PRODUCT_ID,
+        de.STAGED_DISCOUNT_ID,
+        pro.CODE PRODUCT_CODE,
+        catalogs.NAME_ZH || '-' || version.CATALOGVERSION CATALOGVERSION,
+        de.DISCOUNT_TYPE,
+        de.OBJECT_VERSION_NUMBER,
+        de.CATALOGVERSION_ID,
+        de.DISCOUNT,
+        de.START_TIME,
+        de.END_TIME,
+        de.VCODE
+        FROM HMALL_OM_DISCOUNT_ENTRY de
+        LEFT JOIN HMALL_MST_PRODUCT pro ON de.PRODUCT_ID=pro.PRODUCT_ID
+        LEFT JOIN HMALL_MST_CATALOGVERSION version ON de.CATALOGVERSION_ID=version.CATALOGVERSION_ID
+        LEFT JOIN HMALL_MST_CATALOGS catalogs ON version.CATALOG = catalogs.CATALOGS_ID
+        <where>
+            <if test="productCode!=null and productCode!=''">
+                and pro.CODE like CONCAT('%',CONCAT(#{productCode,jdbcType=VARCHAR},'%') )
+            </if>
+            <if test="discountType!=null and discountType!=''">
+                and de.DISCOUNT_TYPE = #{discountType}
+            </if>
+            <if test="catalogversionId!=null and catalogversionId!=''">
+                AND de.CATALOGVERSION_ID= #{catalogversionId}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                AND to_char(de.START_TIME, 'yyyy-MM-dd HH24:mi:ss') >= #{startTimeStr}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                AND to_char(de.END_TIME, 'yyyy-MM-dd HH24:mi:ss') >= #{endTimeStr}
+            </if>
+            AND IS_HANDLE='Y'
+        </where>
+        ORDER BY de.CATALOGVERSION_ID DESC,PRODUCT_CODE DESC
+    </select>
+
+    <!--查询时间范围内同一商品是否存在折扣行-->
+    <select id="queryDiscountEntryByTime" resultMap="BaseResultMap" parameterType="com.hand.hmall.om.dto.OmDiscountEntry">
+        SELECT
+        PRODUCT_ID,
+        START_TIME,
+        END_TIME
+        FROM HMALL_OM_DISCOUNT_ENTRY
+        <where>
+            <if test="productId != null">
+                PRODUCT_ID = #{productId}
+            </if>
+            <if test="catalogversionId!=null and catalogversionId!=''">
+                AND CATALOGVERSION_ID= #{catalogversionId}
+            </if>
+            <if test="discountId != null">
+                AND DISCOUNT_ID != #{discountId}
+            </if>
+            <if test="vcode != null">
+                AND VCODE = #{vcode}
+            </if>
+            <if test="vcode == null">
+                AND VCODE IS NULL
+            </if>
+            AND IS_HANDLE='Y'
+        </where>
+    </select>
+
+    <!--查询online版本数据-->
+    <select id="queryDiscountEntryByOnline" resultMap="BaseResultMap" parameterType="com.hand.hmall.om.dto.OmDiscountEntry">
+        SELECT *
+        FROM HMALL_OM_DISCOUNT_ENTRY
+        <where>
+            <if test="productId != null">
+                PRODUCT_ID = #{productId}
+            </if>
+            <if test="stagedDiscountId != null">
+                AND STAGED_DISCOUNT_ID= #{discountId}
+            </if>
+        </where>
+    </select>
+
+    <!--根据PRODUCT_ID查询IS_HANDLE状态为Y的折扣价格行记录-->
+    <select id="queryDiscountEntryByProductId" parameterType="com.hand.hmall.mst.dto.Product" resultMap="BaseResultMap">
+        SELECT
+        de.START_TIME,
+        de.END_TIME
+        FROM HMALL_OM_DISCOUNT_ENTRY de
+        <where>
+            <if test="productId != null">
+                AND de.PRODUCT_ID=#{productId}
+            </if>
+            AND de.IS_HANDLE='Y'
+        </where>
+    </select>
+
+    <!--根据PRODUCT_ID查询IS_HANDLE状态为Y折扣类型为3的折扣价格行记录-->
+    <select id="queryDiscountEntryByProductIdAndDiscountType" parameterType="com.hand.hmall.mst.dto.Product" resultMap="BaseResultMap">
+        SELECT
+        START_TIME,
+        END_TIME,
+        DISCOUNT
+        FROM HMALL_OM_DISCOUNT_ENTRY
+        <where>
+            <if test="productId != null">
+                AND PRODUCT_ID=#{productId}
+            </if>
+            AND IS_HANDLE='Y' AND DISCOUNT_TYPE = 3
+        </where>
+    </select>
+
+    <!--批量插入订单行数据-->
+    <insert id="batchInsertDiscountEntry" parameterType="java.util.List">
+        insert into HMALL_OM_DISCOUNT_ENTRY
+        (DISCOUNT_ID,
+        PRODUCT_ID,
+        CATALOGVERSION_ID,
+        DISCOUNT_TYPE,
+        DISCOUNT,
+        START_TIME,
+        END_TIME,
+        VCODE
+        )
+        (select HMALL_OM_DISCOUNT_ENTRY_S.NEXTVAL,
+        cd.productId,
+        cd.catalogversionId,
+        cd.discountType,
+        cd.discount,
+        cd.startTime,
+        cd.endTime,
+        cd.vcode
+        from(
+        <foreach collection="list" item="item" index="index" close=")" open="(" separator="union all">
+            select
+            <choose>
+                <when test="item.productId !=null">
+                    #{item.productId,jdbcType=DECIMAL} as productId,
+                </when>
+                <otherwise>
+                    null as productId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.catalogversionId !=null and item.catalogversionId != ''">
+                    #{item.catalogversionId,jdbcType=DECIMAL} as catalogversionId,
+                </when>
+                <otherwise>
+                    null as catalogversionId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.discountType !=null">
+                    #{item.discountType,jdbcType=VARCHAR} as discountType,
+                </when>
+                <otherwise>
+                    null as discountType,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.discount !=null">
+                    #{item.discount,jdbcType=VARCHAR} as discount,
+                </when>
+                <otherwise>
+                    null as discount,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.startTime !=null">
+                    #{item.startTime,jdbcType=DATE} as startTime,
+                </when>
+                <otherwise>
+                    null as startTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.endTime !=null">
+                    #{item.endTime,jdbcType=DATE} as endTime,
+                </when>
+                <otherwise>
+                    null as endTime,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.vcode !=null">
+                    #{item.vcode,jdbcType=VARCHAR} as vcode
+                </when>
+                <otherwise>
+                    null as vcode
+                </otherwise>
+            </choose>
+            from dual
+        </foreach>
+        ) cd)
+    </insert>
+
+    <!--根据PRODUCT_ID和VCODE查询开始和结束时间-->
+    <select id="queryDiscountEntryByProductIdAndVcode" parameterType="com.hand.hmall.om.dto.OmDiscountEntry" resultMap="BaseResultMap">
+        SELECT
+        de.START_TIME,
+        de.END_TIME
+        FROM HMALL_OM_DISCOUNT_ENTRY de
+        <where>
+            <if test="productId != null">
+                AND de.PRODUCT_ID=#{productId}
+            </if>
+            <if test="vcode != null">
+                AND de.VCODE=#{vcode}
+            </if>
+            AND de.IS_HANDLE='Y'
+        </where>
+    </select>
+
+</mapper>

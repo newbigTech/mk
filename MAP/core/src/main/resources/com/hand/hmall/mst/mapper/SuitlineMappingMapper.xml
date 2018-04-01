@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.SuitlineMappingMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.SuitlineMapping">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="COMPONENT_ID" property="componentId" jdbcType="DECIMAL"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="PRODUCT_HEAD_ID" property="productHeadId" jdbcType="DECIMAL"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="PRODUCT_ID" property="productId" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <resultMap id="suitlineMappingMap" type="com.hand.hmall.mst.dto.SuitlineMappingDto">
+        <result column="MAPPING_ID" property="mappingId" jdbcType="DECIMAL"/>
+        <result column="COMPONENT_CODE" property="componentCode" jdbcType="VARCHAR"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 推送syncFlag为N的套件商品映射信息至商城当中 -->
+    <select id="selectPushingSuitlineMapping" resultMap="suitlineMappingMap">
+		select MAPPING_ID,p2.code COMPONENT_CODE ,QUANTITY, p1.code
+          from HMALL_MST_SUITLINE_MAPPING m,
+               hmall_mst_product          p1,
+               hmall_mst_product          p2,
+               hmall_mst_catalogs         c,
+               hmall_mst_catalogversion   cv
+         where m.PRODUCT_HEAD_ID = p1.product_id
+           and m.component_id = p2.product_id
+           and p1.catalogversion_id = cv.catalogversion_id
+           and cv.catalog = c.catalogs_id
+           and c.code = 'markor'
+           and cv.catalogversion = 'online'
+           and m.SYNCFLAG = 'N'
+	</select>
+
+    <select id="getCountByProductHeadId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT sm.COMPONENT_ID FROM HMALL_MST_SUITLINE_MAPPING sm
+        WHERE 1 = 1
+        AND sm.PRODUCT_HEAD_ID = #{productHeadId}
+    </select>
+
+    <select id="selectBysuitlineAndProductId" parameterType="com.hand.hmall.mst.dto.SuitlineMapping" resultType="java.lang.Long">
+        SELECT sm.MAPPING_ID
+        FROM HMALL_MST_SUITLINE_MAPPING sm
+        WHERE 1 = 1
+        AND sm.component_id = #{componentId}
+        AND sm.PRODUCT_HEAD_ID = #{productHeadId}
+    </select>
+
+    <!--更新套件商品关系接口推送标志-->
+    <update id="updateSuitlineMappingSyncflag" parameterType="java.util.List">
+        UPDATE HMALL_MST_SUITLINE_MAPPING
+        <set>
+            SYNCFLAG ='Y'
+        </set>
+        <where>
+            MAPPING_ID IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.mappingId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </update>
+
+
+    <select id="selectInfo" parameterType="com.hand.hmall.mst.dto.SuitlineMapping" resultMap="BaseResultMap">
+        select sm.MAPPING_ID,sm.product_head_id,sm.component_id,sm.QUANTITY,sm.syncflag,pro.product_id,pro.code,pro.name from
+        HMALL_MST_SUITLINE_MAPPING sm,
+        HMALL_MST_PRODUCT  pro
+        where sm.COMPONENT_ID = pro.product_id
+        and sm.PRODUCT_HEAD_ID = #{productHeadId}
+    </select>
+
+    <!-- 删除商品时，连带删除套件关系-->
+    <delete id="deleteSuitlineMapping" parameterType="com.hand.hmall.mst.dto.SuitlineMapping">
+        DELETE  FROM hmall_mst_suitline_mapping
+        WHERE PRODUCT_HEAD_ID = #{productHeadId}
+        or COMPONENT_ID = #{componentId}
+    </delete>
+
+    <delete id="deleteByProductId" parameterType="java.util.List">
+        delete from hmall_mst_suitline_mapping s
+        <where>
+            s.product_head_id in
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.syncProductId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+    </delete>
+
+    <select id="selectAllById" parameterType="java.util.List" resultMap="BaseResultMap">
+        select
+        p.COMPONENT_ID,
+        p.QUANTITY,
+        p.PRODUCT_HEAD_ID,
+        p.SYNCFLAG from hmall_mst_suitline_mapping p
+        where p.product_head_id in
+        <foreach collection="list" index="index" item="item"
+                 separator="," open="(" close=")">
+            #{item.productId,jdbcType=DECIMAL}
+        </foreach>
+    </select>
+
+
+</mapper>

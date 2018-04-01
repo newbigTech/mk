@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.om.mapper.OrderEntryBkMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.OrderEntryBk" extends="com.hand.hap.mapper.StdMapper.STD">
+        <id column="ORDER_ENTRY_ID" jdbcType="DECIMAL" property="orderEntryId"/>
+        <result column="ORDER_ID" jdbcType="DECIMAL" property="orderId"/>
+        <result column="CONSIGNMENT_ID" jdbcType="DECIMAL" property="consignmentId"/>
+        <result column="CODE" jdbcType="VARCHAR" property="code"/>
+        <result column="LINE_NUMBER" jdbcType="DECIMAL" property="lineNumber"/>
+        <result column="PRARENT_LINE" jdbcType="DECIMAL" property="prarentLine"/>
+        <result column="QUANTITY" jdbcType="DECIMAL" property="quantity"/>
+        <result column="UNIT" jdbcType="VARCHAR" property="unit"/>
+        <result column="BASE_PRICE" jdbcType="DECIMAL" property="basePrice"/>
+        <result column="DISCOUNT_FEE" jdbcType="DECIMAL" property="discountFee"/>
+        <result column="DISCOUNT_FEEL" jdbcType="DECIMAL" property="discountFeel"/>
+        <result column="UNIT_FEE" jdbcType="DECIMAL" property="unitFee"/>
+        <result column="TOTAL_FEE" jdbcType="DECIMAL" property="totalFee"/>
+        <result column="IS_GIFT" jdbcType="VARCHAR" property="isGift"/>
+        <result column="ESTIMATE_DELIVERY_TIME" jdbcType="TIMESTAMP" property="estimateDeliveryTime"/>
+        <result column="ESTIMATE_CON_TIME" jdbcType="TIMESTAMP" property="estimateConTime"/>
+        <result column="PRODUCT_ID" jdbcType="DECIMAL" property="productId"/>
+        <result column="PRODUCT_CODE" property="productCode" jdbcType="VARCHAR"/>
+        <result column="VPRODUCT_CODE" jdbcType="VARCHAR" property="vproductCode"/>
+        <result column="SUTI_CODE" jdbcType="VARCHAR" property="sutiCode"/>
+        <result column="ORDER_ENTRY_TYPE" jdbcType="VARCHAR" property="orderEntryType"/>
+        <result column="PIN" jdbcType="VARCHAR" property="pin"/>
+        <result column="SHIPPING_FEE" jdbcType="DECIMAL" property="shippingFee"/>
+        <result column="INSTALLATION_FEE" jdbcType="DECIMAL" property="installationFee"/>
+        <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag"/>
+        <result column="SHIPPING_TYPE" jdbcType="VARCHAR" property="shippingType"/>
+        <result column="POINT_OF_SERVICE_ID" jdbcType="DECIMAL" property="pointOfServiceId"/>
+        <result column="NOTE" jdbcType="VARCHAR" property="note"/>
+        <result column="BOM_APPROVED" jdbcType="VARCHAR" property="bomApproved"/>
+        <result column="PRE_SHIPPINGFEE" jdbcType="DECIMAL" property="preShippingfee"/>
+        <result column="PRE_INSTALLATIONFEE" jdbcType="DECIMAL" property="preInstallationfee"/>
+        <result column="SVPRO_REASON1" jdbcType="VARCHAR" property="svproReason1"/>
+        <result column="REASON1_DES" jdbcType="VARCHAR" property="reason1Des"/>
+        <result column="REASON2" jdbcType="VARCHAR" property="reason2"/>
+        <result column="REASON2_DES" jdbcType="VARCHAR" property="reason2Des"/>
+        <result column="SERVICE_ORDER_ID" jdbcType="DECIMAL" property="serviceOrderId"/>
+        <result column="ATP_STAGE" jdbcType="VARCHAR" property="atpStage"/>
+        <result column="COUPON_FEE" jdbcType="DECIMAL" property="couponFee"/>
+        <result column="TOTAL_DISCOUNT" jdbcType="DECIMAL" property="totalDiscount"/>
+        <result column="PRODUCT_SIZE" jdbcType="VARCHAR" property="productSize"/>
+        <result column="PRODUCT_PACKED_SIZE" jdbcType="VARCHAR" property="productPackedSize"/>
+        <result column="POINT_OF_SERVICE" jdbcType="VARCHAR" property="pointOfService"/>
+        <result column="ORDER_ENTRY_STATUS" jdbcType="VARCHAR" property="orderEntryStatus"/>
+        <result column="INTERNAL_PRICE" jdbcType="DECIMAL" property="internalPrice"/>
+        <result column="INV_OCCUPY_FLAG" jdbcType="VARCHAR" property="invOccupyFlag"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="consignment_code" property="consignmentCode" jdbcType="VARCHAR"/>
+        <result column="LAST_EVENT_DES" property="lastEventDes" jdbcType="VARCHAR"/>
+        <result column="BASE_TOTAL_AMOUNT" property="baseTotalAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        ORDER_ENTRY_ID, ORDER_ID, CONSIGNMENT_ID, CODE, LINE_NUMBER, PRARENT_LINE, QUANTITY,
+        UNIT, BASE_PRICE, DISCOUNT_FEE, DISCOUNT_FEEL, UNIT_FEE, TOTAL_FEE, IS_GIFT, ESTIMATE_DELIVERY_TIME,
+        ESTIMATE_CON_TIME, PRODUCT_ID, VPRODUCT_CODE, SUTI_CODE, ORDER_ENTRY_TYPE, PIN, SHIPPING_FEE,
+        INSTALLATION_FEE, SYNCFLAG, SHIPPING_TYPE, POINT_OF_SERVICE_ID,
+        NOTE, BOM_APPROVED, PRE_SHIPPINGFEE, PRE_INSTALLATIONFEE, SVPRO_REASON1, REASON1_DES,
+        REASON2, REASON2_DES, SERVICE_ORDER_ID, ATP_STAGE, COUPON_FEE, TOTAL_DISCOUNT, PRODUCT_SIZE,
+        PRODUCT_PACKED_SIZE, POINT_OF_SERVICE, ORDER_ENTRY_STATUS, INTERNAL_PRICE, INV_OCCUPY_FLAG
+    </sql>
+
+    <!-- 订单行详情查询 -->
+    <select id="queryInfo" parameterType="com.hand.hmall.om.dto.OrderEntryBk" resultMap="BaseResultMap">
+        SELECT ooe.order_entry_id,
+        ooe.order_id,
+        oo.locked,
+        co.status,
+        co.code consignment_code,
+        ooe.code,
+        ooe.quantity,
+        ooe.parent_line,
+        hooe.vproduct_code parentVproductCode,
+        ooe.unit,
+        ooe.base_price,
+        ooe.discount_fee,
+        ooe.discount_feel,
+        ooe.unit_fee,
+        ooe.total_fee,
+        ooe.estimate_delivery_time,
+        ooe.estimate_con_time,
+        ooe.is_gift,
+        ooe.product_id,
+        mp.code product_code,
+        mp.name,
+        mp.is_suit,
+        ooe.vproduct_code,
+        ooe.order_entry_status,
+        ooe.suit_code,
+        ooe.order_entry_type,
+        ooe.pin,
+        ooe.shipping_fee,
+        ooe.installation_fee,
+        ooe.syncflag,
+        ooe.shipping_type,
+        ooe.point_of_service_id,
+        ooe.consignment_id,
+        ooe.note,
+        ooe.line_number,
+        ooe.bom_approved,
+        ooe.pre_shippingfee,
+        ooe.pre_installationfee,
+        ooe.REASON1,
+        ooe.REASON1_DES,
+        ooe.REASON2,
+        ooe.REASON2_DES,
+        ooe.product_size,
+        ooe.product_packed_size,
+        ooe.logistics_number,
+        ooe.odtype,
+        ooe.ori_requirement_time,
+        ooe.atp_calculate_time,
+        ooe.BASE_PRICE * ooe.QUANTITY AS BASE_TOTAL_AMOUNT,
+        (select event_des from (select p.event_des from hmall_pin_info p where p.code = ooe.pin order by substr(p.event_code,4,7) desc) where rownum = 1 ) AS LAST_EVENT_DES
+        FROM hmall_om_order_entry_bk ooe
+        LEFT JOIN hmall_mst_product mp
+        ON ooe.product_id = mp.product_id
+        LEFT JOIN hmall_om_order_entry_bk hooe
+        ON hooe.order_entry_id = ooe.parent_line
+        LEFT JOIN HMALL_OM_CONSIGNMENT_BK co
+        ON ooe.consignment_id = co.consignment_id
+        LEFT JOIN HMALL_OM_ORDER_BK oo
+        ON oo.order_id = ooe.order_id
+        where 1=1
+        <if test="orderId !=null and orderId !=''">
+            and ooe.order_id = #{orderId}
+        </if>
+        <if test="consignmentId!=null and consignmentId!=''">
+            and ooe.consignment_id = #{consignmentId}
+        </if>
+    </select>
+
+</mapper>

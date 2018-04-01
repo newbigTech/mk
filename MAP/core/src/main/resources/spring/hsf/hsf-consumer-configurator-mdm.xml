@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:reference id="iBomService" interface="com.hand.hap.mdm.bom.service.IBomService" group="configurator-api-4w"
+                     version="1.0.0"/>
+
+    <dubbo:reference id="iItemDimensionsMaintainService"
+                     interface="com.hand.hap.mdm.bom.service.IItemDimensionsMaintainService" group="configurator-api-4w"
+                     version="1.0.0"/>
+
+    <dubbo:reference id="iMdmBomQuantityService" interface="com.hand.hap.mdm.bom.service.IMdmBomQuantityService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iItemService" interface="com.hand.hap.mdm.item.service.IItemService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iLookupCodeService" interface="com.hand.hap.mdm.item.service.ILookupCodeService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iLookupTypeService" interface="com.hand.hap.mdm.item.service.ILookupTypeService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMdmItemPlatformService" interface="com.hand.hap.mdm.item.service.IMdmItemPlatformService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMdmItemSizeInfoService" interface="com.hand.hap.mdm.item.service.IMdmItemSizeInfoService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMdmItemValueService" interface="com.hand.hap.mdm.item.service.IMdmItemValueService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+    <dubbo:reference id="iMdmItemValueSetupService" interface="com.hand.hap.mdm.item.service.IMdmItemValueSetupService"
+                     group="configurator-api-4w" version="1.0.0"/>
+
+</beans>

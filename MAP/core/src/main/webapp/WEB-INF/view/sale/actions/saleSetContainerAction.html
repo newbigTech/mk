@@ -1,0 +1,337 @@
+<#include "/include/header.html"/>
+<body>
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        queryResource: function(e) {
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        },
+        resetForm        : function (e) {
+            var formData = viewModel.model.toJSON();
+            for (var k in formData) {
+                viewModel.model.set(k, null);
+            }
+            $('#grid').data('kendoGrid').dataSource.page(1);
+        }
+
+    });
+
+    var id='${RequestParameters.id}';
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var type='${RequestParameters.type}';
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+
+        <div id='grid-container'>
+            <div id="grid" style="clear: both"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="insertContainerWin"/>
+
+<script type="text/javascript">
+
+    var containerSelect=[];
+
+
+
+    console.log("dasdasd");
+    for(var i in window.parent.viewModel.model.actions)
+    {
+        if(window.parent.viewModel.model.actions[i].id==id)
+        {
+
+            if(window.parent.viewModel.model.actions[i].parameters!=undefined)
+            {
+                if(type=='TARGET') {
+                    if(window.parent.viewModel.model.actions[i].parameters.targetValue!=undefined)
+                    {
+                        for(var j in window.parent.viewModel.model.actions[i].parameters.targetValue)
+                        {
+                            if(window.parent.viewModel.model.actions[i].parameters.targetValue[j].id!=undefined) {
+                                if(window.parent.viewModel.model.actions[i].parameters.targetValue[j].id!=undefined)
+
+                                    containerSelect.push(window.parent.viewModel.model.actions[i].parameters.targetValue[j])
+                            }
+                        }
+
+                    }
+
+                }else {
+                    if(window.parent.viewModel.model.actions[i].parameters.matchValue!=undefined)
+                    {
+                        if(window.parent.viewModel.model.actions[i].parameters.matchValue)
+                        {
+                            for(var j in window.parent.viewModel.model.actions[i].parameters.matchValue)
+                            {
+                                if(window.parent.viewModel.model.actions[i].parameters.matchValue[j]!=undefined){
+                                    if(window.parent.viewModel.model.actions[i].parameters.matchValue[j].id!=undefined)
+                                    containerSelect.push(window.parent.viewModel.model.actions[i].parameters.matchValue[j])
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+
+
+        }
+    }
+
+
+
+
+    kendo.bind($('#page-content'),viewModel);
+    kendo.bind($('#grid-container'),viewModel);
+
+    var countEditor = function (container, options) {
+        $('<input name="count" data-bind="value:' + options.field + '"/>')
+                .appendTo(container)
+                .kendoNumericTextBox({
+                    format: "n0",
+                    min: 0
+
+                });
+    };
+
+
+    var BaseUrl = "${base.contextPath}/sale/range/container/",
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"queryByContainers",
+                        type : "POST",
+                        contentType: "application/json"
+                    },
+                    update:  {
+                        url: BaseUrl+"submitCountNumber",
+                        type : "POST",
+                        contentType: "application/json"
+                    },
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+
+                            return kendo.stringify(containerSelect);
+                        }
+                    }
+                },
+                requestEnd:function (e) {
+                    var resp=e.response;
+                  if(e.type=='update')
+                  {
+                      if(resp.success) {
+                          for (var i in resp.resp) {
+                              for (var j in containerSelect) {
+                                  if (containerSelect[j].id == resp.resp[i].id) {
+                                      containerSelect[j].countNumber = resp.resp[i].countNumber;
+                                      break;
+                                  }
+                              }
+
+                          }
+                      }
+                  }
+                },
+                batch: true,
+                serverPaging : true,
+                schema: {
+                    data:"resp",
+                    model: {
+                        id: "id",
+                        fields: {
+                            meaning:{editable:false, validation: { required: true }},
+                            countNumber:{editable:true, validation: { required: true }}
+
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+    var grid=$("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+        selectable : 'multiple, rowbox',
+
+
+        toolbar: [
+            {
+                name: "insert",
+                template: '<span  id="createButton" disabled="true"  class="btn btn-primary"><i class="fa fa-plus"></i> 添加</span>'
+            },{
+                template:'<button  id="rollbackButton" disabled="true"   class="btn btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> 删除</button>'
+            },{
+                name: "create",
+                template: '<span  id="saveButton" disabled="true"  class="btn btn-warning"><i class="fa fa-plus"></i> 确定</span>'
+            }
+        ],
+        columns: [
+
+            {
+                field: "meaning",
+                title: '容器名',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+
+            },
+            {
+                field: "countNumber",
+                title: '数量',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                },
+                editor:countEditor
+
+            },
+            {
+                command: [
+                    {
+                        name: "edit"
+                    }
+                ],
+                title: "操作",
+                headerAttributes: {
+                    style: "text-align:center"
+                },
+                attributes: {
+                    style: "text-align:center"
+                }
+            }
+
+        ],
+        editable: {
+            mode:"inline"},
+        dataBound: function() {
+            var view = this.dataSource.view();
+            this.items().each(function(index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+
+    function insertContainer()
+    {
+        var onClose = function () {
+            $("#insertContainerWin").empty();
+        };
+
+       $("#insertContainerWin").kendoWindow({
+            actions: ["Close"],
+            title:'添加条件' ,
+            draggable: true,
+            height: "80%",
+            width: "80%",
+            close: onClose,
+            content: "${base.contextPath}/sale/actions/saleSetContainerListAction.html",
+            iframe: true,
+            modal: true
+        });
+
+        var win = $("#insertContainerWin").data("kendoWindow");
+        win.center().open();
+    }
+
+
+    function insertContainerList(data)
+    {
+        for(var i in data) {
+            data[i].countNumber=1;
+            containerSelect.push(data[i]);
+        }
+
+        $('#grid').data('kendoGrid').dataSource.read();
+    }
+    function deleteContainer() {
+        var grid=$('#grid').data('kendoGrid');
+        var data = grid.selectedDataItems();
+        for(var i in data)
+        {
+            for(var j in containerSelect) {
+                if(containerSelect[j].id==data[i].id) {
+                    containerSelect.splice(j, 1);
+                    break;
+                }
+            }
+
+        }
+        grid.dataSource.read();
+    }
+
+    function saveContainer()
+    {
+
+        if(window.parent.viewModel.model.actions!=undefined)
+        {
+            for(var i in window.parent.viewModel.model.actions)
+            {
+                if(window.parent.viewModel.model.actions[i].id==id)
+                {
+                    if(window.parent.viewModel.model.actions[i].parameters==undefined)
+                    {
+                        window.parent.viewModel.model.actions[i].set("parameters",{});
+
+                    }
+
+                    if(type=='TARGET') {
+
+                        window.parent.viewModel.model.actions[i].parameters.targetValue = containerSelect;
+                    }else{
+
+                        window.parent.viewModel.model.actions[i].parameters.matchValue = containerSelect;
+                    }
+                    break;
+                }
+            }
+        }
+
+
+        window.parent.$("#productContainerWin").data("kendoWindow").close();
+
+
+    }
+    if(disabled!='true'){
+        $('#createButton').removeAttr("disabled");
+        $('#createButton').attr("onclick","insertContainer()");
+        $('#rollbackButton').removeAttr("disabled");
+        $('#rollbackButton').attr("onclick","deleteContainer()");
+        $('#saveButton').removeAttr("disabled");
+        $('#saveButton').attr("onclick","saveContainer()");
+    }
+
+    $('.k-input').attr("disabled",true);
+
+</script>
+</body>
+</html>

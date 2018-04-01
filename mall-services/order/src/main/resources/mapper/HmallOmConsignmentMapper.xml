@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+  ~  Copyright (C) HAND Enterprise Solutions Company Ltd.
+  ~  All Rights Reserved
+  ~
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.HmallOmConsignmentMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallOmConsignment">
+        <id column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL" />
+        <result column="CODE" property="code" jdbcType="VARCHAR" />
+        <result column="BRAND" property="brand" jdbcType="VARCHAR" />
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL" />
+        <result column="LOGISTICS_COMPANIES" property="logisticsCompanies" jdbcType="DECIMAL" />
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR" />
+        <result column="POINT_OF_SERVICE_ID" property="pointOfServiceId" jdbcType="DECIMAL" />
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR" />
+        <result column="SHIPPING_DATE" property="shippingDate" jdbcType="DATE" />
+        <result column="RECEIVER_NAME" property="receiverName" jdbcType="VARCHAR" />
+        <result column="RECEIVER_COUNTRY" property="receiverCountry" jdbcType="VARCHAR" />
+        <result column="RECEIVER_STATE" property="receiverState" jdbcType="VARCHAR" />
+        <result column="RECEIVER_CITY" property="receiverCity" jdbcType="VARCHAR" />
+        <result column="RECEIVER_DISTRICT" property="receiverDistrict" jdbcType="VARCHAR" />
+        <result column="RECEIVER_TOWN" property="receiverTown" jdbcType="VARCHAR" />
+        <result column="RECEIVER_ADDRESS" property="receiverAddress" jdbcType="VARCHAR" />
+        <result column="RECEIVER_ZIP" property="receiverZip" jdbcType="VARCHAR" />
+        <result column="RECEIVER_MOBILE" property="receiverMobile" jdbcType="VARCHAR" />
+        <result column="RECEIVER_PHONE" property="receiverPhone" jdbcType="VARCHAR" />
+        <result column="NOTE" property="note" jdbcType="VARCHAR" />
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="DATE" />
+        <result column="SPLIT_ALLOWED" property="splitAllowed" jdbcType="VARCHAR" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+        <result column="TRADE_FINISHED_TIME" property="tradeFinishedTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="getConsignmentByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM HMALL_OM_CONSIGNMENT HOC WHERE HOC.ORDER_ID = #{orderId}
+    </select>
+
+    <!--订单关联的所有“确认收货时间”【consignment.trade_finished_time】值为空且【consignment.status】=WAIT_BUYER_CONFIRM或者TRADE_BUYER_SIGNED的发货单-->
+    <select id="queryConsignmentByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+         SELECT * FROM HMALL_OM_CONSIGNMENT HOC
+         WHERE HOC.ORDER_ID = #{orderId}
+         AND HOC.TRADE_FINISHED_TIME IS NULL
+         AND (HOC.STATUS = 'WAIT_BUYER_CONFIRM' OR  HOC.STATUS = 'TRADE_BUYER_SIGNED')
+    </select>
+
+</mapper>

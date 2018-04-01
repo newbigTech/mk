@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.ProfileValueMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.model.ProfileValue">
+        <result column="Profile_Value" property="profileValue" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectPriorityValues" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT v.PROFILE_VALUE
+        FROM SYS_PROFILE_VALUE v
+        LEFT JOIN SYS_PROFILE p
+            on p.PROFILE_ID = v.PROFILE_ID
+        WHERE p.PROFILE_NAME = #{profileName}
+    </select>
+</mapper>

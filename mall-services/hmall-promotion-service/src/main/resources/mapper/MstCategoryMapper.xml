@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.promotion.mapper.MstCategoryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.promotion.dto.MstCategory">
+        <result column="CATEGORY_ID" property="categoryId" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_CODE" property="categoryCode" jdbcType="VARCHAR"/>
+        <result column="CATEGORY_NAME" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="CATALOG_VERSION" property="catalogVersion" jdbcType="DECIMAL"/>
+        <result column="CATEGORY_LEVEL" property="categoryLevel" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+</mapper>

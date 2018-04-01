@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.hmall.mapper.RefundOrderEntryMapper">
+
+    <resultMap id="RefundOrderEntryMap" type="com.hand.hmall.dto.RefundOrderEntry">
+        <result column="AS_REFUND_ENTRY_ID" property="asRefundEntryId" jdbcType="DECIMAL"/>
+        <result column="AS_REFUND_ID" property="asRefundId" jdbcType="DECIMAL"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+        <result column="PAY_MODE" property="payMode" jdbcType="VARCHAR"/>
+        <result column="ACCOUNT" property="account" jdbcType="VARCHAR"/>
+        <result column="PAY_AMOUNT" property="payAmount" jdbcType="DECIMAL"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATED_BY" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="LAST_UPDATE_LOGIN" property="lastUpdateLogin" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_APPLICATION_ID" property="programApplicationId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_ID" property="programId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_UPDATE_DATE" property="programUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="REQUEST_ID" property="requestId" jdbcType="DECIMAL"/>
+        <result column="ATTRIBUTE_CATEGORY" property="attributeCategory" jdbcType="VARCHAR"/>
+        <result column="PAY_STATUS" property="payStatus" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="COULD_AMOUNT" property="couldAmount" jdbcType="DECIMAL"/>
+
+    </resultMap>
+
+    <sql id="target_table_columns">
+
+		tgtbl.AS_REFUND_ENTRY_ID,
+		tgtbl.AS_REFUND_ID,
+		tgtbl.LINE_NUMBER,
+		tgtbl.PAY_MODE,
+		tgtbl.ACCOUNT,
+		tgtbl.PAY_AMOUNT,
+		tgtbl.NAME,
+		tgtbl.OBJECT_VERSION_NUMBER,
+		tgtbl.CREATION_DATE,
+		tgtbl.CREATED_BY,
+		tgtbl.LAST_UPDATED_BY,
+		tgtbl.LAST_UPDATE_DATE,
+		tgtbl.LAST_UPDATE_LOGIN,
+		tgtbl.PROGRAM_APPLICATION_ID,
+		tgtbl.PROGRAM_ID,
+		tgtbl.PROGRAM_UPDATE_DATE,
+		tgtbl.REQUEST_ID,
+		tgtbl.ATTRIBUTE_CATEGORY,
+		tgtbl.PAY_STATUS,
+		tgtbl.CODE,
+		tgtbl.COULD_AMOUNT
+    </sql>
+
+    <!--
+    /**
+     * 查询退款单对应的退款单行信息
+     * @param refundOrder
+     * @return
+     */
+    List<RefundOrderEntry> selectByRefundOrder(RefundOrder refundOrder);
+    -->
+    <select id="selectByRefundOrder" parameterType="com.hand.hmall.dto.RefundOrder" resultMap="RefundOrderEntryMap">
+        SELECT
+        <include refid="target_table_columns"/>
+        FROM HMALL_AS_REFUND_ENTRY tgtbl WHERE tgtbl.AS_REFUND_ID = #{asRefundId}
+    </select>
+</mapper>

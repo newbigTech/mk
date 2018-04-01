@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.om.mapper.ConsignmentMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.om.dto.Consignment">
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="BRAND" property="brand" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="LOGISTICS_COMPANIES" property="logisticsCompanies" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="POINT_OF_SERVICE_ID" property="pointOfServiceId" jdbcType="DECIMAL"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_DATE" property="shippingDate" jdbcType="DATE"/>
+        <result column="RECEIVER_NAME" property="receiverName" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_COUNTRY" property="receiverCountry" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_STATE" property="receiverState" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_CITY" property="receiverCity" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_DISTRICT" property="receiverDistrict" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_TOWN" property="receiverTown" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_ADDRESS" property="receiverAddress" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_ZIP" property="receiverZip" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_MOBILE" property="receiverMobile" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_PHONE" property="receiverPhone" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="DATE"/>
+        <result column="SPLIT_ALLOWED" property="splitAllowed" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="APPROVED_BY" property="approvedBy" jdbcType="DECIMAL"/>
+        <result column="APPROVED_DATE" property="approvedDate" jdbcType="DATE"/>
+        <result column="APPROVED_TIMES" property="approvedTimes" jdbcType="DECIMAL"/>
+        <result column="SPLIT_REASON" property="splitReason" jdbcType="VARCHAR"/>
+        <result column="ABNORMAL_REASON" property="abnormalReason" jdbcType="VARCHAR"/>
+        <result column="CS_APPROVED" property="csApproved" jdbcType="VARCHAR"/>
+        <result column="CAN_DELIVERY" property="canDelivery" jdbcType="VARCHAR"/>
+        <result column="SYNC_ZMALL" property="syncZmall" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="InfoMap" type="com.hand.hmall.om.dto.Consignment" extends="com.hand.hap.mapper.StdMapper.STD">
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="BRAND" property="brand" jdbcType="VARCHAR"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="LOGISTICS_COMPANIES" property="logisticsCompanies" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="POINT_OF_SERVICE_ID" property="pointOfServiceId" jdbcType="DECIMAL"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_DATE" property="shippingDate" jdbcType="DATE"/>
+        <result column="RECEIVER_NAME" property="receiverName" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_COUNTRY" property="receiverCountry" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_STATE" property="receiverState" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_CITY" property="receiverCity" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_DISTRICT" property="receiverDistrict" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_TOWN" property="receiverTown" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_ADDRESS" property="receiverAddress" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_ZIP" property="receiverZip" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_MOBILE" property="receiverMobile" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_PHONE" property="receiverPhone" jdbcType="VARCHAR"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="ESTIMATE_DELIVERY_TIME" property="estimateDeliveryTime" jdbcType="DATE"/>
+        <result column="SPLIT_ALLOWED" property="splitAllowed" jdbcType="VARCHAR"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="customerid" property="customerid" jdbcType="VARCHAR"/>
+        <result column="sex" property="sex" jdbcType="VARCHAR"/>
+        <result column="pay_status" property="payStatus" jdbcType="VARCHAR"/>
+        <result column="pay_rate" property="payRate" jdbcType="VARCHAR"/>
+        <result column="order_creationtime" property="orderCreationtime" jdbcType="TIMESTAMP"/>
+        <result column="orderNumber" property="orderNumber" jdbcType="VARCHAR"/>
+        <result column="consignmentStatus" property="consignmentStatus" jdbcType="VARCHAR"/>
+        <result column="shippingName" property="shippingName" jdbcType="VARCHAR"/>
+        <result column="CS_APPROVED" property="csApproved" jdbcType="VARCHAR"/>
+        <result column="APPROVED_BY" property="approvedBy" jdbcType="DECIMAL"/>
+        <result column="APPROVED_DATE" property="approvedDate" jdbcType="TIMESTAMP"/>
+        <result column="SPLIT_REASON" property="splitReason" jdbcType="VARCHAR"/>
+        <result column="ABNORMAL_REASON" property="abnormalReason" jdbcType="VARCHAR"/>
+        <result column="order_type" property="orderType" jdbcType="VARCHAR"/>
+        <result column="pause" property="pause" jdbcType="VARCHAR"/>
+        <result column="pause_reason" property="pauseReason" jdbcType="VARCHAR"/>
+        <result column="merge_consignment" property="mergeConsignment" jdbcType="VARCHAR"/>
+
+        <!-- added by majun @2017/6/7 for 订单生成配货单 -->
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="user_level" property="userLevel" jdbcType="VARCHAR"/>
+        <result column="pointCode" property="pointCode" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="region_code" property="regionCode" jdbcType="VARCHAR"/>
+        <result column="sap_code" property="sapCode" jdbcType="VARCHAR"/>
+        <result column="groupName" property="groupName" jdbcType="VARCHAR"/>
+        <result column="corporateName" property="corporateName" jdbcType="VARCHAR"/>
+        <result column="corporateCode" property="corporateCode" jdbcType="VARCHAR"/>
+
+        <!-- added by yuxiaoli @2017/7/28 for 订单推送retail -->
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDateTime" jdbcType="DATE"/>
+        <result column="sold_party" property="soldParty" jdbcType="VARCHAR"/>
+        <result column="sales_office" property="salesOffice" jdbcType="VARCHAR"/>
+        <result column="trade_finish_time" property="tradeFinishTime" jdbcType="DATE"/>
+
+        <result column="CAN_DELIVERY" property="canDelivery" jdbcType="VARCHAR"/>
+        <result column="pause" property="pause" jdbcType="VARCHAR"/>
+        <result column="pause_reason" property="pauseReason" jdbcType="VARCHAR"/>
+        <result column="trade_finished_time" property="tradeFinishedTime" jdbcType="DATE"/>
+        <result column="store_code" property="storeCode" jdbcType="VARCHAR"/>
+
+        <collection property="deliveryOrders" ofType="com.hand.hmall.om.dto.DeliveryOrderDto">
+            <result column="DELIVERY_ORDER_ID" jdbcType="DECIMAL" property="deliveryOrderId"/>
+            <result column="DELIVERY_NOTE" jdbcType="VARCHAR" property="deliveryNote"/>
+            <result column="delivery_Logistics_Number" jdbcType="VARCHAR" property="logisticsNumber" />
+        </collection>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        con.CONSIGNMENT_ID, con.CODE, con.BRAND, con.ORDER_ID, con.LOGISTICS_COMPANIES, con.LOGISTICS_NUMBER, con.POINT_OF_SERVICE_ID,
+        con.SHIPPING_TYPE, con.SHIPPING_DATE, con.RECEIVER_NAME, con.RECEIVER_COUNTRY, con.RECEIVER_STATE, con.RECEIVER_CITY, con.RECEIVER_DISTRICT,
+        con.RECEIVER_TOWN, con.RECEIVER_ADDRESS, con.RECEIVER_ZIP, con.RECEIVER_MOBILE, con.RECEIVER_PHONE, con.NOTE, con.ESTIMATE_DELIVERY_TIME,
+        con.SPLIT_ALLOWED, con.SYNCFLAG, con.SAP_CODE, con.STATUS, con.APPROVED_BY, con.APPROVED_DATE, con.APPROVED_TIMES,
+        con.SPLIT_REASON, con.ABNORMAL_REASON, con.CS_APPROVED, con.SYNC_THIRD_LOGISTICS, con.SYNC_ZMALL, con.CAN_DELIVERY
+    </sql>
+
+    <!-- 订单推送retail数据查询 -->
+    <select id="selectSendRetailData" resultMap="InfoMap" parameterType="java.util.Map">
+        SELECT
+            oc.consignment_id,
+            oc.status,
+            oc.order_id,
+            oc.brand,
+            odu.customerid,
+            oc.receiver_name,
+            odu.user_level,
+            odu.sex,
+            oc.receiver_district region_code,
+            oc.receiver_address,
+            oc.receiver_mobile,
+            oc.receiver_phone,
+            oc.note,
+            oc.estimate_delivery_time,
+            odu.pay_rate,
+            oc.can_delivery,
+            oc.pause,
+            oc.pause_reason,
+            oc.shipping_type,
+            po.code            pointCode,
+            oc.split_allowed,
+            oc.logistics_companies,
+            mls.code           corporateCode,
+            oc.logistics_number,
+            odu.order_creationtime,
+            odu.esc_order_code orderNumber,
+            oc.code,
+            oc.sap_code,
+            oc.LAST_UPDATE_DATE,
+            odu.sold_party,
+            odu.sales_office,
+            odu.store_code,
+            oc.APPROVED_BY,
+            oc.APPROVED_DATE,
+            oc.SPLIT_REASON,
+            oc.ABNORMAL_REASON,
+            oc.trade_finished_time
+        FROM hmall_om_consignment oc
+        LEFT JOIN (SELECT
+                        od.order_id,
+                        mu.customerid,
+                        mu.user_level,
+                        mu.sex,
+                        od.pay_rate,
+                        od.order_creationtime,
+                        od.code,
+                        od.esc_order_code,
+                        hmb.sold_party,
+                        hmb.sales_office,
+                        hmb.code store_code,
+                        od.trade_finish_time
+                        FROM hmall_om_order od
+                        LEFT JOIN hmall_mst_user mu
+                        ON od.user_id = mu.user_id
+                        left join HMALL_MST_BASESTORE hmb
+                        on od.STORE_ID = hmb.code ) odu
+                        ON oc.order_id = odu.order_id
+                        LEFT JOIN hmall_mst_pointofservice po
+                        ON oc.point_of_service_id = po.point_of_service_id
+                        LEFT JOIN HMALL_MST_LOGISTICSCO mls
+                        ON oc.logistics_companies = mls.logisticsco_id
+                        LEFT JOIN hmall_mst_brand brand
+                        ON oc.brand = brand.code
+                        WHERE  oc.status in ('WAIT_FOR_DELIVERY','WAIT_BUYER_CONFIRM','TRADE_BUYER_SIGNED','TRADE_CLOSED')
+                        AND brand.order_receive_system = 'RETAIL'
+                        <if test="syncflag != null and syncflag !=''">
+                            and  oc.syncflag = #{syncflag}
+                        </if>
+                        <if test="consignmentId !=null">
+                            and oc.consignment_id = #{consignmentId}
+                        </if>
+
+    </select>
+
+    <!-- 发货单详情查询 -->
+    <select id="selectConsignmentList" resultMap="InfoMap">
+        SELECT DISTINCT oc.consignment_id
+        ,oo.order_id
+        ,oc.code
+        ,oo.code orderNumber
+        ,oc.status
+        ,oc.logistics_number
+        ,oc.receiver_name
+        ,oc.cs_approved
+        ,oc.receiver_mobile
+        ,oc.shipping_type
+        ,oc.receiver_address
+        ,oc.logistics_companies
+        ,ml.name corporateName
+        ,oo.ORDER_TYPE
+        ,oc.pause
+        ,oc.pause_reason
+        ,mu.CUSTOMERID
+        ,oc.ESTIMATE_DELIVERY_TIME
+        ,oc.TRADE_FINISHED_TIME
+        FROM hmall_om_consignment oc
+        left join hmall_om_order oo
+        on oc.order_id = oo.order_id
+        left join hmall_mst_logisticsco ml
+        on ml.logisticsco_id = oc.logistics_companies
+        left join HMALL_OM_ORDER_ENTRY ooe
+        on ooe.CONSIGNMENT_ID = oc.CONSIGNMENT_ID
+        LEFT JOIN HMALL_MST_USER mu
+        ON oo.USER_ID = mu.USER_ID
+        WHERE 1 = 1
+        and oc.status != 'NEW_CREATE'
+        <if test='confirmReceiving == "Y"'>
+            and oc.Trade_Finished_Time is not null
+        </if>
+        <if test='confirmReceiving == "N"'>
+            and oc.Trade_Finished_Time is null
+        </if>
+        <if test="corporateName !=null and corporateName !=''">
+            and  ml.name LIKE '%'||#{corporateName}||'%'
+        </if>
+        <if test="logisticsNumber !=null and logisticsNumber !=''">
+            and  oc.logistics_number LIKE '%'||#{logisticsNumber}||'%'
+        </if>
+        <if test="receiverMobile !=null and receiverMobile !=''">
+            and  oc.receiver_mobile LIKE '%'||#{receiverMobile}||'%'
+        </if>
+        <if test="provice !=null and provice !=''">
+            and  oc.receiver_address LIKE '%'||#{provice}||'%'
+        </if>
+        <if test="city !=null and city !=''">
+            and  oc.receiver_address LIKE '%'||#{city}||'%'
+        </if>
+        <if test="startTime !=null and startTime!=''and startTime!='undefined'">
+            and oo.order_creationtime>to_date(#{startTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="endTime !=null and endTime!=''and endTime!='undefined'">
+            and oo.order_creationtime &lt;to_date(#{endTime},'yyyy-mm-dd hh24:mi:ss')
+        </if>
+        <if test="code !=null and code!=''">
+            and oc.code =#{code}
+        </if>
+        <if test="escOrderCode !=null and escOrderCode!=''">
+            and oo.esc_order_code =#{escOrderCode}
+        </if>
+        <if test="strOrderStatus != null and strOrderStatus.length != 0">
+            and(
+            <foreach collection="strOrderStatus" item="Status" index="index" open="" separator="or" close="">
+                oc.status = #{Status}
+            </foreach>
+            )
+        </if>
+        <if test="strDistribution != null and strDistribution.length != 0">
+            and(
+            <foreach collection="strDistribution" item="Status" index="index" open="" separator="or" close="">
+                oc.SHIPPING_TYPE = #{Status}
+            </foreach>
+            )
+        </if>
+        <if test="strOrderTypes != null and strOrderTypes.length != 0">
+            and(
+            <foreach collection="strOrderTypes" item="Status" index="index" open="" separator="or" close="">
+                oo.ORDER_TYPE = #{Status}
+            </foreach>
+            )
+        </if>
+        <if test="csApproved !=null and csApproved!=''">
+            and oc.cs_approved = #{csApproved}
+        </if>
+        <if test="pause !=null and pause!=''">
+            and oc.pause = #{pause}
+        </if>
+        <if test="bomApproved != null and bomApproved != ''">
+            and ooe.BOM_APPROVED = #{bomApproved}
+            <if test="bomApproved == 'N'.toString()">
+                and ooe.bom_reject_reason is not null
+            </if>
+        </if>
+    </select>
+
+    <!-- 发货单详情查询 -->
+    <select id="queryInfo" parameterType="com.hand.hmall.om.dto.Consignment" resultMap="InfoMap">
+        SELECT oc.consignment_id,
+        oc.order_id,
+        oc.brand,
+        odu.customerid,
+        odu.name,
+        odu.order_type,
+        oc.receiver_name,
+        odu.user_level,
+        odu.sex,
+        oc.receiver_country,
+        oc.receiver_state,
+        oc.receiver_city,
+        oc.receiver_district,
+        oc.receiver_district region_code,
+        oc.receiver_address,
+        oc.receiver_zip,
+        oc.receiver_mobile,
+        oc.receiver_phone,
+        oc.note,
+        oc.estimate_delivery_time,
+        oc.shipping_date,
+        odu.pay_status,
+        oc.shipping_type,
+        po.code                   pointcode,
+        oc.split_allowed,
+        oc.logistics_companies,
+        mls.name                  corporatename,
+        oc.logistics_number,
+        odu.order_creationtime,
+        odu.code                  ordernumber,
+        oc.code,
+        oc.status,
+        oc.sap_code,
+        oc.cs_approved,
+        odu.groupName,
+        cod.meaning               consignmentStatus, --订单状态
+        tp.meaning                shippingName, --发运方式
+        oc.abnormal_reason,
+        oc.merge_consignment,
+        oc.pause,
+        oc.pause_reason,
+        dod.DELIVERY_ORDER_ID,
+        dod.DELIVERY_NOTE,
+        dod.logistics_number as delivery_Logistics_Number,
+
+        oc.TRADE_FINISHED_TIME
+        FROM hmall_om_consignment oc
+        LEFT JOIN HMALL_OM_DELIVERY_ORDER dod
+        ON dod.CONSIGNMENT_ID = oc.CONSIGNMENT_ID
+        LEFT JOIN (SELECT od.order_id,
+        mu.customerid,
+        mu.name,
+        mu.user_level,
+        mu.sex,
+        od.pay_status,
+        od.order_creationtime,
+        od.code,
+        od.order_type,
+        mu.groupname
+        FROM hmall_om_order od
+        LEFT JOIN (SELECT mu.user_id,
+        mu.customerid,
+        mu.user_level,
+        mu.sex,
+        mu.name,
+        mug.name groupName
+        FROM hmall_mst_user         mu,
+        hmall_mst_usergroup    mug,
+        hmall_mst_user_mapping mup
+        WHERE mu.user_id = mup.user_id
+        AND mup.usergroup_id = mug.usergroup_id) mu
+        ON od.user_id = mu.user_id) odu
+        ON oc.order_id = odu.order_id
+        LEFT JOIN hmall_mst_pointofservice po
+        ON oc.point_of_service_id = po.point_of_service_id
+        LEFT JOIN hmall_mst_logisticsco mls
+        ON oc.logistics_companies = mls.logisticsco_id
+        left join (select va.value, va.meaning
+        from sys_code_value_b va
+        where va.code_id =
+        (select b.code_id
+        from sys_code_b b
+        where b.code = 'HMALL.CONSIGNMENT.STATUS')) cod
+        on oc.status = cod.value
+        left JOIN (select va.value, va.meaning
+        from sys_code_value_b va
+        where va.code_id =
+        (select b.code_id
+        from sys_code_b b
+        where b.code = 'HMALL.SHIPPING_TYPE')) tp
+        on tp.value = oc.shipping_type
+        WHERE 1 = 1
+        and oc.status != 'NEW_CREATE'
+        <if test="orderId !=null and orderId !=''">
+            and  oc.order_id = #{orderId}
+        </if>
+        <if test="code !=null and code!=''">
+            and oc.code =#{code}
+        </if>
+        <if test="consignmentId !=null and consignmentId!=''">
+            and oc.consignment_id = #{consignmentId}
+        </if>
+    </select>
+
+
+    <!-- 更新发货单状态为已审核 -->
+    <update id="examinestatus" parameterType="java.util.List">
+
+        UPDATE hmall_om_consignment t
+        <set>
+            t.status ='WAIT_FOR_DELIVERY',
+            t.last_update_date = sysdate,
+            t.last_updated_by = #{request.userId}
+        </set>
+        <where>
+            t.consignment_id IN
+            <foreach collection="list" index="index" item="item"
+                     separator="," open="(" close=")">
+                #{item.consignmentId,jdbcType=DECIMAL}
+            </foreach>
+        </where>
+
+    </update>
+
+    <!-- 根据发货单ID更新状态 -->
+    <update id="updateStatus">
+        UPDATE hmall_om_consignment
+        SET status = #{status}
+        WHERE consignment_id = #{consignmentId}
+    </update>
+
+    <!-- 同步到ZMALL -->
+    <resultMap id="SyncZmallMap" type="com.hand.hmall.om.dto.Consignment">
+        <result column="CONSIGNMENT_ID" property="consignmentId" jdbcType="DECIMAL"/>
+        <result column="ORDER_CODE" property="orderCode" jdbcType="VARCHAR"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="BRAND" property="brand" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="ORDER_CODE" property="orderCode" jdbcType="DECIMAL"/>
+        <result column="LOGISTICS_COMPANY" property="logisticsCompany" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="POINT_OF_SERVICE" property="pointOfService" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_TYPE" property="shippingType" jdbcType="VARCHAR"/>
+        <result column="SHIPPING_DATE" property="shippingDate" jdbcType="DATE"/>
+        <collection property="consignmentEntries" javaType="list" ofType="com.hand.hmall.om.dto.OrderEntry">
+            <result column="ORDER_ENTRY_CODE" property="orderEntryCode" jdbcType="VARCHAR"/>
+            <result column="LINE_LOGISTICS_NUMBER" property="lineLogisticsNumber" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <!-- 发货单推送ZMALL查询 -->
+    <select id="queryForZmall" resultMap="SyncZmallMap">
+        SELECT
+            hoc.consignment_id,
+            hoc.code,
+            CASE hoc.status
+            WHEN 'ABNORMAL'
+                THEN 'WAIT_FOR_DELIVERY'
+            WHEN 'SPLIT_CLOSED'
+                THEN 'CLOSED'
+            ELSE hoc.status END     AS status,
+            hoc.brand,
+            hoc.logistics_companies AS logistics_company,
+            hoc.logistics_number,
+            hmp.code                AS point_of_service,
+            hoc.shipping_type,
+            hoc.shipping_date,
+            hoo.esc_order_code AS ORDER_CODE,
+            hooe.ESC_LINE_NUMBER AS order_entry_code,
+            hooe.LOGISTICS_NUMBER AS line_logistics_number
+        FROM hmall_om_consignment hoc
+            LEFT JOIN hmall_om_order hoo
+                ON hoc.order_id = hoo.order_id
+            LEFT JOIN hmall_mst_pointofservice hmp
+                ON hmp.point_of_service_id = hoc.point_of_service_id
+            LEFT JOIN hmall_om_order_entry hooe
+                ON hoc.CONSIGNMENT_ID = hooe.CONSIGNMENT_ID
+                   AND hooe.PARENT_LINE IS NULL
+                   AND hooe.ORDER_ENTRY_STATUS = 'NORMAL'
+        WHERE hoc.SYNC_ZMALL != 'Y'
+              AND hoc.status IN ('ABNORMAL',
+                                 'WAIT_FOR_STOCK_UP',
+                                 'WAIT_FOR_DELIVERY',
+                                 'WAIT_BUYER_CONFIRM',
+                                 'TRADE_BUYER_SIGNED',
+                                 'SPLIT_CLOSED',
+                                 'CLOSED')
+             AND upper(hoo.order_type) = 'NORMAL'
+             AND hoo.WEBSITE_ID = '1'
+    </select>
+
+    <update parameterType="java.util.List" id="updateSyncZmall">
+        UPDATE hmall_om_consignment hoc
+        SET hoc.SYNC_ZMALL = 'Y'
+        WHERE hoc.CONSIGNMENT_ID IN
+        <foreach collection="list" open="(" separator="," close=")" index="index" item="item">
+            #{item.consignmentId}
+        </foreach>
+    </update>
+
+    <resultMap id="sendToRRSResultMap" type="com.hand.hmall.om.dto.ConsignmentToRRS">
+        <result column="delivery_order_id" property="deliveryOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_CODE" property="order_code" jdbcType="VARCHAR"/>
+        <result column="TMS_SERVICE_CODE" property="tms_service_code" jdbcType="VARCHAR"/>
+        <result column="TMS_ORDER_CODE" property="tms_order_code" jdbcType="VARCHAR"/>
+        <result column="SERVICE_TYPE" property="service_type" jdbcType="VARCHAR"/>
+        <result column="TOTAL_AMOUNT" property="total_amount" jdbcType="DECIMAL"/>
+        <result column="SERVICE_FEE" property="service_fee" jdbcType="DECIMAL"/>
+        <result column="RECEIVER_NAME" property="receiver_name" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_ZIP" property="receiver_zip" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_PROVINCE" property="receiver_province" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_CITY" property="receiver_city" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_DISTRICT" property="receiver_district" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_ADDRESS" property="receiver_address" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_MOBILE" property="receiver_mobile" jdbcType="VARCHAR"/>
+        <result column="RECEIVER_PHONE" property="receiver_phone" jdbcType="VARCHAR"/>
+        <result column="SENDER_NAME" property="sender_name" jdbcType="VARCHAR"/>
+        <result column="SENDER_ZIP" property="sender_zip" jdbcType="VARCHAR"/>
+        <result column="SENDER_PROVINCE" property="sender_province" jdbcType="VARCHAR"/>
+        <result column="SENDER_CITY" property="sender_city" jdbcType="VARCHAR"/>
+        <result column="SENDER_DISTRICT" property="sender_district" jdbcType="VARCHAR"/>
+        <result column="SENDER_ADDRESS" property="sender_address" jdbcType="VARCHAR"/>
+        <result column="SENDER_MOBILE" property="sender_mobile" jdbcType="VARCHAR"/>
+        <result column="SENDER_PHONE" property="sender_phone" jdbcType="VARCHAR"/>
+        <result column="ORDER_SOURCE" property="order_source" jdbcType="VARCHAR"/>
+        <result column="ORDER_SOURCE_CODE" property="order_source_code" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="MERGE_CONSIGNMENT" property="join_order_code" jdbcType="VARCHAR" />
+        <result column="JOIN_ORDER_COUNT" property="join_order_count" jdbcType="DECIMAL" />
+        <collection property="order_item_list" javaType="java.util.List" ofType="com.hand.hmall.om.dto.OrderItem">
+            <result column="DELIVERY_ENTRY_ID" property="deliveryEntryId" jdbcType="DECIMAL"/>
+            <result column="ITEM_ID" property="item_id" jdbcType="VARCHAR"/>
+            <result column="ITEM_NAME" property="item_name" jdbcType="VARCHAR"/>
+            <result column="ITEM_CODE" property="item_code" jdbcType="VARCHAR"/>
+            <result column="ITEM_QUANTITY" property="item_quantity" jdbcType="DECIMAL"/>
+            <result column="ITEM_PACK" property="item_pack" jdbcType="DECIMAL"/>
+            <result column="ITEM_VOLUME_STR" property="item_volume_str" jdbcType="DECIMAL"/>
+            <result column="ITEM_PRICE" property="item_price" jdbcType="DECIMAL"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryConsignmentForRRS" resultMap="sendToRRSResultMap">
+        select odo.delivery_order_id,
+            odo.delivery_note as order_code,
+               '999' as tms_service_code,
+            odo.logistics_number as TMS_ORDER_CODE,
+               '202' as service_type,
+               fee.sum_fee as total_amount,
+               oc.receiver_name as RECEIVER_NAME,
+               oc.receiver_zip as receiver_zip,
+               oc.receiver_address as receiver_address,
+               oc.receiver_mobile as receiver_mobile,
+               oc.receiver_phone as receiver_phone,
+               PROVINCE.REGION_NAME AS RECEIVER_PROVINCE,
+               CITY.REGION_NAME AS RECEIVER_CITY,
+               AREA.REGION_NAME AS RECEIVER_DISTRICT,
+               '恣在家商城' AS SENDER_NAME,
+               HMPS.DEL_ZIP_CODE AS SENDER_ZIP,
+               HMPS.DEL_PROVINCE AS SENDER_PROVINCE,
+               HMPS.DEL_CITY AS SENDER_CITY,
+               HMPS.DEL_DISTRICT AS SENDER_DISTRICT,
+               HMPS.DEL_ADDRESS AS SENDER_ADDRESS,
+               HMPS.DEL_MOBILE AS SENDER_MOBILE,
+               HMPS.DEL_PHONE AS SENDER_PHONE,
+               CASE HMW.CODE
+               WHEN '2' THEN
+                   'TMALL'
+               ELSE
+                   'ZIZAIJIA'
+               END AS ORDER_SOURCE,
+               HOO.ESC_ORDER_CODE AS ORDER_SOURCE_CODE,
+               '' AS REMARK,
+               CASE WHEN (SELECT count(1) FROM HMALL_OM_DELIVERY_ORDER WHERE CONSIGNMENT_ID = OC.CONSIGNMENT_ID) = 1
+                   THEN OC.MERGE_CONSIGNMENT
+               ELSE
+                    CASE WHEN (select DELIVERY_ORDER_ID from( SELECT DELIVERY_ORDER_ID FROM HMALL_OM_DELIVERY_ORDER WHERE SHIPPING_DATE =
+                                (SELECT MAX(SHIPPING_DATE) FROM HMALL_OM_DELIVERY_ORDER WHERE CONSIGNMENT_ID = OC.CONSIGNMENT_ID GROUP BY CONSIGNMENT_ID) AND SYNC_THIRD_LOGISTICS = 'N') where rownum = 1) = odo.DELIVERY_ORDER_ID
+                        THEN OC.MERGE_CONSIGNMENT
+                    ELSE NULL
+                    END
+                END AS MERGE_CONSIGNMENT,
+               CASE
+               WHEN (HOCM.MERGE_COUNT = 0 or HOCM.MERGE_COUNT is null) THEN
+                   1
+               ELSE
+                   HOCM.MERGE_COUNT
+               END AS JOIN_ORDER_COUNT,
+               ode.delivery_note_line as ITEM_ID,
+               HMP.NAME AS ITEM_NAME,
+               HMP.CODE AS ITEM_CODE,
+               ode.shipped_quantity AS ITEM_QUANTITY,
+               1 AS ITEM_PACK,
+               NULL AS ITEM_PRICE,
+               OOE.PRODUCT_PACKED_SIZE AS ITEM_VOLUME_STR,
+               NULL AS ITEM_WEIGHT,
+               ode.DELIVERY_ENTRY_ID
+        from hmall_om_delivery_order odo
+            left join (select sum(total_fee) as sum_fee, delivery_order_id
+                       from (select case
+                                    when oe.parent_line is null then
+                                        oe.unit_fee * de.shipped_quantity
+                                    else
+                                        oe.internal_price * pe.unit_fee /
+                                        pe.internal_price * de.shipped_quantity
+                                    end as total_fee,
+                                 de.delivery_order_id
+                             from hmall_om_delivery_entry de
+                                 left join hmall_om_order_entry oe
+                                     on oe.order_entry_id = de.order_entry_id
+                                 left join hmall_om_order_entry pe
+                                     on pe.order_entry_id = oe.parent_line)
+                       group by delivery_order_id) fee
+                on fee.delivery_order_id = odo.delivery_order_id
+            left join hmall_om_consignment oc
+                on oc.consignment_id = odo.consignment_id
+            left join hmall_om_delivery_entry ode
+                on odo.delivery_order_id = ode.delivery_order_id
+            left join hmall_om_order_entry ooe
+                on ooe.order_entry_id = ode.order_entry_id
+            LEFT JOIN HMALL_OM_ORDER HOO
+                ON HOO.ORDER_ID = OC.ORDER_ID
+            LEFT JOIN HMALL_MST_PRODUCT HMP
+                ON OOE.PRODUCT_ID = HMP.PRODUCT_ID
+            LEFT JOIN (SELECT HFRB.REGION_CODE, HFRTL.REGION_NAME
+                       FROM HMALL_FND_REGIONS_B HFRB
+                           LEFT JOIN HMALL_FND_REGIONS_TL HFRTL
+                               ON HFRB.REGION_ID = HFRTL.REGION_ID
+                                  AND HFRTL.LANG = 'zh_CN'
+                       WHERE HFRB.REGION_TYPE = 'PROVINCE') PROVINCE
+                ON PROVINCE.REGION_CODE = OC.RECEIVER_STATE
+            LEFT JOIN (SELECT HFRB.REGION_CODE, HFRTL.REGION_NAME
+                       FROM HMALL_FND_REGIONS_B HFRB
+                           LEFT JOIN HMALL_FND_REGIONS_TL HFRTL
+                               ON HFRB.REGION_ID = HFRTL.REGION_ID
+                                  AND HFRTL.LANG = 'zh_CN'
+                       WHERE HFRB.REGION_TYPE = 'CITY') CITY
+                ON CITY.REGION_CODE = OC.RECEIVER_CITY
+            LEFT JOIN (SELECT HFRB.REGION_CODE, HFRTL.REGION_NAME
+                       FROM HMALL_FND_REGIONS_B HFRB
+                           LEFT JOIN HMALL_FND_REGIONS_TL HFRTL
+                               ON HFRB.REGION_ID = HFRTL.REGION_ID
+                                  AND HFRTL.LANG = 'zh_CN'
+                       WHERE HFRB.REGION_TYPE = 'AREA') AREA
+                ON AREA.REGION_CODE = OC.RECEIVER_DISTRICT
+            LEFT JOIN HMALL_MST_WEBSITE HMW
+                ON HMW.CODE = HOO.WEBSITE_ID
+            LEFT JOIN HMALL_MST_POINTOFSERVICE HMPS
+                ON OC.POINT_OF_SERVICE_ID = HMPS.POINT_OF_SERVICE_ID
+            LEFT JOIN (SELECT MERGE_CONSIGNMENT, COUNT(CONSIGNMENT_ID) AS MERGE_COUNT
+                       FROM HMALL_OM_CONSIGNMENT
+                       WHERE STATUS != 'TRADE_CLOSED'
+                       GROUP BY MERGE_CONSIGNMENT) HOCM
+                ON OC.MERGE_CONSIGNMENT = HOCM.MERGE_CONSIGNMENT
+        WHERE odo.SYNC_THIRD_LOGISTICS = 'N' AND OC.SHIPPING_TYPE = 'LOGISTICS' AND HMPS.CODE NOT LIKE '%S%'
+    </select>
+
+    <update id="updateSyncThirdLogistics" parameterType="com.hand.hmall.om.dto.ConsignmentToRRS">
+        UPDATE HMALL_OM_DELIVERY_ORDER do SET do.SYNC_THIRD_LOGISTICS = 'Y'
+        WHERE do.DELIVERY_ORDER_ID = #{deliveryOrderId}
+    </update>
+
+    <select id="selectCanBeShippedConsignments" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+          FROM HMALL_OM_CONSIGNMENT CON
+          JOIN HMALL_OM_ORDER OD
+            ON CON.ORDER_ID = OD.ORDER_ID
+         WHERE CON.STATUS = 'WAIT_FOR_DELIVERY'
+           AND CON.CAN_DELIVERY = 'N'
+           AND OD.PAY_RATE IS NOT NULL
+           AND TO_NUMBER(OD.PAY_RATE) = 1
+    </select>
+
+</mapper>

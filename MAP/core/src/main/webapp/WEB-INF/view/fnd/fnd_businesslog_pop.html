@@ -1,0 +1,24 @@
+<#include "../include/header.html">
+<script type="text/javascript">
+    var operationContent = "${RequestParameters.operationContent!0}";
+    var strs = new Array();
+    strs = operationContent.split(';');
+</script>
+<body>
+<div id="page-content">
+    <div id="contentDetail">
+        <p></p>
+    </div>
+</div>
+<script type="text/javascript">
+
+    if(operationContent != null && operationContent != 0){
+        for(var i=0; i< strs.length; i++){
+            var str = $('#contentDetail p').html()+strs[i]+"</br>";
+            $('#contentDetail p').html(str)
+        }
+
+    }
+</script>
+</body>
+</html>

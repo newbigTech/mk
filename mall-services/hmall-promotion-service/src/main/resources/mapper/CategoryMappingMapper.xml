@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.promotion.mapper.CategoryMappingMapper">
+  <resultMap id="BaseResultMap" type="com.hand.promotion.dto.CategoryMapping">
+    <id column="MAPPING_ID" jdbcType="DECIMAL" property="mappingId" />
+    <result column="PRODUCT_ID" jdbcType="DECIMAL" property="productId" />
+    <result column="CATEGORY_ID" jdbcType="DECIMAL" property="categoryId" />
+    <result column="SYNCFLAG" jdbcType="VARCHAR" property="syncflag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    MAPPING_ID, PRODUCT_ID, CATEGORY_ID, SYNCFLAG, OBJECT_VERSION_NUMBER
+  </sql>
+  <select id="selectCategortByProductId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from HMALL_MST_CATEGORY_MAPPING
+    where PRODUCT_ID = #{productId,jdbcType=DECIMAL}
+  </select>
+
+</mapper>

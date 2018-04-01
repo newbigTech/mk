@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.as.mapper.AsCompensateEntryMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.as.dto.AsCompensateEntry">
+        <result column="COMPENSATE_ENTRY_ID" property="compensateEntryId" jdbcType="DECIMAL"/>
+        <result column="COMPENSATE_ID" property="compensateId" jdbcType="DECIMAL"/>
+        <result column="LINE_NUMBER" property="lineNumber" jdbcType="VARCHAR"/>
+        <result column="COMPENSATE_TYPE" property="compensateType" jdbcType="VARCHAR"/>
+        <result column="QUANTITY" property="quantity" jdbcType="DECIMAL"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="UNIT_FEE" property="unitFee" jdbcType="DECIMAL"/>
+        <result column="TOTAL_FEE" property="totalFee" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="SAP_CODE" property="sapCode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--根据赔付单ID查询赔付单行信息-->
+    <select id="selectCompensateEntryById" parameterType="com.hand.hmall.as.dto.AsCompensateEntry" resultMap="BaseResultMap">
+        SELECT * FROM HMALL_AS_COMPENSATE_ENTRY
+        <where>
+            <if test="compensateId != null">
+                COMPENSATE_ID = #{compensateId}
+            </if>
+        </where>
+        ORDER BY to_Number(LINE_NUMBER) ASC
+    </select>
+
+    <!--根据AS_COMPENSATE_ID查询销售赔付表信息-->
+    <select id="selectAsCompensateEntryByConsignmentId" parameterType="java.lang.Long"
+            resultMap="BaseResultMap">
+        SELECT
+        TOTAL_FEE
+        FROM HMALL_AS_COMPENSATE_ENTRY ce
+        WHERE ce.CONSIGNMENT_ID = #{consignmentId}
+    </select>
+
+    <!--批量插入销售赔付单行数据-->
+    <insert id="batchInsertAsCompensate" parameterType="java.util.List">
+        insert into HMALL_AS_COMPENSATE_ENTRY
+        (COMPENSATE_ENTRY_ID,
+        COMPENSATE_ID,
+        LINE_NUMBER,
+        COMPENSATE_TYPE,
+        QUANTITY,
+        UNIT,
+        UNIT_FEE,
+        TOTAL FEE,
+        NOTE
+        )
+        (select HMALL_AS_COMPENSATE_S.NEXTVAL,
+        cd.compensateEntryId,
+        cd.compensateId,
+        cd.lineNumber,
+        cd.compensateType,
+        cd.quantity,
+        cd.unit,
+        cd.unitFee,
+        cd.totalFee,
+        cd.note
+        from(
+        <foreach collection="list" item="item" index="index" close=")" open="(" separator="union all">
+            select
+            <choose>
+                <when test="item.compensateEntryId !=null">
+                    #{item.compensateEntryId,jdbcType=DECIMAL} as compensateEntryId,
+                </when>
+                <otherwise>
+                    null as compensateEntryId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.compensateId !=null">
+                    #{item.compensateId,jdbcType=DECIMAL} as compensateId,
+                </when>
+                <otherwise>
+                    null as compensateId,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.lineNumber !=null and item.lineNumber != ''">
+                    #{item.lineNumber,jdbcType=VARCHAR} as lineNumber,
+                </when>
+                <otherwise>
+                    null as lineNumber,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.compensateType !=null and item.compensateType != ''">
+                    #{item.compensateType,jdbcType=VARCHAR} as compensateType,
+                </when>
+                <otherwise>
+                    null as compensateType,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.quantity !=null">
+                    #{item.quantity,jdbcType=DECIMAL} as quantity,
+                </when>
+                <otherwise>
+                    null as quantity,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.unit !=null and item.unit != ''">
+                    #{item.unit,jdbcType=VARCHAR} as unit,
+                </when>
+                <otherwise>
+                    null as unit,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.unitFee !=null">
+                    #{item.unitFee,jdbcType=DECIMAL} as unitFee,
+                </when>
+                <otherwise>
+                    null as unitFee,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.totalFee !=null">
+                    #{item.totalFee,jdbcType=DECIMAL} as totalFee,
+                </when>
+                <otherwise>
+                    null as totalFee,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.note !=null and item.note != ''">
+                    #{item.note,jdbcType=VARCHAR} as note
+                </when>
+                <otherwise>
+                    null as note
+                </otherwise>
+            </choose>
+            from dual
+        </foreach>
+        ) cd)
+    </insert>
+
+
+    <select id="selectCompensateEntryForRetail" parameterType="com.hand.hmall.as.dto.AsCompensateEntry" resultMap="BaseResultMap">
+        SELECT entry.*,
+        mapping.SAP_CODE
+        FROM HMALL_AS_COMPENSATE_ENTRY entry
+        LEFT JOIN HMALL_AS_VIRTUAL_MAPPING mapping ON entry.COMPENSATE_TYPE = mapping.CHARGE_TYPE
+        <where>
+            <if test="compensateId != null">
+                entry.COMPENSATE_ID = #{compensateId}
+            </if>
+        </where>
+    </select>
+
+
+
+</mapper>

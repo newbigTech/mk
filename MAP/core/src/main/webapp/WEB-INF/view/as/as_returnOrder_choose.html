@@ -1,0 +1,172 @@
+<#--
+        * description: Hmall退货单选择页面
+        * author: xuxiaoxue
+        * date 2017/07/17
+        * version: 0.1
+        *
+        -->
+    <#include "../include/header.html">
+        <script type="text/javascript">
+            var serviceOrderId = "${RequestParameters.serviceOrderId!0}";
+            function closeWindow() {
+                window.parent.$("#serviceorderEntry").data("kendoWindow").close();
+            }
+            //选择退货单行
+            function selectServiceOrderEntry() {
+                var selections = $("#Grid").data("kendoGrid").selectedDataItems();
+                window.parent.chooseServiceOrderEntry(selections);
+            }
+            var viewModel = kendo.observable({
+                model: {
+                    serviceOrderId: serviceOrderId,
+                    code: null,
+                    name: null
+                },
+                queryResource: function (e) {
+                    $('#Grid').data('kendoGrid').dataSource.page(1);
+                }
+            });
+        </script>
+        <body>
+        <div id="page-content">
+            <div class="pull-right" id="query-form" style="padding-bottom:10px;">
+                <div style="clear:both">
+                    <div id="Grid" style="margin-bottom: 60px;"></div>
+                </div>
+                <div class="pull-right" id="toolbar-btn" style="padding-bottom:10px;padding-top: 10px;">
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="selectServiceOrderEntry()">选择</span>
+                    <span id class="btn btn-primary" style="float:left;margin-right:5px;" onclick="closeWindow()">取消</span>
+                </div>
+            </div>
+
+
+            <script type="text/javascript">
+                var showServiceorderEntry = [];//展示服务单行
+
+                var _grid_ = $("#Grid").kendoGrid({
+                    height: 330,
+                    resizable: true,
+                    navigatable: true,
+                    scrollable: true,
+                    editable: true,
+                    rownumber: true,
+                    sortable: true,
+                    selectable: 'multiple, rowbox',
+                    pageable: {
+                        pageSizes: [5, 10, 20, 50],
+                        refresh: true,
+                        buttonCount: 5
+                    },
+                    columns: [
+                        {
+                            field: "consignmentId",
+                            title: '<@spring.message "原配货单号"/>',
+                            width: 120,
+                            editor: function (container, options) {
+                                container.html(options.model.consignmentId);
+                                container.removeClass('k-edit-cell');
+                            }
+                        },
+                        {
+                            field: "lineNumber",
+                            title: '<@spring.message "原订单行号"/>',
+                            width: 120,
+                            editor: function (container, options) {
+                                container.html(options.model.lineNumber);
+                                container.removeClass('k-edit-cell');
+                            }
+                        },
+                        {
+                            field: "productId",
+                            title: '<@spring.message "产品编号"/>',
+                            width: 120,
+                            editor: function (container, options) {
+                                container.html(options.model.productId);
+                                container.removeClass('k-edit-cell');
+                            }
+                        }, {
+                            field: "name",
+                            title: '<@spring.message "产品描述"/>',
+                            width: 120,
+                            editor: function (container, options) {
+                                container.html(options.model.name);
+                                container.removeClass('k-edit-cell');
+                            }
+                        }, {
+                            field: "basePrice",
+                            title: '<@spring.message "销售价格"/>',
+                            width: 120,
+                            editor: function (container, options) {
+                                container.html(options.model.basePrice);
+                                container.removeClass('k-edit-cell');
+                            }
+                        }, {
+                            field: "quantity",
+                            title: '<@spring.message "数量"/>',
+                            width: 120,
+                            editor: function (container, options) {
+                                container.html(options.model.quantity);
+                                container.removeClass('k-edit-cell');
+                            }
+                        }, {
+                            field: "unitFee",
+                            title: '<@spring.message "实际销售金额"/>',
+                            width: 80,
+                        }, {
+                            field: "returnReason1",
+                            title: '<@spring.message "退换货原因代码-1级"/>',
+                            format: "{0:n2}",
+                            width: 80,
+
+                        }, {
+                            field: "returnReason2",
+                            title: '<@spring.message "退换货原因代码-2级"/>',
+                            format: "{0:n2}",
+                            width: 80,
+
+                        }, {
+                            field: "note",
+                            title: '<@spring.message "备注"/>',
+                            width: 80,
+                        }
+                    ],
+
+                }).data("kendoGrid");
+
+                filterServiceorderEntry();
+
+                //过滤掉已经选择的产品
+                function filterServiceorderEntry() {
+                    var parentAllServiceorderEntries = window.parent.allServiceOrderEntries;
+                    console.log(parentAllServiceorderEntries);
+                    var parentSelectServiceOrderEntries = window.parent.selectServiceOrderEntries;
+                    console.log(parentSelectServiceOrderEntries);
+                    if (parentSelectServiceOrderEntries.length > 0) {
+                        for (var i in parentAllServiceorderEntries) {
+                            var flag = false;//标志位判断当前商品是否已经选择过
+                            for (var j in parentSelectServiceOrderEntries) {
+                                if (parentAllServiceorderEntries[i].productId == parentSelectServiceOrderEntries[j].productId) {
+                                    flag = true;
+                                }
+                            }
+                            if (!flag) {
+                                showServiceorderEntry.push(parentAllServiceorderEntries[i]);
+                            }
+                        }
+                        console.log(showServiceorderEntry);
+                    } else {
+                        showServiceorderEntry = parentAllServiceorderEntries;
+                    }
+                    refreshServiceorderEntry();
+                }
+
+                //刷新商品grid
+                function refreshServiceorderEntry() {
+                    var _dataSource_ = new kendo.data.DataSource({
+                        data: showServiceorderEntry
+                    });
+                    _grid_.setDataSource(_dataSource_);
+                }
+            </script>
+        </body>
+        </html>

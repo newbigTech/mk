@@ -1,0 +1,73 @@
+{
+  "name": "Hmall",
+  "version": "1.0.0",
+  "description": "Hmall storefont project",
+  "main": "src/main.js",
+  "devDependencies": {
+    "babel-core": "^6.17.0",
+    "babel-loader": "^6.2.5",
+    "babel-plugin-react-transform": "^2.0.2",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-2": "^6.16.0",
+    "binstring": "^0.2.1",
+    "classlist-polyfill": "^1.0.3",
+    "clean-webpack-plugin": "^0.1.15",
+    "cross-env": "^3.2.4",
+    "cryptojs": "^2.5.3",
+    "css-loader": "^0.25.0",
+    "extract-text-webpack-plugin": "^2.1.0",
+    "file-loader": "^0.9.0",
+    "html-webpack-plugin": "^2.26.0",
+    "less": "^2.7.1",
+    "less-loader": "^2.2.3",
+    "mocha": "^2.2.5",
+    "moment": "^2.17.1",
+    "rc-upload": "^2.2.0",
+    "react-addons-test-utils": "^0.14.0",
+    "react-cookie": "^1.0.4",
+    "react-datetime": "^2.7.5",
+    "react-dropzone": "^3.7.3",
+    "react-onclickoutside": "^5.9.0",
+    "react-transform-hmr": "^1.0.4",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.7",
+    "webpack": "^2.2.1",
+    "webpack-chunk-hash": "^0.4.0",
+    "webpack-dev-server": "^2.4.2",
+    "webstorage-polyfill": "^1.0.1",
+    "whatwg-fetch": "^1.0.0"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=dev webpack-dev-server --config ./webpack.dev.config.js --progress",
+    "build": "cross-env NODE_ENV=production webpack --config ./webpack.production.config.js --progress",
+    "test": "cross-env NODE_ENV=test webpack --config ./webpack.production.config.js --progress",
+    "preview": "cross-env NODE_ENV=preview webpack --config ./webpack.production.config.js --progress",
+    "cloud": "cross-env NODE_ENV=cloud webpack --config ./webpack.production.config.js --progress",
+    "idc": "cross-env NODE_ENV=idc webpack --config ./webpack.production.config.js --progress",
+    "prod": "cross-env NODE_ENV=prod webpack --config ./webpack.production.config.js --progress",
+    "prod_azure": "cross-env NODE_ENV=prod_azure webpack --config ./webpack.production.config.js --progress",
+    "prod_idc": "cross-env NODE_ENV=prod_idc webpack --config ./webpack.production.config.js --progress",
+    "prod_preview": "cross-env NODE_ENV=prod_preview webpack --config ./webpack.production.config.js --progress"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://rdc.hand-china.com/gitlab/Hmall_Uniqlo/Hmall"
+  },
+  "keywords": [
+    "hmall",
+    "hand"
+  ],
+  "author": "HAND",
+  "bugs": {
+    "url": "https://rdc.hand-china.com/gitlab/Hmall_Uniqlo/Hmall/issues"
+  },
+  "homepage": "https://rdc.hand-china.com/gitlab/Hmall_Uniqlo/Hmall",
+  "dependencies": {
+    "react": "^0.14.8",
+    "react-dom": "^0.14.8",
+    "react-router": "^2.8.1"
+  }
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.HmallAsStatuslogMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.dto.HmallAsStatuslog">
+        <id column="STATUSLOG_ID" property="statuslogId" jdbcType="DECIMAL" />
+        <result column="SERVICE_ID" property="serviceId" jdbcType="DECIMAL" />
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="CHANGE_TIME" property="changeTime" jdbcType="DATE" />
+    </resultMap>
+
+    <select id="getHmallAsStatuslogs" resultMap="BaseResultMap">
+        select * from HMALL_AS_STATUSLOG WHERE SERVICE_ID = #{serviceId, jdbcType=DECIMAL}
+    </select>
+</mapper>

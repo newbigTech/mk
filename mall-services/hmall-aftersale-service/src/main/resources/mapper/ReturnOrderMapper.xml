@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hand.hmall.mapper.ReturnOrderMapper">
+
+    <resultMap id="ReturnOrderMap" type="com.hand.hmall.dto.ReturnOrder">
+        <result column="AS_RETURN_ID" property="asReturnId" jdbcType="DECIMAL"/>
+        <result column="CODE" property="code" jdbcType="VARCHAR"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR"/>
+        <result column="SERVICE_ORDER_ID" property="serviceOrderId" jdbcType="DECIMAL"/>
+        <result column="ORDER_ID" property="orderId" jdbcType="DECIMAL"/>
+        <result column="NOTE" property="note" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="CS" property="cs" jdbcType="VARCHAR"/>
+        <result column="FINISH_TIME" property="finishTime" jdbcType="TIMESTAMP"/>
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR"/>
+        <result column="APPOINTMENT_DATE" property="appointmentDate" jdbcType="TIMESTAMP"/>
+        <result column="EXECUTION_DATE" property="executionDate" jdbcType="TIMESTAMP"/>
+        <result column="TRANS_FEE" property="transFee" jdbcType="DECIMAL"/>
+        <result column="PACKAGE_FEE" property="packageFee" jdbcType="DECIMAL"/>
+        <result column="RETURN_TYPE" property="returnType" jdbcType="VARCHAR"/>
+        <result column="RETURN_FEE" property="returnFee" jdbcType="DECIMAL"/>
+        <result column="RECEIVE_POSITION" property="receivePosition" jdbcType="VARCHAR"/>
+        <result column="LOGISTICS_NUMBER" property="logisticsNumber" jdbcType="VARCHAR"/>
+        <result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="CREATION_DATE" property="creationDate" jdbcType="TIMESTAMP"/>
+        <result column="CREATED_BY" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATED_BY" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="LAST_UPDATE_DATE" property="lastUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="LAST_UPDATE_LOGIN" property="lastUpdateLogin" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_APPLICATION_ID" property="programApplicationId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_ID" property="programId" jdbcType="DECIMAL"/>
+        <result column="PROGRAM_UPDATE_DATE" property="programUpdateDate" jdbcType="TIMESTAMP"/>
+        <result column="REQUEST_ID" property="requestId" jdbcType="DECIMAL"/>
+        <result column="ATTRIBUTE_CATEGORY" property="attributeCategory" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <sql id="target_table_columns">
+
+		tgtbl.AS_RETURN_ID,
+		tgtbl.CODE,
+		tgtbl.STATUS,
+		tgtbl.SERVICE_ORDER_ID,
+		tgtbl.ORDER_ID,
+		tgtbl.NOTE,
+		tgtbl.NAME,
+		tgtbl.MOBILE,
+		tgtbl.ADDRESS,
+		tgtbl.CS,
+		tgtbl.FINISH_TIME,
+		tgtbl.SYNCFLAG,
+		tgtbl.APPOINTMENT_DATE,
+		tgtbl.EXECUTION_DATE,
+		tgtbl.TRANS_FEE,
+		tgtbl.PACKAGE_FEE,
+		tgtbl.RETURN_TYPE,
+		tgtbl.RETURN_FEE,
+		tgtbl.RECEIVE_POSITION,
+		tgtbl.LOGISTICS_NUMBER,
+		tgtbl.OBJECT_VERSION_NUMBER,
+		tgtbl.CREATION_DATE,
+		tgtbl.CREATED_BY,
+		tgtbl.LAST_UPDATED_BY,
+		tgtbl.LAST_UPDATE_DATE,
+		tgtbl.LAST_UPDATE_LOGIN,
+		tgtbl.PROGRAM_APPLICATION_ID,
+		tgtbl.PROGRAM_ID,
+		tgtbl.PROGRAM_UPDATE_DATE,
+		tgtbl.REQUEST_ID,
+		tgtbl.ATTRIBUTE_CATEGORY
+    </sql>
+
+    <!--
+    /**
+     * 查询服务单对应的退货单，并设置到服务单中
+     * @param so
+     * @return
+     */
+    List<ReturnOrder> selectByServiceOrder(ServiceOrder so);
+    -->
+    <select id="selectByServiceOrder" parameterType="com.hand.hmall.dto.ServiceOrder" resultMap="ReturnOrderMap">
+        SELECT
+        <include refid="target_table_columns"/>
+        from HMALL_AS_RETURN tgtbl WHERE tgtbl.SERVICE_ORDER_ID = #{serviceOrderId}
+    </select>
+
+</mapper>

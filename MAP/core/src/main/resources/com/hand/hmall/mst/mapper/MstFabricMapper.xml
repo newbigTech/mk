@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mst.mapper.MstFabricMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.mst.dto.MstFabric">
+        <result column="FABRIC_ID" property="fabricId" jdbcType="DECIMAL" />
+        <result column="FABRIC_CODE" property="fabricCode" jdbcType="VARCHAR" />
+        <result column="FABRIC_LEVEL" property="fabricLevel" jdbcType="VARCHAR" />
+        <result column="SYNCFLAG" property="syncflag" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        FABRIC_ID,FABRIC_CODE,FABRIC_LEVEL,SYNCFLAG
+    </sql>
+
+    <!--更新HMALL_MST_FABRIC表的指定字段-->
+    <update id="updateByFabricCode" parameterType="com.hand.hmall.mst.dto.MstFabric">
+        UPDATE HMALL_MST_FABRIC
+        <set>
+            FABRIC_CODE =#{fabricCode},FABRIC_LEVEL=#{fabricLevel},LAST_UPDATE_DATE=sysdate
+        </set>
+        <where>
+            FABRIC_CODE = #{fabricCode}
+        </where>
+    </update>
+</mapper>

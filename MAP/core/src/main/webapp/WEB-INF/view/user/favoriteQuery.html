@@ -1,0 +1,333 @@
+<#-- * description: 员工管理 * version: 2.0 * author:ljf* --> <#include
+"/include/header.html">
+<script type="text/javascript">
+    
+    //match
+    var userId;
+    var userPhone;
+    var productCode;
+    var product;
+    var map1;
+    
+    var viewModel = kendo.observable({
+    	model : {},
+		queryFunction : function(e) {
+			
+		
+			$('#grid').data('kendoGrid').setDataSource(dataSource);
+			
+			$('#grid').data('kendoGrid').dataSource.page(1);
+			
+		},
+		resetForm : function(e) {
+			var formData = viewModel.model.toJSON();
+			for ( var k in formData) {
+				viewModel.model.set(k, null);
+			};
+		}
+	});
+    
+    
+</script>
+<body>
+     <form id="form_ExportExcle"
+		action="${base.contextPath}/queryFavorite/AllExcel" method="post">
+		<input type="hidden" id="data_ExportExcled" name="data_ExportExcled">
+		<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
+	</form>
+
+     <div id="content-container">
+         <div id="page-content">
+             <div class="panel" style="padding: 0px;">
+
+                 <div class="panel-footer text-left">
+                     <button  id="export" onclick=" exportExcelFunction()" class="btn btn-primary"><i class="fa fa-file-excel-o"></i> 导出</button>
+
+                 </div>
+
+                 <form class="form-horizontal" id="conditionForm">
+                     <div class="panel-body">
+                         <div class="row">
+
+                             <div class="col-sm-4">
+                                 <div class="form-group">
+                                     <label class="col-sm-4 control-label">UID</label>
+                                     <div class="col-sm-8">
+                                         <input id="userId"  type="text" placeholder="UID" style="width: 100%" data-bind="value:model.userId"
+                                                class="k-textbox">
+                                     </div>
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-4">
+                                 <div class="form-group">
+                                     <label class="col-sm-4 control-label">用户ID</label>
+                                     <div class="col-sm-8">
+                                         <input id="customerId" type="text" placeholder="用户ID" style="width: 100%" data-bind="value:model.customerId"
+                                                class="k-textbox">
+                                     </div>
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-4">
+                                 <div class="form-group">
+                                     <label class="col-sm-4 control-label">用户手机号</label>
+                                     <div class="col-sm-8">
+                                         <input id="mobileNumber" type="text" placeholder="用户手机号" style="width: 100%" data-bind="value:model.mobileNumber"
+                                                class="k-textbox">
+                                     </div>
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-4">
+                                 <div class="form-group">
+                                     <label class="col-sm-4 control-label">商品SPU编码</label>
+                                     <div class="col-sm-8">
+                                         <input id="productCode" type="text" placeholder="商品SPU编码" style="width: 100%" data-bind="value:model.productCode"
+                                                class="k-textbox">
+                                     </div>
+                                 </div>
+                             </div>
+
+                             <div class="col-sm-4">
+                                 <div class="form-group">
+                                     <label class="col-sm-4 control-label">商品名称</label>
+                                     <div class="col-sm-8">
+                                         <input id="product" type="text" placeholder="商品名称" style="width: 100%" data-bind="value:model.product"
+                                                class="k-textbox">
+                                     </div>
+                                 </div>
+                             </div>
+
+
+                         </div>
+                     </div>
+                 </form>
+                 <div class="panel-footer text-left">
+                     <span class="btn btn-success" id="query" data-bind="click:queryFunction"  type="submit"><i class="fa fa-search"></i> <@spring.message "hap.query"/></span>
+                     <span class="btn btn-primary" id="resetForm" data-bind="click:resetForm" type="button"><i class="fa fa-refresh"></i> <@spring.message "hap.reset"/></span>
+
+                 </div>
+             </div>
+
+             <div id='grid-container'>
+                 <div id="grid" style="clear: both"></div>
+             </div>
+         </div>
+     </div>
+
+
+
+ <div id="dialogEdit" style="display:none;"></div>
+
+</body>
+<script type="text/javascript">
+		kendo.bind($('#page-content'), viewModel);
+		kendo.bind($('#query-form'), viewModel);
+		$('#query-form input').keydown(function(e) {
+			if (e.keyCode == 13) {
+				e.target.blur();
+				viewModel.queryFunction(e);
+			}
+		});
+
+
+        function exportExcelFunction () {
+            if(map1==undefined){
+                kendo.ui.showWarningDialog({
+                    title:"提示",
+                    message:"表格中没有数据"
+                })
+            }else {
+                if(map1.length>0) {
+                    $("#data_ExportExcled").attr("value", map1);
+                    $("#form_ExportExcle").submit();
+                }else{
+                    kendo.ui.showWarningDialog({
+                        title:"提示",
+                        message:"表格中没有数据"
+                    })
+                }
+            }
+        }
+
+		var crudServiceBaseUrl = '${base.contextPath}', 
+		dataSource = new kendo.data.DataSource(
+				{
+					transport : {
+						read : {
+							url : crudServiceBaseUrl + "/queryFavorite/query",
+							type : "POST",
+							dataType : "json"
+						},
+						
+						
+						  parameterMap: function (options, type) {
+							  if (type !== "read" && options.models) {
+									var datas = Hap.prepareSubmitParameter(options,
+											type);
+									return kendo.stringify(datas);
+								} else if (type === "read") {
+									
+			                    	var pages=Hap.prepareQueryParameter(viewModel.model.toJSON(), options);
+			                    	maps={pages:pages};
+			                    	if(pages==""||pages==null)
+			                    		maps={pages:null};
+			                    	map1=JSON.stringify(maps);
+			                    	var post={data:JSON.stringify(maps)};
+			                    	return post;
+			                    }
+			                }
+			            },
+						
+					batch : true,
+					serverPaging:true,
+					serverSorting:true,
+					pageSize:10,
+					schema : {
+						data : 'resp',
+						total : 'total',
+						model : {
+							id : "userId",
+							fields : {
+								userId : {
+									type : "string"
+								},
+								costumerId : {
+									type : "string"
+								},
+								mobileNumber : {
+									type : "string"
+								},
+								userName : {
+									type : "string"
+								},
+								productNum : {
+									type : "string"
+								},
+								losedProductNum : {
+									type : "string"
+								},
+								lastFixDate : {
+									type : "string"
+								},groups : {
+									type : "string"
+								}
+							}
+						}
+					}
+				});
+		
+		
+		var grid = $("#grid");
+		$("#grid").kendoGrid({
+		dataSource : dataSource,
+			height : '400px',
+			pageable : true,
+			resizable : true,
+			editable : false,
+			navigatable : true,
+			scrollable : true,
+			autoResize:true,
+			selectable : true,
+			sortable : true,
+			/* selectable : "multiple,rowbox", */
+			pageable : {
+				pageSizes : [ 1, 5, 10, 20, 50 ],
+				refresh : true,
+				buttonCount : 10
+			},
+
+			columns : [ 
+			             {
+				title : '序号',
+				width : 130,
+				template: "<span class='row-number'></span>" 
+			},{
+
+				field : "userId",
+				title : 'UID',
+				width : 130,
+				
+			}, {
+				field : "customerId",
+				title : '用户ID',
+				width : 100
+			}, {
+				field : "mobileNumber",
+				title : '用户手机号',
+				width : 100
+			}, {
+				field : "userName",
+				title : '姓名',
+				width : 100
+			}, {
+				field : "productNum",
+				title : '商品数量',
+				width : 100
+			}, 
+			{
+				field : "lastFixDate",
+				title : '最后修改日期',
+				width : 100
+			}
+			],
+			dataBound: function () {  
+                var rows = this.items();  
+                $(rows).each(function () {  
+                    var index = $(this).index() + 1;  
+                    var rowLabel = $(this).find(".row-number");  
+                    $(rowLabel).html(index);  
+                });  
+            },  
+			
+			editable : "inline"
+			
+		}).data("kendoGrid");
+		
+
+		  
+		  grid.on('dblclick', '.k-grid-content tr', function (event) {
+			  var crudServiceBaseUrl = '${base.contextPath}';
+		        var data = $('#grid').data("kendoGrid").dataItem($(event.target).closest("tr"));
+		        var userId = data.userId;
+		        var customerId=data.customerId;
+		        var mobileNumber=data.mobileNumber;
+		        var  userName=data.userName;
+		        if(data.userName == null){
+		        	userName = "";
+		        }
+		        var groups =data.groups;
+		        /* alert(crudServiceBaseUrl+"/user/favoriteInfo.html?userId="+userId+"&customerId="+customerId+"&mobileNumber="+mobileNumber
+				        +"&userName="+userName+"&groups="+groups); */
+		        var url=crudServiceBaseUrl+"/user/favoriteInfo.html?userId="+userId+"&customerId="+customerId+"&mobileNumber="+mobileNumber
+		        +"&userName="+userName+"&groups="+groups; 
+		        openDetail(url,'收藏夹管理[收藏夹详情-'+userName+']');
+
+		        
+		  }); 
+
+
+		//自动根据当前屏幕大小调整表格
+		//Hap.autoResizeGrid("#grid");
+		 //弹出窗口
+    function openDetail(url,title) {
+        var dialog = $("#dialogEdit").kendoWindow({
+            width: 1050,
+            height: 550,
+            title: title,
+            visible: false,
+            iframe: true,
+            modal: true,
+            content: url,
+            close:function(){
+            	refushGrid();    //刷新父级列表
+            }
+        }).data("kendoWindow");
+        dialog.maximize();
+        dialog.open();
+    };
+
+		
+	</script>
+	

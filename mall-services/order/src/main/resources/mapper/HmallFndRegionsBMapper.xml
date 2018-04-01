@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hand.hmall.mapper.HmallFndRegionsBMapper">
+  <resultMap id="BaseResultMap" type="com.hand.hmall.model.HmallFndRegionsB">
+    <id column="REGION_ID" jdbcType="DECIMAL" property="regionId" />
+    <result column="REGION_TYPE" jdbcType="VARCHAR" property="regionType" />
+    <result column="REGION_CODE" jdbcType="VARCHAR" property="regionCode" />
+    <result column="PARENT_ID" jdbcType="DECIMAL" property="parentId" />
+    <result column="ENABLED_FLAG" jdbcType="VARCHAR" property="enabledFlag" />
+    <result column="OBJECT_VERSION_NUMBER" jdbcType="DECIMAL" property="objectVersionNumber" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="CREATED_BY" jdbcType="DECIMAL" property="createdBy" />
+    <result column="LAST_UPDATED_BY" jdbcType="DECIMAL" property="lastUpdatedBy" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATE_LOGIN" jdbcType="DECIMAL" property="lastUpdateLogin" />
+    <result column="PROGRAM_APPLICATION_ID" jdbcType="DECIMAL" property="programApplicationId" />
+    <result column="PROGRAM_ID" jdbcType="DECIMAL" property="programId" />
+    <result column="PROGRAM_UPDATE_DATE" jdbcType="TIMESTAMP" property="programUpdateDate" />
+    <result column="REQUEST_ID" jdbcType="DECIMAL" property="requestId" />
+    <result column="ATTRIBUTE_CATEGORY" jdbcType="VARCHAR" property="attributeCategory" />
+    <result column="SYNCFLAG" jdbcType="OTHER" property="syncflag" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    REGION_ID, REGION_TYPE, REGION_CODE, PARENT_ID, ENABLED_FLAG, OBJECT_VERSION_NUMBER, 
+    CREATION_DATE, CREATED_BY, LAST_UPDATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_LOGIN, 
+    PROGRAM_APPLICATION_ID, PROGRAM_ID, PROGRAM_UPDATE_DATE, REQUEST_ID, ATTRIBUTE_CATEGORY, 
+   SYNCFLAG
+  </sql>
+
+  <select id="selectRegionByRegionCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT HFRB.REGION_CODE FROM HMALL_FND_REGIONS_B HFRB WHERE REGION_CODE = #{code}
+  </select>
+</mapper>

@@ -1,0 +1,185 @@
+<#include "/include/header.html"/>
+<body>
+
+	<script>
+    var viewModel = kendo.observable({
+        model:{}
+    });
+    var code="${RequestParameters.code}"||"";
+    var id="${RequestParameters.id}"||"";
+    var level="${RequestParameters.type}"||"";
+    var selectType="${RequestParameters.selectType}"||"";
+</script>
+
+
+	<div id="content-container">
+		<div id="page-content">
+			<div class="panel" style="padding: 0px;">
+				<div id="grid"></div>
+				<div class="panel-footer text-right">
+					<span class="btn btn-success" id="ok" onclick="doSubmit()"
+						type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+
+
+
+    kendo.bind($('#content-container'),viewModel);
+
+
+
+    var BaseUrl = "${base.contextPath}/sale/range/condition/",
+            dataSource = new kendo.data.DataSource({
+                transport: {
+                    read:  {
+                        url: BaseUrl+"query",
+                        type : "POST",
+                        contentType:"application/json"
+                    },
+                    parameterMap: function(options, type) {
+                        if (type !== "read" && options.models) {
+                            var datas = options.models;
+                            if(type =='create' || type =='update'){
+                                var map = viewModel.model.toJSON();
+                                console.log(map);
+                                datas = options.models.map(function(data){
+                                    data['__status'] = (type =='create' ? 'add' : 'update');
+                                    return data;
+
+                                })
+                            }
+                            return kendo.stringify(datas);
+                        }  else if (type === "read") {
+                            console.log("----read------");
+                            var map={};
+//                            map.datas =viewModel.model.toJSON();
+                            map.code=code;
+                            map.selectType=selectType;
+                            map.type=level;
+                            map.page = options.page;
+                            map.pageSize = options.pageSize;
+                            for (var k in map) {
+                                if (map[k] === '' || map[k] === null || map[k] === undefined)
+                                    delete map[k]
+                            }
+                            return kendo.stringify(map);
+
+                        }
+                    }
+                },
+                batch: true,
+                serverPaging : true,
+                pageSize: 20,
+                schema: {
+                    data:'resp',
+                    total:'total',
+                    model: {
+                        id: "id",
+                        fields: {
+                            type:{editable:false, validation: { required: true }},
+                            definitionId:{editable:false, validation: { required: true }},
+                            meaning: {editable:false, validation: { required: true } }
+
+                        }
+                    },
+                    errors: function(res){
+                        if(!res.success && res.msg) {
+                            return res.msg;
+                        }
+                    }
+                },
+                error: function(e) {
+                    kendo.ui.showErrorDialog({
+                        title:"提示",
+                        message:e.errors
+                    })
+                }
+            });
+
+
+
+    var grid=$("#grid").kendoGrid({
+        dataSource: dataSource,
+        resizable: true,
+        scrollable: true,
+        autoResize:true,
+        navigatable: true,
+        height: '100%',
+        rownumber : true,
+        selectable : 'multiple, rowbox',
+        columns: [
+
+            {
+                field: "meaning",
+                title: '类型',
+                headerAttributes: {
+                    "class": "table-header-cell",
+                    style  : "text-align: center"
+                }
+            }
+
+
+
+        ],
+        editable: true,
+        dataBound: function() {
+            var view = this.dataSource.view();
+            this.items().each(function(index, row) {
+                kendo.bind(row, view[index]);
+            });
+        }
+    }).data("kendoGrid");
+
+    function doSubmit() {
+        var grid = $("#grid").data("kendoGrid");
+        var datas=grid.selectedDataItems();
+
+        $.ajax({
+            url:BaseUrl+"submit",
+            type:"POST",
+            contentType:"application/json",
+            data:JSON.stringify(datas),
+            success:function (data) {
+                if(data.success)
+                {
+                    if(code=='ADD_CONDITIONS')
+                    {
+                        for(var i in data.resp) {
+                            window.parent.addConditionRow(data.resp[i].definitionId,data.resp[i].meaning,data.resp[i].code,data.resp[i].id,'CREATE')
+                        }
+                    }else if(code=='ADD_ACTIONS'){
+                        for(var i in data.resp) {
+                            window.parent.addActionRow(data.resp[i].definitionId,data.resp[i].meaning,data.resp[i].id,'CREATE')
+                        }
+                    }else if(code=='ADD_GROUPS')
+                    {
+                        for(var i in data.resp) {
+                            window.parent.addGroupRow(data.resp[i].definitionId,data.resp[i].meaning,data.resp[i].id,id,'CREATE')
+                        }
+                    }else
+                    {
+                        for(var i in data.resp) {
+                            window.parent.addContainerRow(data.resp[i].definitionId,data.resp[i].meaning,data.resp[i].id,id,'CREATE')
+                        }
+                    }
+
+                    window.parent.$("#addTempWin").data("kendoWindow").close();
+
+
+                }else {
+                    kendo.ui.showErrorDialog({
+                        title:"错误",
+                        message:data.msg
+                    })
+                }
+            }
+        });
+    }
+
+
+</script>
+</body>
+</html>

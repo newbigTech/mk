@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hmall.mapper.PinAlterInfoMapper">
+    <resultMap id="BaseResultMap" type="com.hand.hmall.model.PinAlterInfo">
+        <result column="ALTER_INFO_ID" property="alterInfoId" jdbcType="DECIMAL"/>
+        <result column="PIN" property="pin" jdbcType="VARCHAR"/>
+        <result column="EVENT_CODE" property="eventCode" jdbcType="VARCHAR"/>
+        <result column="NEXT_EVENT_CODE" property="nextEventCode" jdbcType="VARCHAR"/>
+        <result column="NEXT_EVENT_DES" property="nextEventDes" jdbcType="VARCHAR"/>
+        <result column="LEVEL1_TIME" property="level1Time" jdbcType="DATE"/>
+        <result column="LEVEL2_TIME" property="level2Time" jdbcType="DATE"/>
+        <result column="LEVEL3_TIME" property="level3Time" jdbcType="DATE"/>
+        <result column="LEVEL1_DELAY_HOURS" property="level1DelayHours" jdbcType="DECIMAL" />
+        <result column="LEVEL2_DELAY_HOURS" property="level2DelayHours" jdbcType="DECIMAL" />
+        <result column="LEVEL3_DELAY_HOURS" property="level3DelayHours" jdbcType="DECIMAL" />
+    </resultMap>
+
+    <insert id="insertOne" parameterType="com.hand.hmall.model.PinAlterInfo">
+        INSERT INTO HMALL_PIN_ALTER_INFO (
+            ALTER_INFO_ID,
+            PIN,
+            EVENT_CODE,
+            NEXT_EVENT_CODE,
+            LEVEL1_TIME,
+            LEVEL2_TIME,
+            LEVEL3_TIME
+        )
+        VALUES (
+            HMALL_PIN_ALTER_INFO_S.nextval,
+            #{pin},
+            #{eventCode},
+            #{nextEventCode},
+            #{level1Time},
+            #{level2Time},
+            #{level3Time}
+        )
+    </insert>
+
+    <delete id="deleteOne" parameterType="com.hand.hmall.model.PinAlterInfo">
+        DELETE FROM HMALL_PIN_ALTER_INFO WHERE PIN = #{pin}
+    </delete>
+
+</mapper>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <!--用于MAP调用查询优惠券相关数据-->
+    <bean id="hCustomerCouponService" class="com.hand.promotion.dubboService.HCustomerCouponService"/>
+    <dubbo:service interface="com.hand.hpromotion.IHCustomerCouponService"
+                   version="1.0.0" ref="hCustomerCouponService" group="configurator-api-4w"/>
+
+    <!--MAP促销活动操作接口-->
+    <bean id="saleActivityService" class="com.hand.promotion.dubboService.SaleActivityService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleActivityService"
+                   version="1.0.0" ref="saleActivityService" group="configurator-api-4w"/>
+    <!--优惠券操作-->
+    <bean id="saleCouponService" class="com.hand.promotion.dubboService.SaleCouponService"/>
+    <dubbo:service
+            interface="com.hand.hpromotion.ISaleCouponService"
+            version="1.0.0" ref="saleCouponService" group="configurator-api-4w"/>
+    <!--用户已发放优惠券，用于发放，查询优惠券使用情况信息-->
+    <bean id="saleCustomerCouponService" class="com.hand.promotion.dubboService.SaleCustomerCouponService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleCustomerCouponService"
+                   version="1.0.0" ref="saleCustomerCouponService" group="configurator-api-4w"/>
+    <!--促销执行接口-->
+    <bean id="saleExecutionService" class="com.hand.promotion.dubboService.SaleExecutionService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleExecutionService"
+                   version="1.0.0" ref="saleExecutionService" group="configurator-api-4w"/>
+    <!--查询促销/优惠券 操作人员信息-->
+    <bean id="saleOperatorService" class="com.hand.promotion.dubboService.SaleOperatorService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleOperatorService"
+                   version="1.0.0" ref="saleOperatorService" group="configurator-api-4w"/>
+    <!--促销条件、结果、分组信息后台操作入口-->
+    <bean id="saleRangeService" class="com.hand.promotion.dubboService.SaleRangeService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleRangeService"
+                   version="1.0.0" ref="saleRangeService" group="configurator-api-4w"/>
+    <!--促销模板接口-->
+    <bean id="saleTemplateService" class="com.hand.promotion.dubboService.SaleTemplateService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleTemplateService"
+                   version="1.0.0" ref="saleTemplateService" group="configurator-api-4w"/>
+    <!--商品Excel导入接口-->
+    <bean id="hSaleExcelService" class="com.hand.promotion.dubboService.HSaleExcelService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleDroolsExcelService"
+                   version="1.0.0" ref="hSaleExcelService" group="configurator-api-4w"/>
+    <!--捆绑套装对象微服务-->
+    <bean id="saleBundleService" class="com.hand.promotion.dubboService.SaleBundleService"/>
+    <dubbo:service interface="com.hand.hpromotion.ISaleBundleService"
+                   version="1.0.0" ref="saleBundleService" group="configurator-api-4w"/>
+    <!--优惠券推送接口-->
+    <bean id="couponOperateService" class="com.hand.promotion.dubboService.CouponOperateService"/>
+    <dubbo:service interface="com.hand.hpromotion.ICouponOperateService"
+                   ref="couponOperateService" version="1.0.0" group="configurator-api-4w"/>
+
+
+</beans>

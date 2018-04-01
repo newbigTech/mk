@@ -1,0 +1,222 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var viewModel = kendo.observable({
+        model:{},
+        notIn:[]
+    });
+    var id='${RequestParameters.id}';
+    var definitionId='${RequestParameters.definitionId}';
+    var disabled='${RequestParameters.disabled}';
+    var value="";
+    var operator="MAX_THAN";
+    var code="";
+
+    var matchProduct=[];
+    var targetProduct=[];
+
+
+
+
+
+    function insertContainerString()
+    {
+        for(var i in window.parent.viewModel.model.actions)
+        {
+            if(window.parent.viewModel.model.actions[i].id==id)
+            {
+                code=window.parent.viewModel.model.actions[i].code;
+
+                if(window.parent.viewModel.model.actions[i].parameters!=undefined) {
+                    value=window.parent.viewModel.model.actions[i].parameters.value;
+                    operator=window.parent.viewModel.model.actions[i].parameters.operator;
+
+                    if(window.parent.viewModel.model.actions[i].parameters.matchValue!=undefined)
+                    {
+
+                        var matchLength=window.parent.viewModel.model.actions[i].parameters.matchValue.length;
+                        var matchStr="";
+                        if(matchLength>1) {
+                            for (var j = 0; j < matchLength - 1; j++) {
+                                matchStr += window.parent.viewModel.model.actions[i].parameters.matchValue[j].meaning ;
+                                matchStr+=",";
+                            }
+                        }
+                        matchStr += window.parent.viewModel.model.actions[i].parameters.matchValue[matchLength-1].meaning ;
+                        viewModel.model.matchStr=matchStr;
+                        $('#matchContainer').val(matchStr);
+
+                    }
+                    if(window.parent.viewModel.model.actions[i].parameters.targetValue!=undefined)
+                    {
+                        var targetLength=window.parent.viewModel.model.actions[i].parameters.targetValue.length;
+                        var targetStr="";
+                        if(targetLength>1) {
+                            for (var j = 0; j < targetLength - 1; j++) {
+                                targetStr += window.parent.viewModel.model.actions[i].parameters.targetValue[j].meaning ;
+                                targetStr+=",";
+                            }
+                        }
+                        targetStr += window.parent.viewModel.model.actions[i].parameters.targetValue[targetLength-1].meaning ;
+                        viewModel.model.targetStr=targetStr;
+                        $('#targetContainer').val(targetStr);
+                    }
+                }
+                break;
+            }
+        }
+
+    }
+
+    insertContainerString();
+
+
+    if(value!=null&&value!=undefined&&value!="")
+    {
+        viewModel.model.value =value;
+    }
+    if(operator!=null&&operator!=undefined&&operator!="")
+    {
+        viewModel.model.operator =operator;
+
+    }
+
+
+
+    var TARGET_TYPE='TARGET';
+    var MATCH_TYPE='MATCH';
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div class="panel" style="padding: 0px;">
+            <form class="form-horizontal" id="conditionForm">
+                <div class="panel-body">
+                    <div id="showRow" class="row">
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label id="change" class="col-sm-4 control-label">价格</label>
+                                <div class="col-sm-8">
+                                    <input id="value" disabled="true" type="text"  style="width: 100%" data-bind="value:model.value">
+                                    <script>
+                                        if(disabled!='true'){
+                                          $('#value').removeAttr("disabled");
+                                        }
+                                        $("#value").kendoNumericTextBox({
+                                            format: "c",
+                                            min:0
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--<div class="col-sm-6">-->
+                            <!--<div class="form-group">-->
+                                <!--<label class="col-sm-4 control-label">策略</label>-->
+                                <!--<div class="col-sm-8">-->
+                                    <!--<input id="operator" disabled="true" data-bind="value:model.operator" placeholder="策略" style="width: 100%;"  data-value-primitive="true"/>-->
+                                    <!--<script>-->
+                                        <!--if(disabled!='true'){-->
+                                            <!--$('#operator').removeAttr("disabled");-->
+                                        <!--}-->
+                                        <!--if(viewModel.model.operator==null||viewModel.model.operator==undefined||viewModel.model.operator=="") {-->
+                                            <!--viewModel.model.operator = 'MAX_THAN';-->
+                                        <!--}-->
+                                        <!--$("#operator").kendoDropDownList({-->
+                                            <!--dataTextField  : "meaning",-->
+                                            <!--dataValueField : "value",-->
+                                            <!--dataSource     : [{"meaning":"默认","value":"MAX_THAN"},{"meaning":"最便宜","value":"MAX"}]-->
+                                        <!--});-->
+                                    <!--</script>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</div>-->
+
+
+
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">目标商品容器</label>
+                                <div class="col-sm-8">
+
+                                    <input id="targetContainer"  disabled="true" type="text" placeholder="已选商品" style="width: 70%" data-bind="value:model.targetStr"
+                                           class="k-textbox ">
+                                    <span class="btn-sm btn-warning " onclick="showProductContainer(TARGET_TYPE)"><i class="fa fa-search"></i> </span>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </form>
+            <div class="panel-footer text-right">
+                <span class="btn btn-success"  disabled="true" id="query" type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+                <span class="btn btn-primary" id="resetForm" onclick="rollbackWin()" type="button"><i class="fa fa-refresh"></i> 返回</span>
+                <script>
+                    if(disabled!='true'){
+                        $('#query').removeAttr("disabled");
+                        $('#query').attr("onclick","saveDataCondition()");
+                    }
+                </script>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    if(definitionId!='o_target_price')
+    {
+        $('#showRow').append("<div class='col-sm-6'><div class='form-group'>"+
+                "<label class='col-sm-4 control-label'>符合商品容器</label>"+
+                "<div class='col-sm-8'>"+
+                "<input id='matchContainer'  disabled='true' type='text' placeholder='已选商品' style='width: 70%' data-bind='value:model.matchStr'' class='k-textbox '>"+
+                "<span class='btn-sm btn-warning' onclick='showProductContainer(MATCH_TYPE)'><i class='fa fa-search'></i> </span>"+
+                "</div> </div></div>")
+    }
+    kendo.bind($('#content-container'),viewModel);
+    kendo.bind($('#page-content'),viewModel);
+
+    function saveDataCondition()
+    {
+        window.parent.saveContainerAction(viewModel.model,id);
+        rollbackWin();
+    }
+    function rollbackWin() {
+        window.parent.$("#addTempActionDataWin").data("kendoWindow").close();
+
+    }
+
+    function showProductContainer(type) {
+        var onClose = function () {
+            insertContainerString();
+            window.parent.$("#productContainerWin").empty();
+        };
+
+        window.parent.$("#productContainerWin").kendoWindow({
+            actions: ["Close"],
+            title:'添加条件' ,
+            draggable: true,
+            height: "80%",
+            width: "80%",
+            close: onClose,
+            content: "${base.contextPath}/sale/actions/saleSetContainerAction.html?id="+id+"&definitionId="+definitionId+"&disabled="+disabled+"&type="+type,
+            iframe: true,
+            modal: true
+        });
+
+        var win = window.parent.$("#productContainerWin").data("kendoWindow");
+        win.center().open();
+    }
+
+
+
+</script>
+</body>
+</html>

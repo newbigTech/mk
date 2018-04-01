@@ -1,0 +1,180 @@
+<#include "/include/header.html"/>
+<body>
+
+<script>
+    var viewModel = kendo.observable({
+        model: {},
+        createFunction: function () {
+            $('#grid').data('kendoGrid').addRow();
+        }
+    });
+
+    var id = '${RequestParameters.id}';
+    var value = '';
+    var operator = '';
+    var definitionId = '${RequestParameters.definitionId}';
+    var disabled = '${RequestParameters.disabled}';
+
+    for (var i in window.parent.viewModel.model.actions) {
+        if (window.parent.viewModel.model.actions[i].id == id) {
+            definitionId = window.parent.viewModel.model.actions[i].definitionId;
+
+            if (window.parent.viewModel.model.actions[i].parameters != undefined) {
+                if (window.parent.viewModel.model.actions[i].parameters.value != undefined) {
+                    value = window.parent.viewModel.model.actions[i].parameters.value.value;
+                }
+
+            }
+
+            break;
+        }
+    }
+
+    if (value != null && value != undefined && value != "") {
+        viewModel.model.value = value;
+    }
+    if (operator != null && operator != undefined && operator != "") {
+        viewModel.model.operator = operator;
+
+    }
+
+</script>
+
+
+<div id="content-container">
+    <div id="page-content">
+        <div class="panel" style="padding: 0px;">
+                <button class="btn btn-primary" style="float: right" data-bind="click:createFunction">添加行</button>
+                <button class="btn btn-primary" style="float: right" onclick="delConditon()">删除行</button>
+            <div style="clear:both">
+                <div id="grid"></div>
+            </div>
+            <div class="panel-footer text-right">
+                <span class="btn btn-success" disabled="true" id="query" type="submit"><i class="glyphicon glyphicon-ok"></i> 确定</span>
+                <span class="btn btn-primary" id="resetForm" onclick="rollbackWin()" type="button"><i class="fa fa-refresh"></i>返回</span>
+                <script>
+                    if (disabled != "true") {
+                        $('#query').removeAttr("disabled");
+                        $('#query').attr("onclick", "saveSaleLaddersAction()");
+                    }
+                </script>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    kendo.bind($('#content-container'), viewModel);
+    kendo.bind($('#page-content'), viewModel);
+
+    Hap.initEnterQuery('#query-form', viewModel.query);
+
+    var arr = [];
+    $(function () {
+        for (var i in window.parent.viewModel.model.actions) {
+            if (window.parent.viewModel.model.actions[i].id == id) {
+                definitionId = window.parent.viewModel.model.actions[i].definitionId;
+                if (window.parent.viewModel.model.actions[i].parameters != undefined) {
+                    if (window.parent.viewModel.model.actions[i].parameters.value != undefined) {
+                        var parametersArr = window.parent.viewModel.model.actions[i].parameters.value.value;
+                        console.log(parametersArr);
+                        if(parametersArr[0].uid == 'undefined'){
+                            arr = window.parent.viewModel.model.actions[i].parameters.value.value;
+                        }else{
+                            for(var i = 0; i<parametersArr.length;i++){
+                                var data = {};
+                                data.key = parametersArr[i].key;
+                                data.value = parametersArr[i].value;
+                                arr[i] = data;
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+        console.log(arr);
+        refreshGrid();
+    });
+
+    function refreshGrid() {
+        var _dataSource_ = new kendo.data.DataSource({
+            data: arr,
+            schema: {
+                model: {
+                    id: "key",
+                    fields: {
+                        key: {
+                            type: "number"
+                        },
+                        value: {
+                            type: "number"
+                        }
+                    }
+                }
+            }
+        });
+        $('#grid').data('kendoGrid').setDataSource(_dataSource_);
+    }
+
+    var _grid_ = $("#grid").kendoGrid({
+        height: 350,
+        resizable: true,
+        scrollable: true,
+        navigatable: false,
+        selectable: 'multiple, rowbox',
+        pageable: {
+            pageSizes: [5, 10, 20, 50],
+            refresh: true,
+            buttonCount: 5
+        },
+        columns: [
+            {
+                field: "key",
+                title: '满',
+                width: 120
+            },
+            {
+                field: "value",
+                title: '减',
+                width: 120
+            }
+        ],
+        editable: true
+    });
+
+    function saveSaleLaddersAction() {
+        var gridData = $('#grid').data('kendoGrid').dataSource._data;
+        var value = [];
+        for (var i = 0; i < gridData.length; i++) {
+            var data = {};
+            data.key = gridData[i].key;
+            data.value = gridData[i].value;
+            value[i] = data;
+        }
+        window.parent.saveSaleLaddersAction(value, id);
+        rollbackWin();
+    }
+
+    function rollbackWin() {
+        window.parent.$("#addTempActionDataWin").data("kendoWindow").close();
+    }
+
+    function delConditon(e) {
+        var gridData = $('#grid').data('kendoGrid').dataSource._data;
+        var selectData = $('#grid').data('kendoGrid').selectedDataItems();
+        if (selectData.length > 0) {
+            for (var i = 0; i < gridData.length; i++) {
+                for (var j = 0; j < selectData.length; j++) {
+                    if (gridData[i].uid == selectData[j].uid) {
+                        gridData.splice(jQuery.inArray(gridData[i], gridData), 1);
+                    }
+                }
+            }
+            $('#grid').data('kendoGrid').setDataSource(_dataSource_);
+        }
+    }
+
+</script>
+</body>
+</html>
